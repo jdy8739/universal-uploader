@@ -1,0 +1,24 @@
+{
+  "name": "universial-upload",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A lightweight, zero-dependency library for high-performance file uploads using Web Streams API with progress monitoring and cross-browser fallbacks.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdy8739/universial-upload.git"
+  },
+  "keywords": [],
+  "author": "jdy8739",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jdy8739/universial-upload/issues"
+  },
+  "homepage": "https://github.com/jdy8739/universial-upload#readme",
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}
