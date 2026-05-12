@@ -5,6 +5,7 @@
   "description": "A lightweight, zero-dependency library for high-performance file uploads using Web Streams API with progress monitoring and cross-browser fallbacks.",
   "main": "index.js",
   "scripts": {
+    "server": "nodemon --exec ts-node src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,14 @@
   },
   "homepage": "https://github.com/jdy8739/universial-upload#readme",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }
 }
