@@ -74,9 +74,9 @@ const uploadWithoutChunking = ({
   url: string;
   file: File;
   customHeaders: Record<string, string>;
-  onProgress?: UploadParams['option']['onProgress'];
+  onProgress?: UploadParams['options']['onProgress'];
 }) =>
-  new Promise((resolve, reject) => {
+  new Promise<UploadResponse>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
     xhr.open('POST', url);
@@ -103,7 +103,11 @@ const uploadWithoutChunking = ({
         if (onProgress) {
           onProgress({ loaded: file.size, total: file.size, percentage: 100 });
         }
-        resolve(xhr.response);
+        resolve({
+          ok: true,
+          total: file.size,
+          message: undefined,
+        });
         return;
       }
 
@@ -117,8 +121,8 @@ const uploadWithoutChunking = ({
 const uploadWithXhrChuncked = async ({
   url,
   file,
-  option: { chunkSize, customHeaders = {}, onProgress },
-}: UploadParams) => {
+  options: { chunkSize, customHeaders = {}, onProgress },
+}: UploadParams): Promise<UploadResponse> => {
   if (!chunkSize || chunkSize <= 0) {
     return uploadWithoutChunking({ url, file, customHeaders, onProgress });
   }
@@ -127,7 +131,16 @@ const uploadWithXhrChuncked = async ({
     chunkSize,
     fileSize: file.size,
   });
-  let lastResponse: unknown = null;
+
+  if (totalFileSize === 0) {
+    if (onProgress) {
+      onProgress({ loaded: 0, total: 0, percentage: 100 });
+    }
+
+    return { ok: true, total: 0, message: undefined };
+  }
+
+  let lastResponse: UploadResponse = { ok: false, total: 0, message: undefined };
 
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
     const { start, end } = getChunkRange({
@@ -139,7 +152,7 @@ const uploadWithXhrChuncked = async ({
     const chunk = file.slice(start, end);
 
     // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
-    lastResponse = await new Promise((resolve, reject) => {
+    lastResponse = await new Promise<UploadResponse>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
       xhr.open('POST', url);
@@ -162,7 +175,7 @@ const uploadWithXhrChuncked = async ({
               percentage: totalFileSize === 0 ? 100 : (end / totalFileSize) * 100,
             });
           }
-          resolve(xhr.response);
+          resolve({ ok: true, total: totalFileSize, message: undefined });
           return;
         }
 
@@ -172,10 +185,6 @@ const uploadWithXhrChuncked = async ({
       xhr.onerror = (e) => reject(e);
       xhr.send(chunk);
     });
-  }
-
-  if (onProgress && totalFileSize === 0) {
-    onProgress({ loaded: 0, total: 0, percentage: 100 });
   }
 
   return lastResponse;

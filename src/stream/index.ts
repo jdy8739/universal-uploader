@@ -70,15 +70,15 @@ const createProgressStream = ({
 const uploadWithStream = async ({
   url,
   file,
-  option: { chunkSize = 1024 * 1024, customHeaders = {}, onProgress },
-}: UploadParams) => {
+  options: { chunkSize = 1024 * 1024, customHeaders = {}, onProgress },
+}: UploadParams): Promise<UploadResponse> => {
   const stream = getStreamUploader({ file, chunkSize });
 
   const body = onProgress
     ? stream.pipeThrough(createProgressStream({ totalFileSize: file.size, onProgress }))
     : stream;
 
-  const init: RequestInit & { duplex?: 'half' } = {
+  const init: RequestInit = {
     method: 'POST',
     body,
     duplex: 'half',
@@ -90,7 +90,7 @@ const uploadWithStream = async ({
 
   const response = await fetch(url, init);
 
-  return response;
+  return { ok: response.ok, total: file.size, message: undefined };
 };
 
 export default uploadWithStream;

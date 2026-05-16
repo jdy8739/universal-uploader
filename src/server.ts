@@ -1,5 +1,8 @@
-import express from 'express';
+import process from 'node:process';
+import { pathToFileURL } from 'node:url';
+
 import cors from 'cors';
+import express from 'express';
 
 const app = express();
 const port = 3000;
@@ -33,6 +36,13 @@ app.post('/upload', (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Test server running at http://localhost:${port}`);
-});
+export { app };
+
+const runningAsCliEntry =
+  Boolean(process.argv[1]) && pathToFileURL(process.argv[1]).href === import.meta.url;
+
+if (runningAsCliEntry) {
+  app.listen(port, () => {
+    console.log(`Test server running at http://localhost:${port}`);
+  });
+}
