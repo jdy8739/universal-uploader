@@ -36,24 +36,6 @@ const getStreamUploader = ({ file, chunkSize }: StreamUploaderParams) => {
   });
 };
 
-interface UploadWithStreamParams {
-  url: string;
-  file: File;
-  option: {
-    chunkSize: number;
-    customHeaders?: Record<string, string>;
-    onProgress?: ({
-      loaded,
-      total,
-      percentage,
-    }: {
-      loaded: number;
-      total: number;
-      percentage: number;
-    }) => void;
-  };
-}
-
 const createProgressStream = ({
   totalFileSize,
   onProgress,
@@ -89,7 +71,7 @@ const uploadWithStream = async ({
   url,
   file,
   option: { chunkSize = 1024 * 1024, customHeaders = {}, onProgress },
-}: UploadWithStreamParams) => {
+}: UploadParams) => {
   const stream = getStreamUploader({ file, chunkSize });
 
   const body = onProgress
