@@ -11,5 +11,5 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", ".eslintrc.cjs"]
+  "include": ["src/**/*", ".eslintrc.cjs", "./global.d.ts"]
 }
