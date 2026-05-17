@@ -61,7 +61,6 @@ const upload = async ({
 
   const finalOptions = {
     ...restOptions,
-    onAbort,
     onProgress: ({ loaded, total, percentage }: OnProgressParams) => {
       onProgress?.({ loaded, total, percentage });
 
@@ -91,20 +90,24 @@ const upload = async ({
     const retriedActions: UploadActions = { ...originalActions };
 
     const retriedResult: Promise<UploadResult> = originalResult.catch(async (e) => {
-      onError?.(e as Error);
-
-      if (retryCount <= 0) {
-        return originalResult;
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        onAbort?.();
+        throw e;
       }
 
-      const { result: retryResult, actions: retryActions } = await retryUpload({
-        url,
-        file,
-        options: { ...options, retryCount: retryCount - 1 },
-      });
+      if (retryCount > 0) {
+        const { result: retryResult, actions: retryActions } = await retryUpload({
+          url,
+          file,
+          options: { ...options, retryCount: retryCount - 1 },
+        });
 
-      Object.assign(retriedActions, retryActions);
-      return retryResult;
+        Object.assign(retriedActions, retryActions);
+        return retryResult;
+      }
+
+      onError?.(e as Error);
+      throw e;
     });
 
     return { result: Promise.resolve(retriedResult), actions: retriedActions };

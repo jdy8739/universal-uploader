@@ -77,14 +77,12 @@ const uploadWithoutChunking = ({
   refresh,
   customHeaders,
   onProgress,
-  onAbort,
 }: {
   url: string;
   file: File;
   refresh: () => void;
   customHeaders: Record<string, string>;
   onProgress?: (args: OnProgressParams) => void;
-  onAbort?: (e: unknown) => void;
 }): UploadResponse => {
   const xhr = new XMLHttpRequest();
 
@@ -129,7 +127,6 @@ const uploadWithoutChunking = ({
     xhr.onerror = (e) => reject(e);
     xhr.onabort = () => {
       const abortError = new DOMException('Aborted', 'AbortError');
-      onAbort?.(abortError);
       reject(abortError);
     };
     xhr.send(file);
@@ -155,7 +152,7 @@ const uploadWithXhrChuncked = async ({
   url,
   file,
   refresh,
-  options: { chunkSize, customHeaders = {}, onProgress, onAbort },
+  options: { chunkSize, customHeaders = {}, onProgress },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
   const response: UploadResponse = {
     result: Promise.resolve({ ok: false, total: 0, message: undefined }),
@@ -166,7 +163,7 @@ const uploadWithXhrChuncked = async ({
   };
 
   if (!chunkSize || chunkSize <= 0) {
-    return uploadWithoutChunking({ url, file, refresh, customHeaders, onProgress, onAbort });
+    return uploadWithoutChunking({ url, file, refresh, customHeaders, onProgress });
   }
 
   const { safeChunkSize, totalFileSize, totalChunks } = getChunkUploadMeta({
@@ -237,7 +234,6 @@ const uploadWithXhrChuncked = async ({
         xhr.onerror = (e) => reject(e);
         xhr.onabort = () => {
           const abortError = new DOMException('Aborted', 'AbortError');
-          onAbort?.(abortError);
           reject(abortError);
         };
 
