@@ -32,6 +32,11 @@ const checkSupportsStreamingUpload = (url: string) => {
   return duplexAccessed && !hasContentType;
 };
 
+const wait = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
 const upload = async ({
   url,
   file,
@@ -68,54 +73,71 @@ const upload = async ({
 
   const refresh = () => upload({ url, file, options });
 
-  try {
-    if (uploadMethod === 'stream') {
-      const streamUploadResult = await uploadWithStream({
+  const retryUpload = async (uploadArgs: Upload): Promise<UploadResponse> => {
+    const nextRetryDelay = typeof retryDelay === 'function' ? retryDelay(retryCount) : retryDelay;
+
+    await wait(nextRetryDelay);
+
+    onRetry?.();
+
+    return upload(uploadArgs);
+  };
+
+  const wrapPromiseErrorHandler = async (
+    uploadResponse: UploadResponse,
+  ): Promise<UploadResponse> => {
+    const { result: originalResult, actions: originalActions } = uploadResponse;
+
+    const retriedActions: UploadActions = { ...originalActions };
+
+    const retriedResult: Promise<UploadResult> = originalResult.catch(async (e) => {
+      onError?.(e as Error);
+
+      if (retryCount <= 0) {
+        return originalResult;
+      }
+
+      const { result: retryResult, actions: retryActions } = await retryUpload({
         url,
         file,
-        refresh,
-        options: finalOptions,
+        options: { ...options, retryCount: retryCount - 1 },
       });
+
+      Object.assign(retriedActions, retryActions);
+      return retryResult;
+    });
+
+    return { result: Promise.resolve(retriedResult), actions: retriedActions };
+  };
+
+  try {
+    if (uploadMethod === 'stream') {
+      const streamUploadResult = await wrapPromiseErrorHandler(
+        await uploadWithStream({
+          url,
+          file,
+          refresh,
+          options: finalOptions,
+        }),
+      );
 
       return streamUploadResult;
     }
 
     if (uploadMethod === 'xhr chunked') {
-      const xhrChunkedUploadResult = await uploadWithXhrChuncked({
-        url,
-        file,
-        refresh,
-        options: finalOptions,
-      });
+      const xhrChunkedUploadResult = await wrapPromiseErrorHandler(
+        await uploadWithXhrChuncked({
+          url,
+          file,
+          refresh,
+          options: finalOptions,
+        }),
+      );
 
       return xhrChunkedUploadResult;
     }
   } catch (e) {
-    if (e instanceof DOMException && e.name === 'AbortError') {
-      onAbort?.();
-
-      // return {
-      //   ok: false,
-      //   total: 0,
-      //   message: 'Aborted by user action',
-      //   action: {
-      //     abort: () => null,
-      //     refresh,
-      //   },
-      // };
-    }
-
     onError?.(e as Error);
-
-    if (retryCount > 0) {
-      const nextRetryDelay = typeof retryDelay === 'function' ? retryDelay(retryCount) : retryCount;
-
-      setTimeout(() => {
-        upload({ url, file, options: { ...options, retryCount: retryCount - 1 } });
-
-        onRetry?.();
-      }, nextRetryDelay);
-    }
   }
 
   return {
