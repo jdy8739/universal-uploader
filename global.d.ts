@@ -22,9 +22,18 @@ declare interface RequestInit {
   get duplex(): 'half';
 }
 
-declare interface UploadResponse {
+declare interface UploadResult {
   ok: boolean;
   total: number;
   message?: string;
-  action: { abort: () => void; refresh: () => void };
+}
+
+declare interface UploadActions {
+  abort: () => void;
+  refresh: () => void;
+}
+
+declare interface UploadResponse {
+  result: Promise<UploadResult>;
+  actions: UploadActions;
 }

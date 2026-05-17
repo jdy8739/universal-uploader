@@ -44,19 +44,19 @@ const upload = async ({
   const {
     onComplete,
     onProgress,
+    onAbort,
     onRetry,
     onError,
     retryCount: retryCountArg = 3,
     retryDelay = 1000,
     ...restOptions
-  } = {
-    ...options,
-  };
+  } = options;
 
   const retryCount = retryCountArg;
 
   const finalOptions = {
     ...restOptions,
+    onAbort,
     onProgress: ({ loaded, total, percentage }: OnProgressParams) => {
       onProgress?.({ loaded, total, percentage });
 
@@ -66,11 +66,14 @@ const upload = async ({
     },
   };
 
+  const refresh = () => upload({ url, file, options });
+
   try {
     if (uploadMethod === 'stream') {
       const streamUploadResult = await uploadWithStream({
         url,
         file,
+        refresh,
         options: finalOptions,
       });
 
@@ -81,12 +84,27 @@ const upload = async ({
       const xhrChunkedUploadResult = await uploadWithXhrChuncked({
         url,
         file,
+        refresh,
         options: finalOptions,
       });
 
       return xhrChunkedUploadResult;
     }
   } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      onAbort?.();
+
+      // return {
+      //   ok: false,
+      //   total: 0,
+      //   message: 'Aborted by user action',
+      //   action: {
+      //     abort: () => null,
+      //     refresh,
+      //   },
+      // };
+    }
+
     onError?.(e as Error);
 
     if (retryCount > 0) {
@@ -101,12 +119,10 @@ const upload = async ({
   }
 
   return {
-    ok: false,
-    total: 0,
-    message: 'Unsupported upload method',
-    action: {
+    result: Promise.resolve({ ok: false, total: 0, message: 'Unsupported upload method' }),
+    actions: {
       abort: () => null,
-      refresh: () => null,
+      refresh: () => upload({ url, file, options }),
     },
   };
 };

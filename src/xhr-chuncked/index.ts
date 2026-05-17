@@ -4,6 +4,12 @@ interface ChunkUploadMeta {
   totalChunks: number;
 }
 
+const HTTP_STATUS_SUCCESS_MIN = 200;
+const HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE = 300;
+
+const isSuccessfulHttpStatus = (status: number) =>
+  status >= HTTP_STATUS_SUCCESS_MIN && status < HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE;
+
 const getChunkUploadMeta = ({
   chunkSize,
   fileSize,
@@ -68,19 +74,21 @@ const applyChunkHeaders = ({
 const uploadWithoutChunking = ({
   url,
   file,
+  refresh,
   customHeaders,
   onProgress,
   onAbort,
 }: {
   url: string;
   file: File;
+  refresh: () => void;
   customHeaders: Record<string, string>;
   onProgress?: (args: OnProgressParams) => void;
   onAbort?: (e: unknown) => void;
-}) =>
-  new Promise<UploadResponse>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+}): UploadResponse => {
+  const xhr = new XMLHttpRequest();
 
+  const response = new Promise<UploadResult>((resolve, reject) => {
     xhr.open('POST', url);
 
     Object.entries(customHeaders).forEach(([key, value]) => {
@@ -101,7 +109,7 @@ const uploadWithoutChunking = ({
     }
 
     xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
+      if (isSuccessfulHttpStatus(xhr.status)) {
         if (onProgress) {
           onProgress({ loaded: file.size, total: file.size, percentage: 100 });
         }
@@ -110,13 +118,6 @@ const uploadWithoutChunking = ({
           ok: true,
           total: file.size,
           message: undefined,
-          action: {
-            abort: xhr.abort,
-            refresh: () => {
-              xhr.abort();
-              // refresh()
-            },
-          },
         });
 
         return;
@@ -126,17 +127,46 @@ const uploadWithoutChunking = ({
     };
 
     xhr.onerror = (e) => reject(e);
-    xhr.onabort = (e) => onAbort?.(e);
+    xhr.onabort = () => {
+      const abortError = new DOMException('Aborted', 'AbortError');
+      onAbort?.(abortError);
+      reject(abortError);
+    };
     xhr.send(file);
   });
+
+  return {
+    result: response.then((res) => ({
+      ok: res.ok,
+      total: file.size,
+      message: undefined,
+    })),
+    actions: {
+      abort: () => xhr.abort(),
+      refresh: () => {
+        xhr.abort();
+        refresh();
+      },
+    },
+  };
+};
 
 const uploadWithXhrChuncked = async ({
   url,
   file,
+  refresh,
   options: { chunkSize, customHeaders = {}, onProgress, onAbort },
-}: UploadParams): Promise<UploadResponse> => {
+}: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
+  const response: UploadResponse = {
+    result: Promise.resolve({ ok: false, total: 0, message: undefined }),
+    actions: {
+      abort: () => null,
+      refresh: () => null,
+    },
+  };
+
   if (!chunkSize || chunkSize <= 0) {
-    return uploadWithoutChunking({ url, file, customHeaders, onProgress });
+    return uploadWithoutChunking({ url, file, refresh, customHeaders, onProgress, onAbort });
   }
 
   const { safeChunkSize, totalFileSize, totalChunks } = getChunkUploadMeta({
@@ -149,87 +179,91 @@ const uploadWithXhrChuncked = async ({
       onProgress({ loaded: 0, total: 0, percentage: 100 });
     }
 
-    return {
-      ok: true,
-      total: 0,
-      message: undefined,
-      action: {
-        abort: () => null,
-        refresh: () => null,
-      },
-    };
+    response.result = Promise.resolve({ ok: true, total: 0, message: undefined });
+
+    return response;
   }
 
-  let lastResponse: UploadResponse = {
-    ok: false,
-    total: 0,
-    message: undefined,
-    action: {
-      abort: () => null,
-      refresh: () => null,
-    },
-  };
+  const chunkUpload = async (): Promise<Readonly<UploadResult>> => {
+    let uploadResult: Readonly<UploadResult> = {
+      ok: false,
+      total: 0,
+      message: undefined,
+    };
 
-  for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
-    const { start, end } = getChunkRange({
-      chunkIndex,
-      safeChunkSize,
-      totalFileSize,
-    });
-
-    // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
-    lastResponse = await new Promise<UploadResponse>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.open('POST', url);
-
-      applyChunkHeaders({
-        xhr,
-        customHeaders,
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+      const { start, end } = getChunkRange({
         chunkIndex,
-        totalChunks,
         safeChunkSize,
         totalFileSize,
       });
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          if (onProgress) {
-            onProgress({
-              loaded: end,
+      const uploadPromise = new Promise<Readonly<UploadResult>>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.open('POST', url);
+
+        applyChunkHeaders({
+          xhr,
+          customHeaders,
+          chunkIndex,
+          totalChunks,
+          safeChunkSize,
+          totalFileSize,
+        });
+
+        xhr.onload = () => {
+          if (isSuccessfulHttpStatus(xhr.status)) {
+            if (onProgress) {
+              onProgress({
+                loaded: end,
+                total: totalFileSize,
+                percentage: totalFileSize === 0 ? 100 : (end / totalFileSize) * 100,
+              });
+            }
+
+            resolve({
+              ok: true,
               total: totalFileSize,
-              percentage: totalFileSize === 0 ? 100 : (end / totalFileSize) * 100,
+              message: undefined,
             });
+
+            return;
           }
 
-          resolve({
-            ok: true,
-            total: totalFileSize,
-            message: undefined,
-            action: {
-              abort: xhr.abort,
-              refresh: () => {
-                xhr.abort();
-                // refresh()
-              },
-            },
-          });
+          reject(new Error(`Chunk upload failed with status ${xhr.status}`));
+        };
 
-          return;
-        }
+        xhr.onerror = (e) => reject(e);
+        xhr.onabort = () => {
+          const abortError = new DOMException('Aborted', 'AbortError');
+          onAbort?.(abortError);
+          reject(abortError);
+        };
 
-        reject(new Error(`Chunk upload failed with status ${xhr.status}`));
-      };
+        const chunk = file.slice(start, end);
+        xhr.send(chunk);
 
-      xhr.onerror = (e) => reject(e);
-      xhr.onabort = (e) => onAbort?.(e);
+        // 불변성을 보장하지 않고 클로저에서 변경하는 방식
+        response.actions = {
+          abort: () => xhr.abort(),
+          refresh: () => {
+            xhr.abort();
+            refresh();
+          },
+        };
+      });
 
-      const chunk = file.slice(start, end);
-      xhr.send(chunk);
-    });
-  }
+      // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
+      uploadResult = await uploadPromise;
+    }
 
-  return lastResponse;
+    return uploadResult;
+  };
+
+  response.result = chunkUpload();
+
+  return response;
 };
 
 export default uploadWithXhrChuncked;
