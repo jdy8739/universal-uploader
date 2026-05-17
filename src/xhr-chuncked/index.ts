@@ -244,7 +244,7 @@ const uploadWithXhrChuncked = async ({
         const chunk = file.slice(start, end);
         xhr.send(chunk);
 
-        // 불변성을 보장하지 않고 클로저에서 변경하는 방식
+        // 불변성을 보장하지 않고 클로저에서 actions 변경하는 방식
         response.actions = {
           abort: () => xhr.abort(),
           refresh: () => {
@@ -254,6 +254,7 @@ const uploadWithXhrChuncked = async ({
         };
       });
 
+      // 불변성을 보장하지 않고 클로저에서 result 변경 (빠른 UX를 위해, chunkUpload의 action 먼저 반환하고 나머지는 클로저로 업데이트하는 방식)
       // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
       uploadResult = await uploadPromise;
     }
