@@ -9,6 +9,7 @@ interface UploadOptionsExternal extends UploadOptions {
   onError?: (error: Error) => void;
   retryCount?: number;
   retryDelay?: number | ((retryCount: number) => number);
+  throwOnError?: boolean | ((e: unknown) => boolean);
 }
 
 interface Upload {
@@ -54,10 +55,39 @@ const upload = async ({
     onError,
     retryCount: retryCountArg = 3,
     retryDelay = 1000,
+    throwOnError = false,
     ...restOptions
   } = options;
 
   const retryCount = retryCountArg;
+
+  const shouldThrowError = (e: unknown): boolean => {
+    if (typeof throwOnError === 'function') {
+      return throwOnError(e);
+    }
+
+    return Boolean(throwOnError);
+  };
+
+  const handleAbort = (e: DOMException): UploadResult => {
+    onAbort?.();
+
+    if (shouldThrowError(e)) {
+      throw e;
+    }
+
+    return { ok: false, total: 0, message: 'Aborted by user action' };
+  };
+
+  const handleError = (e: Error): UploadResult => {
+    onError?.(e);
+
+    if (shouldThrowError(e)) {
+      throw e;
+    }
+
+    return { ok: false, total: 0, message: e.message };
+  };
 
   const finalOptions = {
     ...restOptions,
@@ -91,8 +121,7 @@ const upload = async ({
 
     const retriedResult: Promise<UploadResult> = originalResult.catch(async (e) => {
       if (e instanceof DOMException && e.name === 'AbortError') {
-        onAbort?.();
-        throw e;
+        return handleAbort(e);
       }
 
       if (retryCount > 0) {
@@ -106,8 +135,7 @@ const upload = async ({
         return retryResult;
       }
 
-      onError?.(e as Error);
-      throw e;
+      return handleError(e);
     });
 
     return { result: Promise.resolve(retriedResult), actions: retriedActions };
