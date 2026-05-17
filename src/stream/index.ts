@@ -41,15 +41,7 @@ const createProgressStream = ({
   onProgress,
 }: {
   totalFileSize: number;
-  onProgress: ({
-    loaded,
-    total,
-    percentage,
-  }: {
-    loaded: number;
-    total: number;
-    percentage: number;
-  }) => void;
+  onProgress: (args: OnProgressParams) => void;
 }) => {
   let bytesRead = 0;
 
@@ -70,7 +62,7 @@ const createProgressStream = ({
 const uploadWithStream = async ({
   url,
   file,
-  options: { chunkSize = 1024 * 1024, customHeaders = {}, onProgress },
+  options: { chunkSize = 1024 * 1024, customHeaders = {}, onProgress, onAbort },
 }: UploadParams): Promise<UploadResponse> => {
   const stream = getStreamUploader({ file, chunkSize });
 
@@ -78,10 +70,13 @@ const uploadWithStream = async ({
     ? stream.pipeThrough(createProgressStream({ totalFileSize: file.size, onProgress }))
     : stream;
 
+  const abortController = typeof onAbort === 'function' ? new AbortController() : null;
+
   const init: RequestInit = {
     method: 'POST',
     body,
     duplex: 'half',
+    signal: abortController?.signal,
     headers: {
       'Content-Type': 'application/octet-stream',
       ...(customHeaders || {}),
@@ -90,7 +85,18 @@ const uploadWithStream = async ({
 
   const response = await fetch(url, init);
 
-  return { ok: response.ok, total: file.size, message: undefined };
+  return {
+    ok: response.ok,
+    total: file.size,
+    message: undefined,
+    action: {
+      abort: () => abortController?.abort(),
+      refresh: () => {
+        abortController?.abort();
+        // refresh()
+      },
+    },
+  };
 };
 
 export default uploadWithStream;

@@ -70,11 +70,13 @@ const uploadWithoutChunking = ({
   file,
   customHeaders,
   onProgress,
+  onAbort,
 }: {
   url: string;
   file: File;
   customHeaders: Record<string, string>;
-  onProgress?: UploadParams['options']['onProgress'];
+  onProgress?: (args: OnProgressParams) => void;
+  onAbort?: (e: unknown) => void;
 }) =>
   new Promise<UploadResponse>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -103,11 +105,20 @@ const uploadWithoutChunking = ({
         if (onProgress) {
           onProgress({ loaded: file.size, total: file.size, percentage: 100 });
         }
+
         resolve({
           ok: true,
           total: file.size,
           message: undefined,
+          action: {
+            abort: xhr.abort,
+            refresh: () => {
+              xhr.abort();
+              // refresh()
+            },
+          },
         });
+
         return;
       }
 
@@ -115,13 +126,14 @@ const uploadWithoutChunking = ({
     };
 
     xhr.onerror = (e) => reject(e);
+    xhr.onabort = (e) => onAbort?.(e);
     xhr.send(file);
   });
 
 const uploadWithXhrChuncked = async ({
   url,
   file,
-  options: { chunkSize, customHeaders = {}, onProgress },
+  options: { chunkSize, customHeaders = {}, onProgress, onAbort },
 }: UploadParams): Promise<UploadResponse> => {
   if (!chunkSize || chunkSize <= 0) {
     return uploadWithoutChunking({ url, file, customHeaders, onProgress });
@@ -137,10 +149,26 @@ const uploadWithXhrChuncked = async ({
       onProgress({ loaded: 0, total: 0, percentage: 100 });
     }
 
-    return { ok: true, total: 0, message: undefined };
+    return {
+      ok: true,
+      total: 0,
+      message: undefined,
+      action: {
+        abort: () => null,
+        refresh: () => null,
+      },
+    };
   }
 
-  let lastResponse: UploadResponse = { ok: false, total: 0, message: undefined };
+  let lastResponse: UploadResponse = {
+    ok: false,
+    total: 0,
+    message: undefined,
+    action: {
+      abort: () => null,
+      refresh: () => null,
+    },
+  };
 
   for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
     const { start, end } = getChunkRange({
@@ -148,8 +176,6 @@ const uploadWithXhrChuncked = async ({
       safeChunkSize,
       totalFileSize,
     });
-
-    const chunk = file.slice(start, end);
 
     // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
     lastResponse = await new Promise<UploadResponse>((resolve, reject) => {
@@ -175,7 +201,20 @@ const uploadWithXhrChuncked = async ({
               percentage: totalFileSize === 0 ? 100 : (end / totalFileSize) * 100,
             });
           }
-          resolve({ ok: true, total: totalFileSize, message: undefined });
+
+          resolve({
+            ok: true,
+            total: totalFileSize,
+            message: undefined,
+            action: {
+              abort: xhr.abort,
+              refresh: () => {
+                xhr.abort();
+                // refresh()
+              },
+            },
+          });
+
           return;
         }
 
@@ -183,6 +222,9 @@ const uploadWithXhrChuncked = async ({
       };
 
       xhr.onerror = (e) => reject(e);
+      xhr.onabort = (e) => onAbort?.(e);
+
+      const chunk = file.slice(start, end);
       xhr.send(chunk);
     });
   }
