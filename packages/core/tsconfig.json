@@ -6,6 +6,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true,
     "declaration": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,5 +16,5 @@
     "noEmit": true,
     "isolatedModules": true
   },
-  "include": ["src/**/*", "demo/**/*", "vite.config.ts", ".eslintrc.cjs", "./global.d.ts"]
+  "include": ["src/**/*", "../../global.d.ts"]
 }
