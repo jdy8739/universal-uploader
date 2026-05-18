@@ -119,24 +119,39 @@ const upload = async ({
 
     const retriedActions: UploadActions = { ...originalActions };
 
-    const retriedResult: Promise<UploadResult> = originalResult.catch(async (e) => {
-      if (e instanceof DOMException && e.name === 'AbortError') {
-        return handleAbort(e);
-      }
+    const retriedResult: Promise<UploadResult> = originalResult
+      .then((uploadResult) => {
+        /**
+         * fetch resolves for HTTP 4xx/5xx, so stream mode can return { ok: false, status: 'error' }
+         * without rejecting. We rethrow here to route it through retry/onError handling.
+         *
+         * fetch는 HTTP 4xx/5xx에서도 reject하지 않아 stream 모드가 실패 결과를 resolve로 반환할 수 있습니다.
+         * 그래서 여기서 다시 throw해서 retry/onError 흐름으로 태웁니다.
+         */
+        if (!uploadResult.ok && uploadResult.status === 'error') {
+          throw new Error(uploadResult.message || 'Upload failed');
+        }
 
-      if (retryCount > 0) {
-        const { result: retryResult, actions: retryActions } = await retryUpload({
-          url,
-          file,
-          options: { ...options, retryCount: retryCount - 1 },
-        });
+        return uploadResult;
+      })
+      .catch(async (e) => {
+        if (e instanceof DOMException && e.name === 'AbortError') {
+          return handleAbort(e);
+        }
 
-        Object.assign(retriedActions, retryActions);
-        return retryResult;
-      }
+        if (retryCount > 0) {
+          const { result: retryResult, actions: retryActions } = await retryUpload({
+            url,
+            file,
+            options: { ...options, retryCount: retryCount - 1 },
+          });
 
-      return handleError(e);
-    });
+          Object.assign(retriedActions, retryActions);
+          return retryResult;
+        }
+
+        return handleError(e as Error);
+      });
 
     return { result: Promise.resolve(retriedResult), actions: retriedActions };
   };
