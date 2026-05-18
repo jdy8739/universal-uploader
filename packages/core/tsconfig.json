@@ -9,7 +9,11 @@
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "noEmit": true,
+    "isolatedModules": true
   },
-  "include": ["src/**/*", ".eslintrc.cjs", "./global.d.ts"]
+  "include": ["src/**/*", "demo/**/*", "vite.config.ts", ".eslintrc.cjs", "./global.d.ts"]
 }

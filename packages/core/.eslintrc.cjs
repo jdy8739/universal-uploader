@@ -8,6 +8,8 @@ module.exports = {
     'airbnb-base',
     'airbnb-typescript/base',
     'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
     'plugin:prettier/recommended',
   ],
   parser: '@typescript-eslint/parser',
@@ -15,9 +17,19 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
     project: './tsconfig.json',
+    ecmaFeatures: {
+      jsx: true,
+    },
   },
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'react', 'react-hooks', 'prettier'],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
   rules: {
+    'react/react-in-jsx-scope': 'off',
+    'react/prop-types': 'off',
     'prettier/prettier': 'error',
     'import/prefer-default-export': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
@@ -45,6 +57,17 @@ module.exports = {
       files: ['src/server.ts'],
       rules: {
         'no-console': 'off',
+      },
+    },
+    {
+      files: ['src/server.ts', 'src/stream/upload.integration.ts'],
+      rules: {
+        'import/no-extraneous-dependencies': [
+          'error',
+          {
+            devDependencies: ['src/server.ts', 'src/stream/upload.integration.ts'],
+          },
+        ],
       },
     },
   ],

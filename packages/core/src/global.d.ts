@@ -26,6 +26,7 @@ declare interface UploadResult {
   ok: boolean;
   total: number;
   message?: string;
+  status: 'idle' | 'uploading' | 'success' | 'error' | 'aborted';
 }
 
 declare interface UploadActions {
