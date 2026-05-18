@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && pnpm --filter @usu/core build && tsc --noEmit false --outDir dist",
+    "build": "rm -rf dist && tsc --outDir dist",
     "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
