@@ -73,7 +73,7 @@ const uploadWithStream = async ({
 
   const abortController = new AbortController();
 
-  const init: RequestInit = {
+  const init: Readonly<RequestInit> = {
     method: 'POST',
     body,
     duplex: 'half',
@@ -90,7 +90,8 @@ const uploadWithStream = async ({
     result: response.then((res) => ({
       ok: res.ok,
       total: file.size,
-      message: undefined,
+      message: res.ok ? undefined : `Upload failed with status ${res.status}`,
+      status: res.ok ? 'success' : 'error',
     })),
     actions: {
       abort: () => abortController.abort(),

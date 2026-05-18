@@ -76,7 +76,7 @@ const upload = async ({
       throw e;
     }
 
-    return { ok: false, total: 0, message: 'Aborted by user action' };
+    return { ok: false, total: 0, message: 'Aborted by user action', status: 'aborted' };
   };
 
   const handleError = (e: Error): UploadResult => {
@@ -86,7 +86,7 @@ const upload = async ({
       throw e;
     }
 
-    return { ok: false, total: 0, message: e.message };
+    return { ok: false, total: 0, message: e.message, status: 'error' };
   };
 
   const finalOptions = {
@@ -172,7 +172,12 @@ const upload = async ({
   }
 
   return {
-    result: Promise.resolve({ ok: false, total: 0, message: 'Unsupported upload method' }),
+    result: Promise.resolve({
+      ok: false,
+      total: 0,
+      message: 'Unsupported upload method',
+      status: 'error',
+    }),
     actions: {
       abort: () => null,
       refresh: () => upload({ url, file, options }),

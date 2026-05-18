@@ -116,6 +116,7 @@ const uploadWithoutChunking = ({
           ok: true,
           total: file.size,
           message: undefined,
+          status: 'success',
         });
 
         return;
@@ -126,8 +127,7 @@ const uploadWithoutChunking = ({
 
     xhr.onerror = (e) => reject(e);
     xhr.onabort = () => {
-      const abortError = new DOMException('Aborted', 'AbortError');
-      reject(abortError);
+      reject(new DOMException('Aborted', 'AbortError'));
     };
     xhr.send(file);
   });
@@ -137,6 +137,7 @@ const uploadWithoutChunking = ({
       ok: res.ok,
       total: file.size,
       message: undefined,
+      status: 'success',
     })),
     actions: {
       abort: () => xhr.abort(),
@@ -155,7 +156,7 @@ const uploadWithXhrChuncked = async ({
   options: { chunkSize, customHeaders = {}, onProgress },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
   const response: UploadResponse = {
-    result: Promise.resolve({ ok: false, total: 0, message: undefined }),
+    result: Promise.resolve({ ok: false, total: 0, message: undefined, status: 'idle' }),
     actions: {
       abort: () => null,
       refresh: () => null,
@@ -176,7 +177,12 @@ const uploadWithXhrChuncked = async ({
       onProgress({ loaded: 0, total: 0, percentage: 100 });
     }
 
-    response.result = Promise.resolve({ ok: true, total: 0, message: undefined });
+    response.result = Promise.resolve({
+      ok: true,
+      total: 0,
+      message: undefined,
+      status: 'success',
+    });
 
     return response;
   }
@@ -186,6 +192,7 @@ const uploadWithXhrChuncked = async ({
       ok: false,
       total: 0,
       message: undefined,
+      status: 'uploading',
     };
 
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
@@ -211,11 +218,14 @@ const uploadWithXhrChuncked = async ({
 
         xhr.onload = () => {
           if (isSuccessfulHttpStatus(xhr.status)) {
+            const isLastChunk = end >= totalFileSize;
+            const percentage = isLastChunk ? 100 : (end / totalFileSize) * 100;
+
             if (onProgress) {
               onProgress({
                 loaded: end,
                 total: totalFileSize,
-                percentage: totalFileSize === 0 ? 100 : (end / totalFileSize) * 100,
+                percentage: totalFileSize === 0 ? 100 : percentage,
               });
             }
 
@@ -223,6 +233,7 @@ const uploadWithXhrChuncked = async ({
               ok: true,
               total: totalFileSize,
               message: undefined,
+              status: isLastChunk ? 'success' : 'uploading',
             });
 
             return;
