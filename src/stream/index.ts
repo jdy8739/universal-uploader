@@ -3,6 +3,12 @@ interface StreamUploaderParams {
   chunkSize: number;
 }
 
+/**
+ * Default chunk size (1 MiB) for stream uploads.
+ * Used as both API default and fallback for invalid chunk sizes.
+ */
+const DEFAULT_STREAM_CHUNK_SIZE = 1024 * 1024;
+
 const createBuffer = async ({
   file,
   offset,
@@ -59,13 +65,18 @@ const createProgressStream = ({
   });
 };
 
+/**
+ * Uploads a file using the Fetch streaming request body.
+ */
 const uploadWithStream = async ({
   url,
   file,
   refresh,
-  options: { chunkSize = 1024 * 1024, customHeaders = {}, onProgress },
+  options: { chunkSize = DEFAULT_STREAM_CHUNK_SIZE, customHeaders = {}, onProgress },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
-  const stream = getStreamUploader({ file, chunkSize });
+  const safeChunkSize =
+    Number.isFinite(chunkSize) && chunkSize > 0 ? chunkSize : DEFAULT_STREAM_CHUNK_SIZE;
+  const stream = getStreamUploader({ file, chunkSize: safeChunkSize });
 
   const body = onProgress
     ? stream.pipeThrough(createProgressStream({ totalFileSize: file.size, onProgress }))
