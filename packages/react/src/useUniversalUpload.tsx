@@ -31,7 +31,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
   const upload = useCallback(async () => {
     requestIdRef.current += 1;
     const requestId = requestIdRef.current;
-    const isCurrent = () => requestIdRef.current === requestId;
+    const isLatestUploadRequest = () => requestIdRef.current === requestId;
 
     /**
      * If the previous request is still in progress, abort it.
@@ -55,32 +55,32 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
         ...$options,
         onComplete: () => {
           $options.onComplete?.();
-          if (isCurrent()) {
+          if (isLatestUploadRequest()) {
             setStatus('success');
           }
         },
         onError: (e) => {
           $options.onError?.(e);
-          if (isCurrent()) {
+          if (isLatestUploadRequest()) {
             setError(e);
             setStatus('error');
           }
         },
         onAbort: (e) => {
           $options.onAbort?.(e);
-          if (isCurrent()) {
+          if (isLatestUploadRequest()) {
             setStatus('aborted');
           }
         },
         onProgress: (args) => {
           $options.onProgress?.(args);
-          if (isCurrent()) {
+          if (isLatestUploadRequest()) {
             setStatus('uploading');
           }
         },
         onRetry: () => {
           $options.onRetry?.();
-          if (isCurrent()) {
+          if (isLatestUploadRequest()) {
             setStatus('uploading');
             setResult(INITIAL_UPLOAD_RESULT);
             setError(null);
@@ -89,7 +89,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
       },
     });
 
-    if (!isCurrent()) {
+    if (!isLatestUploadRequest()) {
       uploadAbort();
       return;
     }
@@ -98,7 +98,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
 
     const uploadResult = await uploadResultPromise;
 
-    if (!isCurrent()) {
+    if (!isLatestUploadRequest()) {
       return;
     }
 

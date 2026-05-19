@@ -1,1 +1,1 @@
-export * from './useUniversalUpload';
+export { default as useUniversalUpload } from './useUniversalUpload';
