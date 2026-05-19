@@ -11,10 +11,20 @@ declare interface UploadOptions {
   onAbort?: (e: unknown) => void;
 }
 
-declare interface UploadParams {
+declare interface UploadOptionsExternal extends UploadOptions {
+  method?: 'stream' | 'xhr chunked' | 'auto';
+  onComplete?: () => void;
+  onRetry?: () => void;
+  onError?: (error: Error) => void;
+  retryCount?: number;
+  retryDelay?: number | ((retryCount: number) => number);
+  throwOnError?: boolean | ((e: unknown) => boolean);
+}
+
+declare interface Upload {
   url: string;
   file: File;
-  options: UploadOptions;
+  options: UploadOptionsExternal;
 }
 
 declare interface RequestInit {
@@ -22,11 +32,13 @@ declare interface RequestInit {
   get duplex(): 'half';
 }
 
+declare type UploadStatus = 'idle' | 'uploading' | 'success' | 'error' | 'aborted';
+
 declare interface UploadResult {
   ok: boolean;
   total: number;
   message?: string;
-  status: 'idle' | 'uploading' | 'success' | 'error' | 'aborted';
+  status: UploadStatus;
 }
 
 declare interface UploadActions {

@@ -1,23 +1,6 @@
 import uploadWithStream from './stream';
 import uploadWithXhrChuncked from './xhr-chuncked';
 
-interface UploadOptionsExternal extends UploadOptions {
-  method?: 'stream' | 'xhr chunked' | 'auto';
-  onComplete?: () => void;
-  onAbort?: () => void;
-  onRetry?: () => void;
-  onError?: (error: Error) => void;
-  retryCount?: number;
-  retryDelay?: number | ((retryCount: number) => number);
-  throwOnError?: boolean | ((e: unknown) => boolean);
-}
-
-interface Upload {
-  url: string;
-  file: File;
-  options: UploadOptionsExternal;
-}
-
 const checkSupportsStreamingUpload = (url: string) => {
   let duplexAccessed = false;
 
@@ -70,7 +53,7 @@ const upload = async ({
   };
 
   const handleAbort = (e: DOMException): UploadResult => {
-    onAbort?.();
+    onAbort?.(e);
 
     if (shouldThrowError(e)) {
       throw e;
@@ -195,7 +178,7 @@ const upload = async ({
     }),
     actions: {
       abort: () => null,
-      refresh: () => upload({ url, file, options }),
+      refresh,
     },
   };
 };
