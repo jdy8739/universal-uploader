@@ -1,4 +1,4 @@
-declare interface UploadParams {
+interface UploadParams {
   url: string;
   file: File;
   options: UploadOptions;

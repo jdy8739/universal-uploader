@@ -8,23 +8,37 @@ const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {
   status: 'idle',
 };
 
-type UploadActionsWithoutRefresh = Omit<UploadActions, 'refresh'>;
-
-const INITIAL_UPLOAD_ACTIONS: Readonly<UploadActionsWithoutRefresh> = {
-  abort: () => null,
-};
-
 export default function useUniversalUpload({ url, file, options }: Upload) {
   const [status, setStatus] = useState<UploadStatus>('idle');
   const [error, setError] = useState<Error | null>(null);
   const [result, setResult] = useState<UploadResult>(INITIAL_UPLOAD_RESULT);
-  const [actions, setActions] = useState<UploadActionsWithoutRefresh>(INITIAL_UPLOAD_ACTIONS);
 
+  const prevReqAbortRef = useRef<() => void>(() => null);
+  const requestIdRef = useRef(0);
   const optionRef = useRef(options);
   // eslint-disable-next-line react-hooks/refs
   optionRef.current = options;
 
+  const updateUploadResult = useCallback((uploadResult: UploadResult) => {
+    setResult(uploadResult);
+    setStatus(uploadResult.status);
+
+    if (uploadResult.status === 'error') {
+      setError((prevError) => prevError ?? new Error(uploadResult.message || 'Upload failed'));
+    }
+  }, []);
+
   const upload = useCallback(async () => {
+    requestIdRef.current += 1;
+    const requestId = requestIdRef.current;
+    const isCurrent = () => requestIdRef.current === requestId;
+
+    /**
+     * If the previous request is still in progress, abort it.
+     * 이전의 요청이 아직 진행 중이라면 중단합니다.
+     */
+    prevReqAbortRef.current();
+
     setStatus('uploading');
     setError(null);
     setResult(INITIAL_UPLOAD_RESULT);
@@ -41,43 +55,55 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
         ...$options,
         onComplete: () => {
           $options.onComplete?.();
-          setStatus('success');
+          if (isCurrent()) {
+            setStatus('success');
+          }
         },
         onError: (e) => {
           $options.onError?.(e);
-          setError(e);
-          setStatus('error');
+          if (isCurrent()) {
+            setError(e);
+            setStatus('error');
+          }
         },
         onAbort: (e) => {
           $options.onAbort?.(e);
-          setStatus('aborted');
+          if (isCurrent()) {
+            setStatus('aborted');
+          }
         },
         onProgress: (args) => {
           $options.onProgress?.(args);
-          setStatus('uploading');
+          if (isCurrent()) {
+            setStatus('uploading');
+          }
         },
         onRetry: () => {
           $options.onRetry?.();
-          setStatus('uploading');
-          setResult(INITIAL_UPLOAD_RESULT);
-          setError(null);
+          if (isCurrent()) {
+            setStatus('uploading');
+            setResult(INITIAL_UPLOAD_RESULT);
+            setError(null);
+          }
         },
       },
     });
 
-    setActions({
-      abort: uploadAbort,
-    });
+    if (!isCurrent()) {
+      uploadAbort();
+      return;
+    }
+
+    prevReqAbortRef.current = uploadAbort;
 
     const uploadResult = await uploadResultPromise;
 
-    setResult(uploadResult);
-    setStatus(uploadResult.status);
-
-    if (uploadResult.status === 'error') {
-      setError((prevError) => prevError ?? new Error(uploadResult.message || 'Upload failed'));
+    if (!isCurrent()) {
+      return;
     }
-  }, [url, file]);
+
+    updateUploadResult(uploadResult);
+  }, [url, file, updateUploadResult]);
 
   const uploadSafely = useCallback(async () => {
     try {
@@ -85,21 +111,30 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
     } catch (e) {
       setError(e as Error);
       setStatus('error');
-      setResult(INITIAL_UPLOAD_RESULT);
+      setResult({ ...INITIAL_UPLOAD_RESULT, status: 'error' });
+
+      const { current: $options } = optionRef;
+
+      const shouldThrow =
+        typeof $options.throwOnError === 'function'
+          ? $options.throwOnError(e)
+          : Boolean($options.throwOnError);
+
+      if (shouldThrow) {
+        throw e;
+      }
     }
   }, [upload]);
 
-  const finalUpload = options.throwOnError ? upload : uploadSafely;
-
   return {
-    upload: finalUpload,
+    upload: uploadSafely,
     result,
     status,
     error,
-    abort: actions.abort,
+    abort: () => prevReqAbortRef.current(),
     refresh: async () => {
-      actions.abort();
-      await finalUpload();
+      prevReqAbortRef.current();
+      await uploadSafely();
     },
   };
 }
