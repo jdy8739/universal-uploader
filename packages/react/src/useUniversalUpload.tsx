@@ -1,5 +1,5 @@
 import uploadCore from '@usu/core';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {
   ok: false,
@@ -13,8 +13,22 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
   const [error, setError] = useState<Error | null>(null);
   const [result, setResult] = useState<UploadResult>(INITIAL_UPLOAD_RESULT);
 
+  /**
+   * The previous request abort function.
+   * 이전의 요청 중단 함수입니다.
+   */
   const prevReqAbortRef = useRef<() => void>(() => null);
-  const requestIdRef = useRef(0);
+
+  /**
+   * The latest upload request ID.
+   * 가장 최근의 업로드 요청 ID입니다.
+   */
+  const latestUploadRequestIdRef = useRef(0);
+
+  /**
+   * The options object.
+   * deps에 포함되지 않는 옵션 객체입니다.
+   */
   const optionRef = useRef(options);
   // eslint-disable-next-line react-hooks/refs
   optionRef.current = options;
@@ -29,9 +43,19 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
   }, []);
 
   const upload = useCallback(async () => {
-    requestIdRef.current += 1;
-    const requestId = requestIdRef.current;
-    const isLatestUploadRequest = () => requestIdRef.current === requestId;
+    /**
+     * Increment the latest upload request ID.
+     * 가장 최근의 업로드 요청 ID를 증가시킵니다.
+     *
+     * Set the latest upload request ID to the current value.
+     * 가장 최근의 업로드 요청 ID를 현재 값으로 설정합니다.
+     *
+     * Check if the current request is the latest upload request.
+     * 현재 요청이 가장 최근의 업로드 요청인지 확인합니다.
+     */
+    latestUploadRequestIdRef.current += 1;
+    const latestUploadRequestId = latestUploadRequestIdRef.current;
+    const isLatestUploadRequest = () => latestUploadRequestIdRef.current === latestUploadRequestId;
 
     /**
      * If the previous request is still in progress, abort it.
@@ -47,7 +71,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
 
     const {
       result: uploadResultPromise,
-      actions: { abort: uploadAbort },
+      actions: { abort: abortUpload },
     } = await uploadCore({
       url,
       file,
@@ -89,15 +113,25 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
       },
     });
 
+    /**
+     * If the current request is not the latest upload request, abort the request.
+     * 현재 요청이 가장 최근의 업로드 요청이 아니라면 요청을 중단합니다.
+     */
     if (!isLatestUploadRequest()) {
-      uploadAbort();
+      abortUpload();
       return;
     }
 
-    prevReqAbortRef.current = uploadAbort;
+    // Set the previous request abort function to the current abort function.
+    // 이전의 요청 중단 함수를 현재의 요청 중단 함수로 설정합니다.
+    prevReqAbortRef.current = abortUpload;
 
     const uploadResult = await uploadResultPromise;
 
+    /**
+     * If the current request is not the latest upload request, do not update the result status.
+     * 현재 요청이 가장 최근의 업로드 요청이 아니라면 결과 상태 업데이트를 하지 않고 반환합니다.
+     */
     if (!isLatestUploadRequest()) {
       return;
     }
@@ -125,6 +159,12 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
       }
     }
   }, [upload]);
+
+  useEffect(() => {
+    return () => {
+      prevReqAbortRef.current();
+    };
+  }, []);
 
   return {
     upload: uploadSafely,
