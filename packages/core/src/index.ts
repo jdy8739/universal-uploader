@@ -100,8 +100,6 @@ const upload = async ({
   ): Promise<UploadResponse> => {
     const { result: originalResult, actions: originalActions } = uploadResponse;
 
-    const retriedActions: UploadActions = { ...originalActions };
-
     const retriedResult: Promise<UploadResult> = originalResult
       .then((uploadResult) => {
         /**
@@ -129,14 +127,14 @@ const upload = async ({
             options: { ...options, retryCount: retryCount - 1 },
           });
 
-          Object.assign(retriedActions, retryActions);
+          Object.assign(originalActions, retryActions);
           return retryResult;
         }
 
         return handleError(e as Error);
       });
 
-    return { result: Promise.resolve(retriedResult), actions: retriedActions };
+    return { result: Promise.resolve(retriedResult), actions: originalActions };
   };
 
   try {

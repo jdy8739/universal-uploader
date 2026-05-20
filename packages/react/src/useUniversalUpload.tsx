@@ -17,7 +17,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
    * The previous request abort function.
    * 이전의 요청 중단 함수입니다.
    */
-  const prevReqAbortRef = useRef<() => void>(() => null);
+  const prevReqAbortRef = useRef<UploadActions>({ abort: () => null, refresh: () => null });
 
   /**
    * The latest upload request ID.
@@ -61,7 +61,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
      * If the previous request is still in progress, abort it.
      * 이전의 요청이 아직 진행 중이라면 중단합니다.
      */
-    prevReqAbortRef.current();
+    prevReqAbortRef.current.abort();
 
     setStatus('uploading');
     setError(null);
@@ -69,10 +69,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
 
     const { current: $options } = optionRef;
 
-    const {
-      result: uploadResultPromise,
-      actions: { abort: abortUpload },
-    } = await uploadCore({
+    const { result: uploadResultPromise, actions: uploadActions } = await uploadCore({
       url,
       file,
       options: {
@@ -118,13 +115,13 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
      * 현재 요청이 가장 최근의 업로드 요청이 아니라면 요청을 중단합니다.
      */
     if (!isLatestUploadRequest()) {
-      abortUpload();
+      uploadActions.abort();
       return;
     }
 
     // Set the previous request abort function to the current abort function.
     // 이전의 요청 중단 함수를 현재의 요청 중단 함수로 설정합니다.
-    prevReqAbortRef.current = abortUpload;
+    prevReqAbortRef.current = uploadActions;
 
     const uploadResult = await uploadResultPromise;
 
@@ -162,7 +159,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
 
   useEffect(() => {
     return () => {
-      prevReqAbortRef.current();
+      prevReqAbortRef.current.abort();
     };
   }, []);
 
@@ -171,9 +168,9 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
     result,
     status,
     error,
-    abort: () => prevReqAbortRef.current(),
+    abort: () => prevReqAbortRef.current.abort(),
     refresh: async () => {
-      prevReqAbortRef.current();
+      prevReqAbortRef.current.refresh();
       await uploadSafely();
     },
   };

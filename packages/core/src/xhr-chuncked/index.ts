@@ -251,13 +251,11 @@ const uploadWithXhrChuncked = async ({
         const chunk = file.slice(start, end);
         xhr.send(chunk);
 
-        // 불변성을 보장하지 않고 클로저에서 actions 변경하는 방식
-        response.actions = {
-          abort: () => xhr.abort(),
-          refresh: () => {
-            xhr.abort();
-            refresh();
-          },
+        // 불변성을 보장하지 않고 클로저에서 변경하는 방식
+        response.actions.abort = () => xhr.abort();
+        response.actions.refresh = () => {
+          xhr.abort();
+          refresh();
         };
       });
 
