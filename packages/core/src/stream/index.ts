@@ -150,9 +150,9 @@ const uploadWithStream = async ({
       status: res.ok ? "success" : "error",
     })),
     actions: {
-      abort: () => abortController.abort("Aborted by user action"),
+      abort: () => abortController.abort(), // Never put an argument when aborting.
       refresh: () => {
-        abortController.abort("Aborted by user action");
+        abortController.abort(); // Never put an argument when aborting.
         refresh();
       },
     },
