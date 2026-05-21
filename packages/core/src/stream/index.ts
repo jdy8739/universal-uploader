@@ -112,6 +112,7 @@ const uploadWithStream = async ({
     Number.isFinite(chunkSize) && chunkSize > 0
       ? chunkSize
       : DEFAULT_STREAM_CHUNK_SIZE;
+
   const stream = getStreamUploader({ file, chunkSize: safeChunkSize });
 
   const body = onProgress
