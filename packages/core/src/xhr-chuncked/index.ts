@@ -1,93 +1,10 @@
 import { UploadParams, UploadResponse, OnProgressParams, UploadResult } from '../index';
-
-interface ChunkUploadMeta {
-  safeChunkSize: number;
-  totalFileSize: number;
-  totalChunks: number;
-}
-
-const HTTP_STATUS_SUCCESS_MIN = 200;
-const HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE = 300;
-
-/**
- * Checks if the given HTTP status code indicates success (2xx).
- * 주어진 HTTP 상태 코드가 성공(2xx)을 나타내는지 확인합니다.
- */
-const isSuccessfulHttpStatus = (status: number) =>
-  status >= HTTP_STATUS_SUCCESS_MIN && status < HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE;
-
-/**
- * Calculates metadata for chunked uploads, such as safe chunk size and total chunks.
- * 안전한 청크 크기 및 전체 청크 수와 같은 청크 업로드용 메타데이터를 계산합니다.
- */
-const getChunkUploadMeta = ({
-  chunkSize,
-  fileSize,
-}: {
-  chunkSize: number;
-  fileSize: number;
-}): ChunkUploadMeta => {
-  const safeChunkSize = Math.max(1, chunkSize);
-  const totalFileSize = fileSize;
-  const totalChunks = Math.ceil(totalFileSize / safeChunkSize);
-
-  return {
-    safeChunkSize,
-    totalFileSize,
-    totalChunks,
-  };
-};
-
-/**
- * Calculates the start and end byte positions for a specific chunk.
- * 특정 청크의 시작 및 종료 바이트 위치를 계산합니다.
- */
-const getChunkRange = ({
-  chunkIndex,
-  safeChunkSize,
-  totalFileSize,
-}: {
-  chunkIndex: number;
-  safeChunkSize: number;
-  totalFileSize: number;
-}) => {
-  const start = chunkIndex * safeChunkSize;
-  const end = Math.min(start + safeChunkSize, totalFileSize);
-
-  return {
-    start,
-    end,
-  };
-};
-
-/**
- * Applies chunking-related headers and custom headers to the XMLHttpRequest object.
- * XMLHttpRequest 객체에 청크 관련 헤더 및 커스텀 헤더를 적용합니다.
- */
-const applyChunkHeaders = ({
-  xhr,
-  customHeaders,
-  chunkIndex,
-  totalChunks,
-  safeChunkSize,
-  totalFileSize,
-}: {
-  xhr: XMLHttpRequest;
-  customHeaders: Record<string, string>;
-  chunkIndex: number;
-  totalChunks: number;
-  safeChunkSize: number;
-  totalFileSize: number;
-}) => {
-  xhr.setRequestHeader('X-Chunk-Index', String(chunkIndex));
-  xhr.setRequestHeader('X-Total-Chunks', String(totalChunks));
-  xhr.setRequestHeader('X-Chunk-Size', String(safeChunkSize));
-  xhr.setRequestHeader('X-File-Size', String(totalFileSize));
-
-  Object.entries(customHeaders).forEach(([key, value]) => {
-    xhr.setRequestHeader(key, value);
-  });
-};
+import {
+  isSuccessfulHttpStatus,
+  getChunkUploadMeta,
+  getChunkRange,
+  applyChunkHeaders,
+} from './helper';
 
 /**
  * Handles file upload as a single request without chunking using XMLHttpRequest.
