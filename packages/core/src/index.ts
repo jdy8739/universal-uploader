@@ -1,26 +1,13 @@
 export * from "./types";
 import uploadWithStream from "./stream";
 import uploadWithXhrChuncked from "./xhr-chuncked";
-import { Upload, UploadResponse, UploadResult, OnProgressParams } from "./types";
-
-/**
- * Checks if the browser supports ReadableStream upload with Fetch.
- * 브라우저가 Fetch를 통한 ReadableStream 업로드를 지원하는지 확인합니다.
- */
-const checkSupportsStreamingUpload = (url: string) => {
-  let duplexAccessed = false;
-
-  const hasContentType = new Request(url, {
-    body: new ReadableStream(),
-    method: "POST",
-    get duplex(): "half" {
-      duplexAccessed = true;
-      return "half";
-    },
-  }).headers.has("Content-Type");
-
-  return duplexAccessed && !hasContentType;
-};
+import {
+  Upload,
+  UploadResponse,
+  UploadResult,
+  OnProgressParams,
+} from "./types";
+import { checkSupportsStreamingUpload } from "./stream/helper";
 
 /**
  * Utility function to wait for a specific duration.
@@ -40,14 +27,6 @@ const upload = async ({
   file,
   options: { method = "auto", ...options },
 }: Upload): Promise<UploadResponse> => {
-  const uploadMethod =
-    // eslint-disable-next-line no-nested-ternary
-    method === "auto"
-      ? checkSupportsStreamingUpload(url)
-        ? "stream"
-        : "xhr chunked"
-      : method;
-
   const {
     onComplete,
     onProgress,
@@ -181,6 +160,14 @@ const upload = async ({
 
     return { result: Promise.resolve(retriedResult), actions: originalActions };
   };
+
+  const uploadMethod =
+    // eslint-disable-next-line no-nested-ternary
+    method === "auto"
+      ? checkSupportsStreamingUpload(url)
+        ? "stream"
+        : "xhr chunked"
+      : method;
 
   try {
     if (uploadMethod === "stream") {
