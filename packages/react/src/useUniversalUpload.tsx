@@ -78,6 +78,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
           $options.onComplete?.();
           if (isLatestUploadRequest()) {
             setStatus('success');
+            setResult((prevResult) => ({ ...prevResult, ok: true, status: 'success' }));
           }
         },
         onError: (e) => {
@@ -85,18 +86,21 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
           if (isLatestUploadRequest()) {
             setError(e);
             setStatus('error');
+            setResult((prevResult) => ({ ...prevResult, ok: false, status: 'error' }));
           }
         },
         onAbort: (e) => {
           $options.onAbort?.(e);
           if (isLatestUploadRequest()) {
             setStatus('aborted');
+            setResult((prevResult) => ({ ...prevResult, ok: false, status: 'aborted' }));
           }
         },
         onProgress: (args) => {
           $options.onProgress?.(args);
           if (isLatestUploadRequest()) {
             setStatus('uploading');
+            setResult({ ok: false, total: args.percentage, status: 'uploading' });
           }
         },
         onRetry: () => {
