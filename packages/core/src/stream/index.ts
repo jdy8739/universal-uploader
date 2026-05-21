@@ -1,3 +1,5 @@
+import { UploadParams, UploadResponse, OnProgressParams } from "../index";
+
 interface StreamUploaderParams {
   file: File;
   chunkSize: number;
@@ -100,25 +102,33 @@ const uploadWithStream = async ({
   url,
   file,
   refresh,
-  options: { chunkSize = DEFAULT_STREAM_CHUNK_SIZE, customHeaders = {}, onProgress },
+  options: {
+    chunkSize = DEFAULT_STREAM_CHUNK_SIZE,
+    customHeaders = {},
+    onProgress,
+  },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
   const safeChunkSize =
-    Number.isFinite(chunkSize) && chunkSize > 0 ? chunkSize : DEFAULT_STREAM_CHUNK_SIZE;
+    Number.isFinite(chunkSize) && chunkSize > 0
+      ? chunkSize
+      : DEFAULT_STREAM_CHUNK_SIZE;
   const stream = getStreamUploader({ file, chunkSize: safeChunkSize });
 
   const body = onProgress
-    ? stream.pipeThrough(createProgressStream({ totalFileSize: file.size, onProgress }))
+    ? stream.pipeThrough(
+        createProgressStream({ totalFileSize: file.size, onProgress }),
+      )
     : stream;
 
   const abortController = new AbortController();
 
   const init: Readonly<RequestInit> = {
-    method: 'POST',
+    method: "POST",
     body,
-    duplex: 'half',
+    duplex: "half",
     signal: abortController.signal,
     headers: {
-      'Content-Type': 'application/octet-stream',
+      "Content-Type": "application/octet-stream",
       ...(customHeaders || {}),
     },
   };
@@ -130,12 +140,12 @@ const uploadWithStream = async ({
       ok: res.ok,
       total: file.size,
       message: res.ok ? undefined : `Upload failed with status ${res.status}`,
-      status: res.ok ? 'success' : 'error',
+      status: res.ok ? "success" : "error",
     })),
     actions: {
-      abort: () => abortController.abort('Aborted by user action'),
+      abort: () => abortController.abort("Aborted by user action"),
       refresh: () => {
-        abortController.abort('Aborted by user action');
+        abortController.abort("Aborted by user action");
         refresh();
       },
     },

@@ -1,4 +1,4 @@
-import uploadCore from '@usu/core';
+import uploadCore, { Upload, UploadResult, UploadStatus, UploadActions } from '@usu/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {

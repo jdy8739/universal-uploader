@@ -1,3 +1,5 @@
+import { UploadParams, UploadResponse, OnProgressParams, UploadResult } from '../index';
+
 interface ChunkUploadMeta {
   safeChunkSize: number;
   totalFileSize: number;

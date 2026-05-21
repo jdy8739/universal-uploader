@@ -1,5 +1,7 @@
+export * from './types';
 import uploadWithStream from './stream';
 import uploadWithXhrChuncked from './xhr-chuncked';
+import { Upload, UploadResponse } from './types';
 
 const checkSupportsStreamingUpload = (url: string) => {
   let duplexAccessed = false;

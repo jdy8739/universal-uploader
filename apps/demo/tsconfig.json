@@ -6,12 +6,10 @@
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "declaration": true,
-    "declarationDir": "./dist",
     "rootDir": "./src",
-    "outDir": "./dist",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "jsx": "react-jsx"
   },
-  "include": ["src/**/*", "../../global.d.ts"]
+  "include": ["./src/**/*", "../../global.d.ts"]
 }
