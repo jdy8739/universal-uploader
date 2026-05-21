@@ -6,9 +6,16 @@ interface StreamUploaderParams {
 /**
  * Default chunk size (1 MiB) for stream uploads.
  * Used as both API default and fallback for invalid chunk sizes.
+ *
+ * 스트림 업로드를 위한 기본 청크 크기(1 MiB)입니다.
+ * API 기본값 및 유효하지 않은 청크 크기에 대한 폴백으로 사용됩니다.
  */
 const DEFAULT_STREAM_CHUNK_SIZE = 1024 * 1024;
 
+/**
+ * Creates a Uint8Array buffer from a specific slice of the file.
+ * 파일의 특정 부분을 잘라 Uint8Array 버퍼를 생성합니다.
+ */
 const createBuffer = async ({
   file,
   offset,
@@ -21,6 +28,10 @@ const createBuffer = async ({
   return new Uint8Array(buffer);
 };
 
+/**
+ * Returns a ReadableStream that yields chunks of the file.
+ * 파일의 청크를 순차적으로 내보내는 ReadableStream을 반환합니다.
+ */
 const getStreamUploader = ({ file, chunkSize }: StreamUploaderParams) => {
   let offset = 0;
 
@@ -42,6 +53,10 @@ const getStreamUploader = ({ file, chunkSize }: StreamUploaderParams) => {
   });
 };
 
+/**
+ * Creates a TransformStream that tracks the progress of the data flowing through it.
+ * 데이터 흐름을 추적하여 진행률을 계산하는 TransformStream을 생성합니다.
+ */
 const createProgressStream = ({
   totalFileSize,
   onProgress,
@@ -52,7 +67,9 @@ const createProgressStream = ({
   let bytesRead = 0;
 
   return new TransformStream<Uint8Array, Uint8Array>({
-    transform(chunk, controller) {
+    // Calculate progress by obtaining chunks from the readable stream piped through. No separate data processing is performed.
+    // 각 리더블 스트림에 파이프를 걸어 청크를 얻어 진행율을 계산합니다. 별도의 chunk 데이터 가공은 하지 않습니다.
+    transform: (chunk, controller) => {
       bytesRead += chunk.byteLength;
       onProgress({
         loaded: bytesRead,
@@ -62,11 +79,22 @@ const createProgressStream = ({
 
       controller.enqueue(chunk);
     },
+
+    // Trigger the final progress event once the transform streaming is complete.
+    // 변환 스트리밍이 완료되면 마지막 프로그레스 이벤트를 발생시킵니다.
+    flush: () => {
+      onProgress({
+        loaded: totalFileSize,
+        percentage: 100,
+        total: totalFileSize,
+      });
+    },
   });
 };
 
 /**
  * Uploads a file using the Fetch streaming request body.
+ * Fetch 스트리밍 요청 바디를 사용하여 파일을 업로드합니다.
  */
 const uploadWithStream = async ({
   url,
@@ -105,9 +133,9 @@ const uploadWithStream = async ({
       status: res.ok ? 'success' : 'error',
     })),
     actions: {
-      abort: () => abortController.abort(),
+      abort: () => abortController.abort('Aborted by user action'),
       refresh: () => {
-        abortController.abort();
+        abortController.abort('Aborted by user action');
         refresh();
       },
     },

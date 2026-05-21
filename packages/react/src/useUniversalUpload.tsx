@@ -8,6 +8,10 @@ const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {
   status: 'idle',
 };
 
+/**
+ * A custom React hook for handling universal file uploads with streaming support and fallbacks.
+ * 스트리밍 지원 및 폴백 기능을 갖춘 범용 파일 업로드를 처리하기 위한 커스텀 React 훅입니다.
+ */
 export default function useUniversalUpload({ url, file, options }: Upload) {
   const [status, setStatus] = useState<UploadStatus>('idle');
   const [error, setError] = useState<Error | null>(null);
@@ -33,6 +37,10 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
   // eslint-disable-next-line react-hooks/refs
   optionRef.current = options;
 
+  /**
+   * Updates the upload result and status state.
+   * 업로드 결과 및 상태 스테이트를 업데이트합니다.
+   */
   const updateUploadResult = useCallback((uploadResult: UploadResult) => {
     setResult(uploadResult);
     setStatus(uploadResult.status);
@@ -42,6 +50,10 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
     }
   }, []);
 
+  /**
+   * Core upload logic that manages request lifecycle and status updates.
+   * 요청 수명 주기 및 상태 업데이트를 관리하는 핵심 업로드 로직입니다.
+   */
   const upload = useCallback(async () => {
     /**
      * Increment the latest upload request ID.
@@ -62,6 +74,12 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
      * 이전의 요청이 아직 진행 중이라면 중단합니다.
      */
     prevReqAbortRef.current.abort();
+
+    /**
+     * Reset external progress UI before a new upload starts.
+     * 새 업로드가 시작되기 전에 외부 progress UI를 초기화합니다.
+     */
+    optionRef.current?.onProgress?.({ loaded: 0, total: 0, percentage: 0 });
 
     setStatus('uploading');
     setError(null);
@@ -140,6 +158,10 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
     updateUploadResult(uploadResult);
   }, [url, file, updateUploadResult]);
 
+  /**
+   * Executes the upload with error handling and optional re-throwing.
+   * 에러 핸들링 및 선택적 re-throw 기능을 포함하여 업로드를 실행합니다.
+   */
   const uploadSafely = useCallback(async () => {
     try {
       await upload();
@@ -169,13 +191,14 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
 
   return {
     upload: uploadSafely,
+    /**
+     * Alias for upload — restarts upload after abort, error, or success.
+     * upload의 별칭 — 중단, 실패, 성공 이후 업로드를 다시 시작할 때 사용합니다.
+     */
+    retry: uploadSafely,
     result,
     status,
     error,
     abort: () => prevReqAbortRef.current.abort(),
-    refresh: async () => {
-      prevReqAbortRef.current.abort();
-      await uploadSafely();
-    },
   };
 }

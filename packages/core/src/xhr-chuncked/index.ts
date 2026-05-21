@@ -7,9 +7,17 @@ interface ChunkUploadMeta {
 const HTTP_STATUS_SUCCESS_MIN = 200;
 const HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE = 300;
 
+/**
+ * Checks if the given HTTP status code indicates success (2xx).
+ * 주어진 HTTP 상태 코드가 성공(2xx)을 나타내는지 확인합니다.
+ */
 const isSuccessfulHttpStatus = (status: number) =>
   status >= HTTP_STATUS_SUCCESS_MIN && status < HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE;
 
+/**
+ * Calculates metadata for chunked uploads, such as safe chunk size and total chunks.
+ * 안전한 청크 크기 및 전체 청크 수와 같은 청크 업로드용 메타데이터를 계산합니다.
+ */
 const getChunkUploadMeta = ({
   chunkSize,
   fileSize,
@@ -28,6 +36,10 @@ const getChunkUploadMeta = ({
   };
 };
 
+/**
+ * Calculates the start and end byte positions for a specific chunk.
+ * 특정 청크의 시작 및 종료 바이트 위치를 계산합니다.
+ */
 const getChunkRange = ({
   chunkIndex,
   safeChunkSize,
@@ -46,6 +58,10 @@ const getChunkRange = ({
   };
 };
 
+/**
+ * Applies chunking-related headers and custom headers to the XMLHttpRequest object.
+ * XMLHttpRequest 객체에 청크 관련 헤더 및 커스텀 헤더를 적용합니다.
+ */
 const applyChunkHeaders = ({
   xhr,
   customHeaders,
@@ -71,6 +87,10 @@ const applyChunkHeaders = ({
   });
 };
 
+/**
+ * Handles file upload as a single request without chunking using XMLHttpRequest.
+ * XMLHttpRequest를 사용하여 파일을 청크 분할 없이 단일 요청으로 업로드합니다.
+ */
 const uploadWithoutChunking = ({
   url,
   file,
@@ -149,6 +169,10 @@ const uploadWithoutChunking = ({
   };
 };
 
+/**
+ * Uploads a file by splitting it into sequential chunks using XMLHttpRequest.
+ * XMLHttpRequest를 사용하여 파일을 여러 개의 청크로 나누어 순차적으로 업로드합니다.
+ */
 const uploadWithXhrChuncked = async ({
   url,
   file,
@@ -187,6 +211,10 @@ const uploadWithXhrChuncked = async ({
     return response;
   }
 
+  /**
+   * Orchestrates the sequential upload of all chunks.
+   * 모든 청크의 순차적 업로드를 조율합니다.
+   */
   const chunkUpload = async (): Promise<Readonly<UploadResult>> => {
     let uploadResult: Readonly<UploadResult> = {
       ok: false,
@@ -251,7 +279,8 @@ const uploadWithXhrChuncked = async ({
         const chunk = file.slice(start, end);
         xhr.send(chunk);
 
-        // 불변성을 보장하지 않고 클로저에서 변경하는 방식
+        // Update actions to refer to the current XHR request.
+        // 현재 XHR 요청을 참조하도록 액션을 업데이트합니다.
         response.actions.abort = () => xhr.abort();
         response.actions.refresh = () => {
           xhr.abort();
@@ -259,7 +288,8 @@ const uploadWithXhrChuncked = async ({
         };
       });
 
-      // 불변성을 보장하지 않고 클로저에서 result 변경 (빠른 UX를 위해, chunkUpload의 action 먼저 반환하고 나머지는 클로저로 업데이트하는 방식)
+      // Sequential execution using await within a loop for chunked transfer.
+      // 청크 전송을 위해 루프 내에서 await를 사용하여 순차적으로 실행합니다.
       // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
       uploadResult = await uploadPromise;
     }
