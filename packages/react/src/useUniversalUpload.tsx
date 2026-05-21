@@ -174,7 +174,7 @@ export default function useUniversalUpload({ url, file, options }: Upload) {
     error,
     abort: () => prevReqAbortRef.current.abort(),
     refresh: async () => {
-      prevReqAbortRef.current.refresh();
+      prevReqAbortRef.current.abort();
       await uploadSafely();
     },
   };
