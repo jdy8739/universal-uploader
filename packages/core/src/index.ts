@@ -6,6 +6,7 @@ import {
   UploadResponse,
   UploadResult,
   OnProgressParams,
+  UploadOptions,
 } from "./types";
 import { checkSupportsStreamingUpload } from "./stream/helper";
 
@@ -17,6 +18,24 @@ const wait = (ms: number) =>
   new Promise<void>((resolve) => {
     setTimeout(resolve, ms);
   });
+
+/**
+ * Returns the appropriate uploader function based on the method and URL.
+ * 메서드와 URL에 따라 적절한 업로더 함수를 반환합니다.
+ */
+const getUploader = (url: string, method: UploadOptions["method"]) => {
+  const finalMethod =
+    method === "auto" && checkSupportsStreamingUpload(url) ? "stream" : method;
+
+  switch (finalMethod) {
+    case "stream":
+      return uploadWithStream;
+    case "xhr chunked":
+      return uploadWithXhrChuncked;
+    default:
+      throw new Error(`Unsupported upload method: ${method}`);
+  }
+};
 
 /**
  * Orchestrates file upload by selecting the optimal method and managing retries and errors.
@@ -161,40 +180,19 @@ const upload = async ({
     return { result: Promise.resolve(retriedResult), actions: originalActions };
   };
 
-  const uploadMethod =
-    // eslint-disable-next-line no-nested-ternary
-    method === "auto"
-      ? checkSupportsStreamingUpload(url)
-        ? "stream"
-        : "xhr chunked"
-      : method;
+  const uploadFile = getUploader(url, method);
 
   try {
-    if (uploadMethod === "stream") {
-      const streamUploadResult = await wrapPromiseErrorHandler(
-        await uploadWithStream({
-          url,
-          file,
-          refresh,
-          options: finalOptions,
-        }),
-      );
+    const streamUploadResult = await wrapPromiseErrorHandler(
+      await uploadFile({
+        url,
+        file,
+        refresh,
+        options: finalOptions,
+      }),
+    );
 
-      return streamUploadResult;
-    }
-
-    if (uploadMethod === "xhr chunked") {
-      const xhrChunkedUploadResult = await wrapPromiseErrorHandler(
-        await uploadWithXhrChuncked({
-          url,
-          file,
-          refresh,
-          options: finalOptions,
-        }),
-      );
-
-      return xhrChunkedUploadResult;
-    }
+    return streamUploadResult;
   } catch (e) {
     onError?.(e as Error);
   }
