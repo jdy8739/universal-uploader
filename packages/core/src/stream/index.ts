@@ -1,7 +1,13 @@
 import { UploadParams, UploadResponse, OnProgressParams } from "../index";
 
+/**
+ * Parameters for stream uploader configuration.
+ * 스트림 업로더 구성을 위한 매개변수입니다.
+ */
 interface StreamUploaderParams {
+  /** The file to be uploaded. / 업로드할 파일. */
   file: File;
+  /** Chunk size in bytes. / 바이트 단위의 청크 크기. */
   chunkSize: number;
 }
 
