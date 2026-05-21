@@ -183,7 +183,7 @@ const upload = async ({
   const uploadFile = getUploader(url, method);
 
   try {
-    const streamUploadResult = await wrapPromiseErrorHandler(
+    const uploadResult = await wrapPromiseErrorHandler(
       await uploadFile({
         url,
         file,
@@ -192,7 +192,7 @@ const upload = async ({
       }),
     );
 
-    return streamUploadResult;
+    return uploadResult;
   } catch (e) {
     onError?.(e as Error);
   }
