@@ -11,21 +11,18 @@ const UploadSection = ({
   method: 'auto' | 'stream' | 'xhr chunked';
   file: File | null;
 }) => {
-  const [progress, setProgress] = useState(0);
-
   const { upload, status, error, abort, retry, result } = useUniversalUpload({
     url: '/upload',
-    file: file || ({} as File),
     options: {
       method,
       chunkSize: 1024 * 1024,
-      onProgress: ({ percentage }) => setProgress(Math.round(percentage)),
     },
   });
+  const progress = Math.round(result.total);
 
   const handleUpload = () => {
     if (!file) return;
-    upload();
+    upload(file);
   };
 
   const tagClass =
@@ -60,7 +57,7 @@ const UploadSection = ({
         <button className="btn-outline" onClick={abort} disabled={status !== 'uploading'}>
           Abort
         </button>
-        <button className="btn-outline" onClick={retry} disabled={status === 'idle'}>
+        <button className="btn-outline" onClick={() => file && retry(file)} disabled={!file || status === 'idle'}>
           Retry
         </button>
       </div>
@@ -105,8 +102,8 @@ const UploadSection = ({
             <dd>{result.message || 'N/A'}</dd>
             <dt>status:</dt>
             <dd>{result.status}</dd>
-            <dt>total:</dt>
-            <dd>{result.total} bytes</dd>
+            <dt>progress:</dt>
+            <dd>{progress}%</dd>
           </dl>
 
           {error && (
