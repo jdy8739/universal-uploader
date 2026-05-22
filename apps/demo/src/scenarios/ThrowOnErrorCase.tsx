@@ -1,6 +1,4 @@
-import { Card } from "../ui";
-import { Button } from "../ui";
-import { Log } from "../ui";
+import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload } from "@usu/react";
 
@@ -48,13 +46,25 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
         Run Throw Scenario
       </Button>
       <Log className="mt-4 p-3">
-        <Log.Data items={[
-          { label: 'status', value: status },
-          { label: 'onErrorCalls', value: onErrorCalls },
-          { label: 'resultOk', value: result.ok.toString() },
-          { label: 'caughtError', value: caughtErrorMessage || "No throw yet" },
-        ]} />
+        <Log.Data
+          items={[
+            { label: "status", value: status },
+            { label: "onErrorCalls", value: onErrorCalls },
+            { label: "resultOk", value: result.ok.toString() },
+            { label: "caughtError", value: caughtErrorMessage || "No throw yet" },
+          ]}
+        />
       </Log>
+      {result.ok && (
+        <Badge variant="success" className="mt-3">
+          Success: {result.message || "Upload completed"}
+        </Badge>
+      )}
+      {caughtErrorMessage && (
+        <Badge variant="error" className="mt-3">
+          Caught: {caughtErrorMessage}
+        </Badge>
+      )}
     </Card>
   );
 };

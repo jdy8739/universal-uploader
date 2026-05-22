@@ -52,9 +52,14 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
           ]}
         />
       </Log>
+      {result.ok && (
+        <Badge variant="success" className="mt-3">
+          Success: {result.message || "Upload completed"}
+        </Badge>
+      )}
       {error && (
         <Badge variant="error" className="mt-3">
-          {error.message}
+          Error: {error.message}
         </Badge>
       )}
     </Card>
