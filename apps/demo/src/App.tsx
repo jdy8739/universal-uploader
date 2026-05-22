@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Home } from './pages/Home';
 import {
   UploadCard,
   RetryAndOnErrorCase,
@@ -9,8 +10,10 @@ import {
   SmallChunkStressTest,
   CustomHeadersCase,
 } from './scenarios';
+import { Button } from './ui';
 
 const App = () => {
+  const [showDashboard, setShowDashboard] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,8 +22,16 @@ const App = () => {
     }
   };
 
+  if (!showDashboard) {
+    return <Home onNavigate={() => setShowDashboard(true)} />;
+  }
+
   return (
     <main className="max-w-[1200px] mx-auto p-8">
+      <div className="mb-8">
+        <Button variant="outline" onClick={() => setShowDashboard(false)}>← Back to Home</Button>
+      </div>
+
       <header className="text-center mb-12">
         <h1 className="text-4xl font-extrabold mb-2">Universal Stream Uploader</h1>
         <p className="text-lg text-gray-500">
