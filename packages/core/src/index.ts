@@ -10,24 +10,7 @@ import {
 } from "./types";
 import { checkSupportsStreamingUpload } from "./stream/helper";
 import { wait } from "./utils";
-
-/**
- * Returns the appropriate uploader function based on the method and URL.
- * 메서드와 URL에 따라 적절한 업로더 함수를 반환합니다.
- */
-const getUploader = (url: string, method: UploadOptions["method"]) => {
-  const finalMethod =
-    method === "auto" && checkSupportsStreamingUpload(url) ? "stream" : method;
-
-  switch (finalMethod) {
-    case "stream":
-      return uploadWithStream;
-    case "xhr chunked":
-      return uploadWithXhrChuncked;
-    default:
-      throw new Error(`Unsupported upload method: ${method}`);
-  }
-};
+import { getUploader } from "./helper";
 
 /**
  * Orchestrates file upload by selecting the optimal method and managing retries and errors.
