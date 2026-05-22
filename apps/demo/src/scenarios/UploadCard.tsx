@@ -1,0 +1,126 @@
+/* eslint-disable no-nested-ternary */
+import { useUniversalUpload } from "@usu/react";
+import { Card, Button, Log, Badge } from "../ui";
+
+interface UploadCardProps {
+  title: string;
+  method: "auto" | "stream" | "xhr chunked";
+  file: File | null;
+}
+
+export const UploadCard = ({ title, method, file }: UploadCardProps) => {
+  const { upload, status, error, abort, retry, result } = useUniversalUpload({
+    url: "/upload",
+    options: {
+      method,
+      chunkSize: 1024 * 1024,
+    },
+  });
+  const progress = Math.round(result.total);
+
+  const handleUpload = () => {
+    if (!file) return;
+    upload(file);
+  };
+
+  const tagClass =
+    method === "stream"
+      ? "tag tag-stream"
+      : method === "xhr chunked"
+        ? "tag tag-xhr"
+        : "tag";
+
+  return (
+    <Card>
+      <header>
+        <span className={tagClass}>{method}</span>
+        <Card.Title>{title}</Card.Title>
+        <Card.Description>
+          {method === "stream"
+            ? "Constant memory usage via Web Streams."
+            : method === "xhr chunked"
+              ? "Sequential chunks via XMLHttpRequest."
+              : "Automatically selects optimal transfer method."}
+        </Card.Description>
+      </header>
+
+      <div className="mb-6 flex gap-3 items-center">
+        <Button
+          onClick={handleUpload}
+          disabled={!file || status === "uploading"}
+        >
+          {status === "idle" || status === "aborted"
+            ? "Start Upload"
+            : status === "success" || status === "error"
+              ? "Retry Upload"
+              : "Uploading..."}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={abort}
+          disabled={status !== "uploading"}
+        >
+          Abort
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => file && retry(file)}
+          disabled={!file || status === "idle"}
+        >
+          Retry
+        </Button>
+      </div>
+
+      {status !== "idle" && (
+        <section aria-labelledby={`progress-title-${method}`}>
+          <h4 id={`progress-title-${method}`} className="sr-only">
+            Upload Progress
+          </h4>
+          <Card.ProgressBar
+            value={status === "success" ? 100 : progress}
+            variant={
+              status === "success"
+                ? "success"
+                : status === "error"
+                  ? "error"
+                  : "info"
+            }
+          />
+          <div className="mt-3 flex gap-2">
+            <Badge
+              variant={
+                status === "error"
+                  ? "error"
+                  : status === "success"
+                    ? "success"
+                    : "info"
+              }
+            >
+              {status.toUpperCase()}
+            </Badge>
+            <Badge>{status === "success" ? 100 : progress}%</Badge>
+          </div>
+
+          <Log className="mt-3">
+            <Log.Data
+              items={[
+                { label: "ok", value: result.ok.toString() },
+                { label: "message", value: result.message || "N/A" },
+                { label: "status", value: result.status },
+                { label: "progress", value: `${progress}%` },
+              ]}
+            />
+          </Log>
+
+          {error && (
+            <Badge variant="error" className="mt-3">
+              {error.message}
+            </Badge>
+          )}
+        </section>
+      )}
+    </Card>
+  );
+};
+
+export default UploadCard;
