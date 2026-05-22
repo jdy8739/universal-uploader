@@ -12,11 +12,10 @@ import { getUploader } from "./helper";
  * Orchestrates file upload by selecting the optimal method and managing retries and errors.
  * 최적의 업로드 방식을 선택하고 재시도 및 에러 처리를 관리하여 파일 업로드를 수행합니다.
  */
-const upload = async ({
-  url,
-  file,
-  options: { method = "auto", ...options },
-}: Upload): Promise<UploadResponse> => {
+const upload = async (
+  { url, file, options: { method = "auto", ...options } }: Upload,
+  retryAttempt = 0,
+): Promise<UploadResponse> => {
   const {
     onComplete,
     onProgress,
@@ -94,14 +93,20 @@ const upload = async ({
    * 업로드 작업을 재시도합니다.
    */
   const retryUpload = async (uploadArgs: Upload): Promise<UploadResponse> => {
+    const nextRetryAttempt = retryAttempt + 1;
+
     const nextRetryDelay =
-      typeof retryDelay === "function" ? retryDelay(retryCount) : retryDelay;
+      typeof retryDelay === "function"
+        ? retryDelay(nextRetryAttempt)
+        : retryDelay;
 
     await wait(nextRetryDelay);
 
+    const uploadResponse = await upload(uploadArgs, nextRetryAttempt);
+
     onRetry?.();
 
-    return upload(uploadArgs);
+    return uploadResponse;
   };
 
   /**
@@ -138,7 +143,11 @@ const upload = async ({
             await retryUpload({
               url,
               file,
-              options: { ...options, method, retryCount: retryCount - 1 },
+              options: {
+                ...options,
+                method,
+                retryCount: retryCount - 1,
+              },
             });
 
           Object.assign(originalActions, retryActions);

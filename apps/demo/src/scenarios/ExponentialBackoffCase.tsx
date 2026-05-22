@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
-import { useUniversalUpload } from '@usu/react';
-import { Card, Button, Badge } from '../ui';
+import React, { useState } from "react";
+import { useUniversalUpload } from "@usu/react";
+import { Card, Button, Badge } from "../ui";
 
 interface ExponentialBackoffCaseProps {
   file: File | null;
 }
 
-export const ExponentialBackoffCase = ({ file }: ExponentialBackoffCaseProps) => {
-  const [retries, setRetries] = useState<{ count: number; delay: number }[]>([]);
+export const ExponentialBackoffCase = ({
+  file,
+}: ExponentialBackoffCaseProps) => {
+  const [retries, setRetries] = useState<{ count: number; delay: number }[]>(
+    [],
+  );
   const startTime = React.useRef<number>(0);
 
   const { upload, status } = useUniversalUpload({
-    url: '/upload/fail-always',
+    url: "/upload/fail-always",
     options: {
-      method: 'auto',
+      method: "auto",
       retryCount: 3,
-      // Exponential backoff: 200ms, 400ms, 800ms...
-      retryDelay: (count) => Math.pow(2, count) * 100,
+      retryDelay: (count) => count * 1000,
       onRetry: () => {
         const now = Date.now();
         const delay = startTime.current ? now - startTime.current : 0;
@@ -37,9 +40,10 @@ export const ExponentialBackoffCase = ({ file }: ExponentialBackoffCaseProps) =>
     <Card>
       <Card.Title>Exponential Backoff Case</Card.Title>
       <Card.Description>
-        Tests functional `retryDelay`. Delays increase exponentially with each attempt.
+        Tests functional `retryDelay`. Delays increase exponentially with each
+        attempt.
       </Card.Description>
-      <Button onClick={handleRun} disabled={!file || status === 'uploading'}>
+      <Button onClick={handleRun} disabled={!file || status === "uploading"}>
         Run Backoff Scenario
       </Button>
       <div className="mt-4 space-y-2">
@@ -48,10 +52,8 @@ export const ExponentialBackoffCase = ({ file }: ExponentialBackoffCaseProps) =>
             Retry #{r.count} triggered after ~{r.delay}ms
           </Badge>
         ))}
-        {status === 'error' && (
-          <Badge variant="error">
-            Final attempt failed.
-          </Badge>
+        {status === "error" && (
+          <Badge variant="error">Final attempt failed.</Badge>
         )}
       </div>
     </Card>
