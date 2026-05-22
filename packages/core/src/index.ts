@@ -1,14 +1,10 @@
 export * from "./types";
-import uploadWithStream from "./stream";
-import uploadWithXhrChuncked from "./xhr-chuncked";
 import {
   Upload,
   UploadResponse,
   UploadResult,
   OnProgressParams,
-  UploadOptions,
 } from "./types";
-import { checkSupportsStreamingUpload } from "./stream/helper";
 import { wait } from "./utils";
 import { getUploader } from "./helper";
 
@@ -142,7 +138,7 @@ const upload = async ({
             await retryUpload({
               url,
               file,
-              options: { ...options, retryCount: retryCount - 1 },
+              options: { ...options, method, retryCount: retryCount - 1 },
             });
 
           Object.assign(originalActions, retryActions);
