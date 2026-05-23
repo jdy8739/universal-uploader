@@ -1,65 +1,6 @@
 import { UploadResponse, OnProgressParams, UploadParams } from "../types";
-
-/**
- * Parameters for stream uploader configuration.
- * 스트림 업로더 구성을 위한 매개변수입니다.
- */
-interface StreamUploaderParams {
-  /** The file to be uploaded. / 업로드할 파일. */
-  file: File;
-  /** Chunk size in bytes. / 바이트 단위의 청크 크기. */
-  chunkSize: number;
-}
-
-/**
- * Default chunk size (1 MiB) for stream uploads.
- * Used as both API default and fallback for invalid chunk sizes.
- *
- * 스트림 업로드를 위한 기본 청크 크기(1 MiB)입니다.
- * API 기본값 및 유효하지 않은 청크 크기에 대한 폴백으로 사용됩니다.
- */
-const DEFAULT_STREAM_CHUNK_SIZE = 1024 * 1024;
-
-/**
- * Creates a Uint8Array buffer from a specific slice of the file.
- * 파일의 특정 부분을 잘라 Uint8Array 버퍼를 생성합니다.
- */
-const createBuffer = async ({
-  file,
-  offset,
-  chunkSize,
-}: StreamUploaderParams & { offset: number }) => {
-  const chunk = file.slice(offset, offset + chunkSize);
-
-  const buffer = await chunk.arrayBuffer();
-
-  return new Uint8Array(buffer);
-};
-
-/**
- * Returns a ReadableStream that yields chunks of the file.
- * 파일의 청크를 순차적으로 내보내는 ReadableStream을 반환합니다.
- */
-const getStreamUploader = ({ file, chunkSize }: StreamUploaderParams) => {
-  let offset = 0;
-
-  return new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      if (offset >= file.size) {
-        controller.close();
-        return;
-      }
-
-      const chunkBuffer = await createBuffer({ file, offset, chunkSize });
-      controller.enqueue(chunkBuffer);
-      offset += chunkSize;
-
-      if (offset >= file.size) {
-        controller.close();
-      }
-    },
-  });
-};
+import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
+import { getStreamUploader } from "../helper";
 
 /**
  * Creates a TransformStream that tracks the progress of the data flowing through it.

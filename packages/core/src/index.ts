@@ -1,7 +1,7 @@
 export * from "./types";
 import { UploadParams, UploadResponse, UploadResult } from "./types";
 import { wait } from "./utils";
-import { getUploader } from "./helper";
+import { getUploader } from "./orchestrator";
 
 /**
  * Orchestrates file upload by selecting the optimal method and managing retries and errors.

@@ -1,10 +1,10 @@
 import { UploadParams, UploadResponse, UploadResult } from "../types";
 import {
   isSuccessfulHttpStatus,
-  getChunkUploadMeta,
-  getChunkRange,
+  calculateChunkRange,
   applyChunkHeaders,
 } from "./helper";
+import { calculateSizes } from "../helper";
 
 /**
  * Handles file upload as a single request without chunking using XMLHttpRequest.
@@ -124,7 +124,7 @@ const uploadWithXhrChuncked = async (
     return uploadWithoutChunking(args);
   }
 
-  const { safeChunkSize, totalFileSize, totalChunks } = getChunkUploadMeta({
+  const { safeChunkSize, totalFileSize, totalChunks } = calculateSizes({
     chunkSize,
     fileSize: file.size,
   });
@@ -143,7 +143,7 @@ const uploadWithXhrChuncked = async (
     return response;
   }
 
-  const chunkUpload = async (): Promise<Readonly<UploadResult>> => {
+  const uploadChunkedXhr = async (): Promise<Readonly<UploadResult>> => {
     let uploadResult: Readonly<UploadResult> = {
       ok: false,
       total: 0,
@@ -152,7 +152,7 @@ const uploadWithXhrChuncked = async (
     };
 
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
-      const { start, end } = getChunkRange({
+      const { start, end } = calculateChunkRange({
         chunkIndex,
         safeChunkSize,
         totalFileSize,
@@ -161,10 +161,13 @@ const uploadWithXhrChuncked = async (
       const uploadPromise = new Promise<Readonly<UploadResult>>(
         (resolve, reject) => {
           const xhr = new XMLHttpRequest();
+
           if (withCredentials) {
             xhr.withCredentials = true;
           }
+
           xhr.open("POST", url);
+
           applyChunkHeaders({
             xhr,
             customHeaders,
@@ -177,6 +180,7 @@ const uploadWithXhrChuncked = async (
           xhr.onload = () => {
             if (isSuccessfulHttpStatus(xhr.status)) {
               const isLastChunk = end >= totalFileSize;
+
               const percentage = isLastChunk
                 ? 100
                 : (end / totalFileSize) * 100;
@@ -191,23 +195,26 @@ const uploadWithXhrChuncked = async (
                 onComplete?.();
               }
 
-              resolve({
+              return resolve({
                 ok: true,
                 total: totalFileSize,
                 message: undefined,
                 status: isLastChunk ? "success" : "uploading",
               });
-              return;
             }
+
             reject(new Error(`Chunk upload failed with status ${xhr.status}`));
           };
+
           xhr.onerror = (e) => reject(e);
           xhr.onabort = () => {
             const abortError = new DOMException("Aborted", "AbortError");
             reject(abortError);
           };
+
           const chunk = file.slice(start, end);
           xhr.send(chunk);
+
           response.actions.abort = () => xhr.abort();
           response.actions.refresh = () => {
             xhr.abort();
@@ -222,7 +229,7 @@ const uploadWithXhrChuncked = async (
     return uploadResult;
   };
 
-  response.result = chunkUpload();
+  response.result = uploadChunkedXhr();
   return response;
 };
 
