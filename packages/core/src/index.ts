@@ -129,6 +129,7 @@ const upload = async (
               options: {
                 ...options,
                 method,
+                offset: options.offset,
                 retryCount: retryCount - 1,
               },
             });

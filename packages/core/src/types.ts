@@ -22,6 +22,8 @@ export interface UploadOptions {
   method?: UploadMethod;
   /** Size of each chunk in bytes. / 각 청크의 바이트 크기. */
   chunkSize?: number;
+  /** Start byte offset for resumed chunked uploads. / 재개 청크 업로드 시 시작 바이트 오프셋. */
+  offset?: number;
   /** Custom HTTP headers to be sent with the request. / 요청과 함께 전송될 커스텀 HTTP 헤더. */
   customHeaders?: Record<string, string>;
   /** Whether to include credentials (cookies, etc.) in the request. / 요청에 자격 증명(쿠키 등)을 포함할지 여부. */

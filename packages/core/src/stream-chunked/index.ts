@@ -8,18 +8,18 @@ import {
 import { calculateChunkRange } from "../xhr-chuncked/helper";
 import { createChunkedStream, getStreamChunkHeaders } from "./helper";
 
-const uploadWithFetchStreamChunked = async ({
-  url,
-  file,
-  refresh,
-  options: {
+const uploadWithFetchStreamChunked = async (
+  args: UploadParams & { refresh: () => void },
+): Promise<UploadResponse> => {
+  const { url, file, refresh, options } = args;
+  const {
     chunkSize = DEFAULT_STREAM_CHUNK_SIZE,
+    offset: offsetFrom = 0,
     customHeaders = {},
     withCredentials,
     onProgress,
     onComplete,
-  },
-}: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
+  } = options;
   const response: UploadResponse = {
     result: Promise.resolve({
       ok: false,
@@ -62,9 +62,14 @@ const uploadWithFetchStreamChunked = async ({
       status: "uploading",
     };
 
-    let offset = 0;
+    const startChunkIndex = Math.floor(offsetFrom / safeChunkSize);
+    let offset = startChunkIndex * safeChunkSize;
 
-    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+    for (
+      let chunkIndex = startChunkIndex;
+      chunkIndex < totalChunks;
+      chunkIndex += 1
+    ) {
       const { end } = calculateChunkRange({
         chunkIndex,
         chunkSize: safeChunkSize,
@@ -76,8 +81,6 @@ const uploadWithFetchStreamChunked = async ({
         offset,
         chunkSize: safeChunkSize,
       });
-
-      offset += safeChunkSize;
 
       const { abortController, streamInit } = initializeStream({
         body: chunkedStream,
@@ -122,6 +125,10 @@ const uploadWithFetchStreamChunked = async ({
         if (isLastChunk) {
           onComplete?.();
         }
+
+        // 성공 이후에 offset 증가
+        offset += safeChunkSize;
+        options.offset = offset;
 
         uploadResult = {
           ok: true,
