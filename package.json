@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "pnpm --filter @usu/demo dev",
+    "build-libs": "cd packages/core && pnpm build && cd ../react && pnpm build",
     "lint": "eslint packages --ext .ts,.tsx",
     "format": "prettier --write ."
   },
