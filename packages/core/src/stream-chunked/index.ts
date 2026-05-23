@@ -1,7 +1,12 @@
 import { UploadParams, UploadResponse, UploadResult } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
-import { calculateSizes, getStreamUploader } from "../helper";
+import {
+  calculateSizes,
+  createBuffer,
+  calculateChunkProgress,
+} from "../helper";
 import { calculateChunkRange } from "../xhr-chuncked/helper";
+import { getStreamChunkHeaders } from "./helper";
 
 const uploadWithFetchStreamChunked = async ({
   url,
@@ -57,72 +62,97 @@ const uploadWithFetchStreamChunked = async ({
       status: "uploading",
     };
 
-    const stream = getStreamUploader({
-      file,
-      chunkSize: safeChunkSize,
-    });
+    let offset = 0;
 
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
       const { end } = calculateChunkRange({
         chunkIndex,
-        safeChunkSize,
+        chunkSize: safeChunkSize,
         totalFileSize,
       });
 
-      const uploadPromise = new Promise<Readonly<UploadResult>>(
-        async (resolve, reject) => {
-          const abortController = new AbortController();
-
-          const init: Readonly<RequestInit> = {
-            method: "POST",
-            body: stream,
-            duplex: "half",
-            signal: abortController.signal,
-            credentials: withCredentials ? "include" : "same-origin",
-            headers: {
-              "Content-Type": "application/octet-stream",
-              ...(customHeaders || {}),
-            },
-          };
-
-          response.actions.abort = () => abortController.abort();
-          response.actions.refresh = () => {
-            abortController.abort();
-            refresh();
-          };
-          response.actions.pause = () => null;
-          response.actions.resume = () => null;
-
-          const fetchResponse = await fetch(url, init);
-
-          if (fetchResponse.ok) {
-            onProgress?.({
-              loaded: end,
-              total: totalFileSize,
-              percentage: (end / totalFileSize) * 100,
-            });
-
-            if (end >= totalFileSize) {
-              onComplete?.();
-            }
-
-            return resolve({
-              ok: true,
-              total: totalFileSize,
-              message: undefined,
-              status: "success",
-            });
+      const chunkedStream = new ReadableStream<Uint8Array>({
+        pull: async (controller) => {
+          if (offset >= file.size) {
+            controller.close();
+            return;
           }
 
-          reject(
-            new Error(
-              `Chunk upload failed with status ${fetchResponse.status}`,
-            ),
-          );
+          const chunkBuffer = await createBuffer({
+            file,
+            offset,
+            chunkSize: safeChunkSize,
+          });
+
+          controller.enqueue(chunkBuffer);
+          offset += safeChunkSize;
+          controller.close();
         },
-      );
-      uploadResult = await uploadPromise;
+      });
+
+      const abortController = new AbortController();
+
+      const init: Readonly<RequestInit> = {
+        method: "POST",
+        body: chunkedStream,
+        duplex: "half",
+        signal: abortController.signal,
+        credentials: withCredentials ? "include" : "same-origin",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          ...getStreamChunkHeaders({
+            customHeaders: customHeaders || {},
+            chunkIndex,
+            totalChunks,
+            chunkSize: safeChunkSize,
+            totalFileSize,
+          }),
+        },
+      };
+
+      response.actions.abort = () => abortController.abort();
+      response.actions.refresh = () => {
+        abortController.abort();
+        refresh();
+      };
+      response.actions.pause = () => null;
+      response.actions.resume = () => null;
+
+      try {
+        const fetchResponse = await fetch(url, init);
+
+        if (!fetchResponse.ok || fetchResponse.status >= 300) {
+          throw new Error(
+            `Chunk upload failed with status ${fetchResponse.status}`,
+          );
+        }
+
+        const { isLastChunk, percentage } = calculateChunkProgress({
+          loaded: end,
+          total: totalFileSize,
+        });
+
+        onProgress?.({
+          loaded: end,
+          total: totalFileSize,
+          percentage,
+        });
+
+        if (isLastChunk) {
+          onComplete?.();
+        }
+
+        uploadResult = {
+          ok: true,
+          total: totalFileSize,
+          message: undefined,
+          status: "success",
+        };
+      } catch (e) {
+        throw e;
+      }
     }
+
     return uploadResult;
   };
 

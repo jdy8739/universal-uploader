@@ -39,6 +39,23 @@ export const calculateSizes = ({
 };
 
 /**
+ * Calculates chunk progress state.
+ * 청크 진행 상태(isLastChunk, percentage)를 계산합니다.
+ */
+export const calculateChunkProgress = ({
+  loaded,
+  total,
+}: {
+  loaded: number;
+  total: number;
+}) => {
+  const isLastChunk = total === 0 || loaded >= total;
+  const percentage = isLastChunk ? 100 : (loaded / total) * 100;
+
+  return { isLastChunk, percentage };
+};
+
+/**
  * Parameters for stream uploader configuration.
  * 스트림 업로더 구성을 위한 매개변수입니다.
  */

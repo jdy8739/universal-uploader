@@ -4,7 +4,7 @@ import {
   calculateChunkRange,
   applyChunkHeaders,
 } from "./helper";
-import { calculateSizes } from "../helper";
+import { calculateSizes, calculateChunkProgress } from "../helper";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 
 /**
@@ -157,7 +157,7 @@ const uploadWithXhrChuncked = async (
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
       const { start, end } = calculateChunkRange({
         chunkIndex,
-        safeChunkSize,
+        chunkSize: safeChunkSize,
         totalFileSize,
       });
 
@@ -182,11 +182,10 @@ const uploadWithXhrChuncked = async (
 
           xhr.onload = () => {
             if (isSuccessfulHttpStatus(xhr.status)) {
-              const isLastChunk = end >= totalFileSize;
-
-              const percentage = isLastChunk
-                ? 100
-                : (end / totalFileSize) * 100;
+              const { isLastChunk, percentage } = calculateChunkProgress({
+                loaded: end,
+                total: totalFileSize,
+              });
 
               onProgress?.({
                 loaded: end,

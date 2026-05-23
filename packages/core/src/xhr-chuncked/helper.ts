@@ -1,3 +1,5 @@
+import { CHUNK_HEADER_KEYS } from "../const";
+
 const HTTP_STATUS_SUCCESS_MIN = 200;
 const HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE = 300;
 
@@ -15,21 +17,45 @@ export const isSuccessfulHttpStatus = (status: number) =>
  */
 export const calculateChunkRange = ({
   chunkIndex,
-  safeChunkSize,
+  chunkSize,
   totalFileSize,
 }: {
   chunkIndex: number;
-  safeChunkSize: number;
+  chunkSize: number;
   totalFileSize: number;
 }) => {
-  const start = chunkIndex * safeChunkSize;
-  const end = Math.min(start + safeChunkSize, totalFileSize);
+  const start = chunkIndex * chunkSize;
+  const end = Math.min(start + chunkSize, totalFileSize);
 
   return {
     start,
     end,
   };
 };
+
+/**
+ * Returns chunking-related headers merged with custom headers.
+ * 청크 관련 헤더와 커스텀 헤더를 병합해 반환합니다.
+ */
+export const getChunkHeaders = ({
+  customHeaders,
+  chunkIndex,
+  totalChunks,
+  chunkSize,
+  totalFileSize,
+}: {
+  customHeaders: Record<string, string>;
+  chunkIndex: number;
+  totalChunks: number;
+  chunkSize: number;
+  totalFileSize: number;
+}) => ({
+  [CHUNK_HEADER_KEYS.chunkIndex]: String(chunkIndex),
+  [CHUNK_HEADER_KEYS.totalChunks]: String(totalChunks),
+  [CHUNK_HEADER_KEYS.chunkSize]: String(chunkSize),
+  [CHUNK_HEADER_KEYS.fileSize]: String(totalFileSize),
+  ...customHeaders,
+});
 
 /**
  * Applies chunking-related headers and custom headers to the XMLHttpRequest object.
@@ -50,12 +76,17 @@ export const applyChunkHeaders = ({
   safeChunkSize: number;
   totalFileSize: number;
 }) => {
-  xhr.setRequestHeader("X-Chunk-Index", String(chunkIndex));
-  xhr.setRequestHeader("X-Total-Chunks", String(totalChunks));
-  xhr.setRequestHeader("X-Chunk-Size", String(safeChunkSize));
-  xhr.setRequestHeader("X-File-Size", String(totalFileSize));
+  const headers = getChunkHeaders({
+    customHeaders,
+    chunkIndex,
+    totalChunks,
+    chunkSize: safeChunkSize,
+    totalFileSize,
+  });
 
-  Object.entries(customHeaders).forEach(([key, value]) => {
+  Object.entries(headers).forEach(([key, value]) => {
     xhr.setRequestHeader(key, value);
   });
+
+  return xhr;
 };
