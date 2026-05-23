@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "jsx": "react-jsx"
   },
-  "include": ["./src/**/*", "../../global.d.ts"]
+  "include": ["./src/**/*", "../server.ts", "../../global.d.ts"]
 }

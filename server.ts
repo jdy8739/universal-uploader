@@ -1,5 +1,4 @@
 import process from 'node:process';
-import { pathToFileURL } from 'node:url';
 
 import cors from 'cors';
 import express from 'express';
