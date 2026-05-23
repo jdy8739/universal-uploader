@@ -1,10 +1,5 @@
 export * from "./types";
-import {
-  UploadParams,
-  UploadResponse,
-  UploadResult,
-  OnProgressParams,
-} from "./types";
+import { UploadParams, UploadResponse, UploadResult } from "./types";
 import { wait } from "./utils";
 import { getUploader } from "./helper";
 
@@ -17,15 +12,12 @@ const upload = async (
   retryAttempt = 0,
 ): Promise<UploadResponse> => {
   const {
-    onComplete,
-    onProgress,
     onAbort,
     onRetry,
     onError,
     retryCount: retryCountArg = 3,
     retryDelay = 1000,
     throwOnError = false,
-    ...restOptions
   } = options;
 
   const retryCount = retryCountArg;
@@ -75,24 +67,15 @@ const upload = async (
     return { ok: false, total: 0, message: e.message, status: "error" };
   };
 
-  const finalOptions = {
-    ...restOptions,
-    onProgress: ({ loaded, total, percentage }: OnProgressParams) => {
-      onProgress?.({ loaded, total, percentage });
-
-      if (percentage === 100) {
-        onComplete?.();
-      }
-    },
-  };
-
   const refresh = () => upload({ url, file, options });
 
   /**
    * Attempts to retry an upload operation.
    * 업로드 작업을 재시도합니다.
    */
-  const retryUpload = async (uploadArgs: UploadParams): Promise<UploadResponse> => {
+  const retryUpload = async (
+    uploadArgs: UploadParams,
+  ): Promise<UploadResponse> => {
     const nextRetryAttempt = retryAttempt + 1;
 
     const nextRetryDelay =
@@ -168,7 +151,7 @@ const upload = async (
         url,
         file,
         refresh,
-        options: finalOptions,
+        options,
       }),
     );
 

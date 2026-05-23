@@ -1,4 +1,4 @@
-import { UploadParams, UploadResponse, OnProgressParams } from "../index";
+import { UploadResponse, OnProgressParams, UploadParams } from "../types";
 
 /**
  * Parameters for stream uploader configuration.
@@ -70,7 +70,7 @@ const createProgressStream = ({
   onProgress,
 }: {
   totalFileSize: number;
-  onProgress: (args: OnProgressParams) => void;
+  onProgress?: (args: OnProgressParams) => void;
 }) => {
   let bytesRead = 0;
 
@@ -79,23 +79,14 @@ const createProgressStream = ({
     // 각 리더블 스트림에 파이프를 걸어 청크를 얻어 진행율을 계산합니다. 별도의 chunk 데이터 가공은 하지 않습니다.
     transform: (chunk, controller) => {
       bytesRead += chunk.byteLength;
-      onProgress({
+
+      onProgress?.({
         loaded: bytesRead,
         percentage: (bytesRead / totalFileSize) * 100,
         total: totalFileSize,
       });
 
       controller.enqueue(chunk);
-    },
-
-    // Trigger the final progress event once the transform streaming is complete.
-    // 변환 스트리밍이 완료되면 마지막 프로그레스 이벤트를 발생시킵니다.
-    flush: () => {
-      onProgress({
-        loaded: totalFileSize,
-        percentage: 100,
-        total: totalFileSize,
-      });
     },
   });
 };
@@ -113,6 +104,7 @@ const uploadWithStream = async ({
     customHeaders = {},
     withCredentials,
     onProgress,
+    onComplete,
   },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
   const safeChunkSize =
@@ -124,7 +116,10 @@ const uploadWithStream = async ({
 
   const body = onProgress
     ? stream.pipeThrough(
-        createProgressStream({ totalFileSize: file.size, onProgress }),
+        createProgressStream({
+          totalFileSize: file.size,
+          onProgress,
+        }),
       )
     : stream;
 
@@ -145,12 +140,23 @@ const uploadWithStream = async ({
   const response = fetch(url, init);
 
   return {
-    result: response.then((res) => ({
-      ok: res.ok,
-      total: file.size,
-      message: res.ok ? undefined : `Upload failed with status ${res.status}`,
-      status: res.ok ? "success" : "error",
-    })),
+    result: response.then((res) => {
+      if (res.ok) {
+        // No chunks are transformed for empty files, so emit terminal progress here.
+        if (file.size === 0) {
+          onProgress?.({ loaded: 0, total: 0, percentage: 100 });
+        }
+
+        onComplete?.();
+      }
+
+      return {
+        ok: res.ok,
+        total: file.size,
+        message: res.ok ? undefined : `Upload failed with status ${res.status}`,
+        status: res.ok ? "success" : "error",
+      };
+    }),
     actions: {
       abort: () => abortController.abort(), // Never put an argument when aborting.
       refresh: () => {

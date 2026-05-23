@@ -1,9 +1,4 @@
-import {
-  UploadParams,
-  UploadResponse,
-  OnProgressParams,
-  UploadResult,
-} from "../index";
+import { UploadParams, UploadResponse, UploadResult } from "../types";
 import {
   isSuccessfulHttpStatus,
   getChunkUploadMeta,
@@ -19,17 +14,8 @@ const uploadWithoutChunking = ({
   url,
   file,
   refresh,
-  customHeaders,
-  withCredentials,
-  onProgress,
-}: {
-  url: string;
-  file: File;
-  refresh: () => void;
-  customHeaders: Record<string, string>;
-  withCredentials?: boolean;
-  onProgress?: (args: OnProgressParams) => void;
-}): UploadResponse => {
+  options: { customHeaders = {}, withCredentials, onProgress, onComplete },
+}: UploadParams & { refresh: () => void }): UploadResponse => {
   const xhr = new XMLHttpRequest();
 
   const response = new Promise<UploadResult>((resolve, reject) => {
@@ -44,12 +30,12 @@ const uploadWithoutChunking = ({
     });
 
     if (onProgress) {
-      xhr.upload.onprogress = (event) => {
-        const total = event.total || file.size;
-        const percentage = total === 0 ? 100 : (event.loaded / total) * 100;
+      xhr.upload.onprogress = (e) => {
+        const total = e.total || file.size;
+        const percentage = total === 0 ? 100 : (e.loaded / total) * 100;
 
         onProgress({
-          loaded: event.loaded,
+          loaded: e.loaded,
           total,
           percentage,
         });
@@ -58,9 +44,8 @@ const uploadWithoutChunking = ({
 
     xhr.onload = () => {
       if (isSuccessfulHttpStatus(xhr.status)) {
-        if (onProgress) {
-          onProgress({ loaded: file.size, total: file.size, percentage: 100 });
-        }
+        onProgress?.({ loaded: file.size, total: file.size, percentage: 100 });
+        onComplete?.();
 
         resolve({
           ok: true,
@@ -71,7 +56,6 @@ const uploadWithoutChunking = ({
 
         return;
       }
-
       reject(new Error(`Upload failed with status ${xhr.status}`));
     };
 
@@ -105,12 +89,22 @@ const uploadWithoutChunking = ({
  * Uploads a file by splitting it into sequential chunks using XMLHttpRequest.
  * XMLHttpRequest를 사용하여 파일을 여러 개의 청크로 나누어 순차적으로 업로드합니다.
  */
-const uploadWithXhrChuncked = async ({
-  url,
-  file,
-  refresh,
-  options: { chunkSize, customHeaders = {}, withCredentials, onProgress },
-}: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
+const uploadWithXhrChuncked = async (
+  args: UploadParams & { refresh: () => void },
+): Promise<UploadResponse> => {
+  const {
+    url,
+    file,
+    refresh,
+    options: {
+      customHeaders = {},
+      withCredentials,
+      onProgress,
+      onComplete,
+      chunkSize,
+    },
+  } = args;
+
   const response: UploadResponse = {
     result: Promise.resolve({
       ok: false,
@@ -127,13 +121,7 @@ const uploadWithXhrChuncked = async ({
   };
 
   if (!chunkSize || chunkSize <= 0) {
-    return uploadWithoutChunking({
-      url,
-      file,
-      refresh,
-      customHeaders,
-      onProgress,
-    });
+    return uploadWithoutChunking(args);
   }
 
   const { safeChunkSize, totalFileSize, totalChunks } = getChunkUploadMeta({
@@ -142,9 +130,8 @@ const uploadWithXhrChuncked = async ({
   });
 
   if (totalFileSize === 0) {
-    if (onProgress) {
-      onProgress({ loaded: 0, total: 0, percentage: 100 });
-    }
+    onProgress?.({ loaded: 0, total: 0, percentage: 100 });
+    onComplete?.();
 
     response.result = Promise.resolve({
       ok: true,
@@ -156,10 +143,6 @@ const uploadWithXhrChuncked = async ({
     return response;
   }
 
-  /**
-   * Orchestrates the sequential upload of all chunks.
-   * 모든 청크의 순차적 업로드를 조율합니다.
-   */
   const chunkUpload = async (): Promise<Readonly<UploadResult>> => {
     let uploadResult: Readonly<UploadResult> = {
       ok: false,
@@ -178,13 +161,10 @@ const uploadWithXhrChuncked = async ({
       const uploadPromise = new Promise<Readonly<UploadResult>>(
         (resolve, reject) => {
           const xhr = new XMLHttpRequest();
-
           if (withCredentials) {
             xhr.withCredentials = true;
           }
-
           xhr.open("POST", url);
-
           applyChunkHeaders({
             xhr,
             customHeaders,
@@ -201,12 +181,14 @@ const uploadWithXhrChuncked = async ({
                 ? 100
                 : (end / totalFileSize) * 100;
 
-              if (onProgress) {
-                onProgress({
-                  loaded: end,
-                  total: totalFileSize,
-                  percentage: totalFileSize === 0 ? 100 : percentage,
-                });
+              onProgress?.({
+                loaded: end,
+                total: totalFileSize,
+                percentage: totalFileSize === 0 ? 100 : percentage,
+              });
+
+              if (isLastChunk) {
+                onComplete?.();
               }
 
               resolve({
@@ -215,24 +197,17 @@ const uploadWithXhrChuncked = async ({
                 message: undefined,
                 status: isLastChunk ? "success" : "uploading",
               });
-
               return;
             }
-
             reject(new Error(`Chunk upload failed with status ${xhr.status}`));
           };
-
           xhr.onerror = (e) => reject(e);
           xhr.onabort = () => {
             const abortError = new DOMException("Aborted", "AbortError");
             reject(abortError);
           };
-
           const chunk = file.slice(start, end);
           xhr.send(chunk);
-
-          // Update actions to refer to the current XHR request.
-          // 현재 XHR 요청을 참조하도록 액션을 업데이트합니다.
           response.actions.abort = () => xhr.abort();
           response.actions.refresh = () => {
             xhr.abort();
@@ -242,18 +217,12 @@ const uploadWithXhrChuncked = async ({
           response.actions.resume = () => null;
         },
       );
-
-      // Sequential execution using await within a loop for chunked transfer.
-      // 청크 전송을 위해 루프 내에서 await를 사용하여 순차적으로 실행합니다.
-      // eslint-disable-next-line no-await-in-loop -- chunked mode intentionally uploads sequentially
       uploadResult = await uploadPromise;
     }
-
     return uploadResult;
   };
 
   response.result = chunkUpload();
-
   return response;
 };
 
