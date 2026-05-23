@@ -160,7 +160,7 @@ export default function useUniversalUpload({
                 setStatus("uploading");
                 setResult({
                   ok: false,
-                  total: args.percentage,
+                  total: args.total,
                   status: "uploading",
                 });
               }
@@ -237,6 +237,14 @@ export default function useUniversalUpload({
       prevReqAbortRef.current.abort();
     };
   }, []);
+
+  useEffect(() => {
+    optionRef.current?.onUrlChange?.(url);
+  }, [url]);
+
+  useEffect(() => {
+    optionRef.current?.onMethodChange?.(optionRef.current.method);
+  }, [options?.method]);
 
   return {
     upload: uploadSafely,
