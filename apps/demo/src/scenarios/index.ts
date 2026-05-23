@@ -1,4 +1,5 @@
 export * from './CustomHeadersCase';
+export * from './DisableChunkingCase';
 export * from './ExponentialBackoffCase';
 export * from './LifecycleHooksCase';
 export * from './RetryAndOnErrorCase';

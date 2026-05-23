@@ -57,9 +57,9 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
           Success: {result.message || "Upload completed"}
         </Badge>
       )}
-      {error && (
+      {(!result.ok || error) && (
         <Badge variant="error" className="mt-3">
-          Error: {error.message}
+          Error: {error?.message || "Upload failed"}
         </Badge>
       )}
     </Card>

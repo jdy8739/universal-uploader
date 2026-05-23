@@ -9,6 +9,7 @@ import {
   ExponentialBackoffCase,
   SmallChunkStressTest,
   CustomHeadersCase,
+  DisableChunkingCase,
 } from './scenarios';
 import { Button } from './ui';
 
@@ -65,6 +66,7 @@ const App = () => {
           <UploadCard title="Intelligent Auto" method="auto" file={file} />
           <UploadCard title="Modern Streaming" method="stream" file={file} />
           <UploadCard title="Reliable Chunking" method="xhr chunked" file={file} />
+          <DisableChunkingCase file={file} />
         </div>
       </section>
 
