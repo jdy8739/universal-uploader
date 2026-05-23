@@ -1,3 +1,4 @@
+export * from './ChunkedResumptionCase';
 export * from './CustomHeadersCase';
 export * from './DisableChunkingCase';
 export * from './ExponentialBackoffCase';

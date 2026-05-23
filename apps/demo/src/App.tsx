@@ -10,6 +10,7 @@ import {
   SmallChunkStressTest,
   CustomHeadersCase,
   DisableChunkingCase,
+  ChunkedResumptionCase,
 } from './scenarios';
 import { Button } from './ui';
 
@@ -78,6 +79,8 @@ const App = () => {
           <ThrowOnErrorCase file={file} />
           <RetryRecoveryCase file={file} />
           <ExponentialBackoffCase file={file} />
+          <ChunkedResumptionCase file={file} method="stream chunked" title="Stream Chunked Resumption" />
+          <ChunkedResumptionCase file={file} method="xhr chunked" title="XHR Chunked Resumption" />
         </div>
       </section>
 

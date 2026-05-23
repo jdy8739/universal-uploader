@@ -92,6 +92,38 @@ app.post('/upload/fail-twice-then-success', async (req, res) => {
   }
 });
 
+app.post('/upload/fail-at-chunk-3', async (req, res) => {
+  const testKey = req.header('x-test-key') || 'default';
+  const chunkIndex = req.header('X-Chunk-Index') || 'none';
+  const attempt = (failTwiceCounter.get(testKey) ?? 0) + 1;
+  failTwiceCounter.set(testKey, attempt);
+
+  console.log(`[SERVER] /fail-at-chunk-3: key=${testKey}, attempt=${attempt}, chunkIndex=${chunkIndex}`);
+
+  try {
+    const receivedBytes = await readRequestBytes(req);
+
+    if (attempt === 3) {
+      res.status(500).json({
+        message: `Intentional failure on 3rd attempt`,
+        size: receivedBytes,
+      });
+      return;
+    }
+
+    if (attempt > 3) failTwiceCounter.set(testKey, 0);
+
+    res.status(200).json({
+      message: 'Upload successful',
+      size: receivedBytes,
+      attempt,
+    });
+  } catch (err) {
+    console.error('Server error during fail-at-chunk-3 upload:', err);
+    res.status(500).json({ message: 'Upload failed' });
+  }
+});
+
 app.post('/upload/reset-test-counters', (_req, res) => {
   failTwiceCounter.clear();
   res.status(200).json({ message: 'Test counters reset' });
