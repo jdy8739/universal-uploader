@@ -11,7 +11,7 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
   const [progress, setProgress] = useState(0);
 
   // Use a very small chunk size (16KB) to force many network requests
-  const { upload, status, result, error } = useUniversalUpload({
+  const { upload, status, result, error, pause, resume } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "xhr chunked",
@@ -33,9 +33,25 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
         Uses tiny 16KB chunks. Tests the overhead and stability of many
         sequential requests.
       </Card.Description>
-      <Button onClick={handleRun} disabled={!file || status === "uploading"}>
-        Start Stress Test
-      </Button>
+      <div className="flex gap-2 flex-wrap">
+        <Button onClick={handleRun} disabled={!file || status === "uploading"}>
+          Start Stress Test
+        </Button>
+        <Button
+          variant="outline"
+          onClick={pause}
+          disabled={status !== "uploading"}
+        >
+          Pause
+        </Button>
+        <Button
+          variant="outline"
+          onClick={resume}
+          disabled={status !== "paused"}
+        >
+          Resume
+        </Button>
+      </div>
 
       {status !== "idle" && (
         <div className="mt-4">

@@ -31,9 +31,11 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
   const tagClass =
     method === "stream"
       ? "tag tag-stream"
-      : method === "xhr chunked"
-        ? "tag tag-xhr"
-        : "tag";
+      : method === "stream chunked"
+        ? "tag tag-stream"
+        : method === "xhr chunked"
+          ? "tag tag-xhr"
+          : "tag";
 
   return (
     <Card>
@@ -43,9 +45,11 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
         <Card.Description>
           {method === "stream"
             ? "Constant memory usage via Web Streams."
-            : method === "xhr chunked"
-              ? "Sequential chunks via XMLHttpRequest."
-              : "Automatically selects optimal transfer method."}
+            : method === "stream chunked"
+              ? "Sequential chunks via Web Streams."
+              : method === "xhr chunked"
+                ? "Sequential chunks via XMLHttpRequest."
+                : "Automatically selects optimal transfer method."}
         </Card.Description>
       </header>
 
@@ -58,7 +62,9 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
             ? "Start Upload"
             : status === "success" || status === "error"
               ? "Retry Upload"
-              : "Uploading..."}
+              : status === "paused"
+                ? "Restart Upload"
+                : "Uploading..."}
         </Button>
         <Button
           variant="outline"
@@ -74,7 +80,9 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
         >
           Retry
         </Button>
-        {method === "xhr chunked" && (
+        {(method === "xhr chunked" ||
+          method === "stream chunked" ||
+          method === "auto") && (
           <div className="flex gap-2">
             <Button
               variant="outline"
