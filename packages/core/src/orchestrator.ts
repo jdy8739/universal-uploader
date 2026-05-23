@@ -2,6 +2,7 @@ import uploadWithStream from "./stream";
 import { checkSupportsStreamingUpload } from "./stream/helper";
 import { UploadOptions } from "./types";
 import uploadWithXhrChuncked from "./xhr-chuncked";
+import uploadWithFetchStreamChunked from "./stream-chunked";
 
 /**
  * Returns the appropriate uploader function based on the method and URL.
@@ -9,14 +10,15 @@ import uploadWithXhrChuncked from "./xhr-chuncked";
  */
 export const getUploader = (url: string, method: UploadOptions["method"]) => {
   const finalMethod =
-    method === "auto" && checkSupportsStreamingUpload(url)
-      ? "stream"
-      : "xhr chunked";
+    method === "auto" && checkSupportsStreamingUpload(url) ? "stream" : method;
 
   switch (finalMethod) {
     case "stream":
       return uploadWithStream;
+    case "stream chunked":
+      return uploadWithFetchStreamChunked;
     case "xhr chunked":
+    case "auto":
       return uploadWithXhrChuncked;
     default:
       throw new Error(`Unsupported upload method: ${method}`);
