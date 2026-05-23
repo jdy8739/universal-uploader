@@ -173,6 +173,27 @@ export default function useUniversalUpload({
                 setError(null);
               }
             },
+            onPause: () => {
+              $options.onPause?.();
+              if (isLatestUploadRequest()) {
+                setStatus("paused");
+                setResult((prevResult) => ({
+                  ...prevResult,
+                  ok: false,
+                  status: "paused",
+                }));
+              }
+            },
+            onResume: () => {
+              $options.onResume?.();
+              if (isLatestUploadRequest()) {
+                setStatus("uploading");
+                setResult((prevResult) => ({
+                  ...prevResult,
+                  status: "uploading",
+                }));
+              }
+            },
           },
         });
 
@@ -257,7 +278,7 @@ export default function useUniversalUpload({
     status,
     error,
     abort: () => prevReqAbortRef.current.abort(),
-    pause: () => null,
-    resume: () => null,
+    pause: () => prevReqAbortRef.current.pause(),
+    resume: () => prevReqAbortRef.current.resume(),
   };
 }

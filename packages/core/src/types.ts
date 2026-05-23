@@ -42,6 +42,10 @@ export interface UploadOptions {
   onAbort?: (error: DOMException) => void;
   /** Callback on retry attempt. / 재시도 시 호출되는 콜백. */
   onRetry?: () => void;
+  /** Callback when upload is paused. / 업로드 일시정지 시 호출되는 콜백. */
+  onPause?: () => void;
+  /** Callback when upload is resumed. / 업로드 재개 시 호출되는 콜백. */
+  onResume?: () => void;
   /** Callback on fatal error. / 치명적 에러 발생 시 호출되는 콜백. */
   onError?: (error: Error) => void;
 }
@@ -69,7 +73,8 @@ export type UploadStatus =
   | "uploading"
   | "success"
   | "error"
-  | "aborted";
+  | "aborted"
+  | "paused";
 
 /**
  * The final result of an upload operation.
