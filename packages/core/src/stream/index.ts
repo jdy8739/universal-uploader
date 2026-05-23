@@ -1,6 +1,6 @@
 import { UploadResponse, OnProgressParams, UploadParams } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
-import { getStreamUploader } from "../helper";
+import { calculateSizes, getStreamUploader } from "../helper";
 
 /**
  * Creates a TransformStream that tracks the progress of the data flowing through it.
@@ -48,10 +48,10 @@ const uploadWithStream = async ({
     onComplete,
   },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
-  const safeChunkSize =
-    Number.isFinite(chunkSize) && chunkSize > 0
-      ? chunkSize
-      : DEFAULT_STREAM_CHUNK_SIZE;
+  const { safeChunkSize } = calculateSizes({
+    chunkSize,
+    fileSize: file.size,
+  });
 
   const stream = getStreamUploader({ file, chunkSize: safeChunkSize });
 

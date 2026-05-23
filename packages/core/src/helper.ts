@@ -1,3 +1,5 @@
+import { DEFAULT_STREAM_CHUNK_SIZE } from "./const";
+
 /**
  * Metadata for chunked uploads.
  * 청크 단위 업로드를 위한 메타데이터입니다.
@@ -22,7 +24,10 @@ export const calculateSizes = ({
   chunkSize: number;
   fileSize: number;
 }): ChunkUploadSizesMeta => {
-  const safeChunkSize = Math.max(1, chunkSize);
+  const safeChunkSize =
+    Number.isFinite(chunkSize) && chunkSize > 0
+      ? chunkSize
+      : DEFAULT_STREAM_CHUNK_SIZE;
   const totalFileSize = fileSize;
   const totalChunks = Math.ceil(totalFileSize / safeChunkSize);
 

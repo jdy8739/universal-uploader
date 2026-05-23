@@ -5,6 +5,7 @@ import {
   applyChunkHeaders,
 } from "./helper";
 import { calculateSizes } from "../helper";
+import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 
 /**
  * Handles file upload as a single request without chunking using XMLHttpRequest.
@@ -59,10 +60,12 @@ const uploadWithoutChunking = ({
       reject(new Error(`Upload failed with status ${xhr.status}`));
     };
 
-    xhr.onerror = (e) => reject(e);
+    xhr.onerror = () =>
+      reject(new Error(`Upload failed with status ${xhr.status}`));
     xhr.onabort = () => {
       reject(new DOMException("Aborted", "AbortError"));
     };
+
     xhr.send(file);
   });
 
@@ -120,14 +123,14 @@ const uploadWithXhrChuncked = async (
     },
   };
 
-  if (!chunkSize || chunkSize <= 0) {
-    return uploadWithoutChunking(args);
-  }
-
   const { safeChunkSize, totalFileSize, totalChunks } = calculateSizes({
-    chunkSize,
+    chunkSize: chunkSize ?? DEFAULT_STREAM_CHUNK_SIZE,
     fileSize: file.size,
   });
+
+  if (!safeChunkSize || safeChunkSize <= 0) {
+    return uploadWithoutChunking(args);
+  }
 
   if (totalFileSize === 0) {
     onProgress?.({ loaded: 0, total: 0, percentage: 100 });
@@ -206,7 +209,8 @@ const uploadWithXhrChuncked = async (
             reject(new Error(`Chunk upload failed with status ${xhr.status}`));
           };
 
-          xhr.onerror = (e) => reject(e);
+          xhr.onerror = () =>
+            reject(new Error(`Upload failed with status ${xhr.status}`));
           xhr.onabort = () => {
             const abortError = new DOMException("Aborted", "AbortError");
             reject(abortError);
