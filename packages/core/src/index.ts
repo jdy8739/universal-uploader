@@ -67,7 +67,7 @@ const upload = async (
     return { ok: false, total: 0, message: e.message, status: "error" };
   };
 
-  const refresh = () => upload({ url, file, options });
+  const refresh = () => upload({ url, file, options: { ...options, method } });
 
   /**
    * Attempts to retry an upload operation.
@@ -143,9 +143,9 @@ const upload = async (
     return { result: Promise.resolve(retriedResult), actions: originalActions };
   };
 
-  const uploadFile = getUploader(url, method);
-
   try {
+    const uploadFile = getUploader(url, method);
+
     const uploadResult = await wrapPromiseErrorHandler(
       await uploadFile({
         url,
@@ -157,23 +157,23 @@ const upload = async (
 
     return uploadResult;
   } catch (e) {
-    onError?.(e as Error);
-  }
+    const uploadResult: UploadResult =
+      e instanceof DOMException && e.name === "AbortError"
+        ? handleAbort(e)
+        : handleError(
+            e instanceof Error ? e : new Error("Unknown upload error"),
+          );
 
-  return {
-    result: Promise.resolve({
-      ok: false,
-      total: 0,
-      message: "Unsupported upload method",
-      status: "error",
-    }),
-    actions: {
-      abort: () => null,
-      refresh,
-      pause: () => null,
-      resume: () => null,
-    },
-  };
+    return {
+      result: Promise.resolve(uploadResult),
+      actions: {
+        abort: () => null,
+        refresh,
+        pause: () => null,
+        resume: () => null,
+      },
+    };
+  }
 };
 
 export default upload;
