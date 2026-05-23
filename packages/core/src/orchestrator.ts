@@ -9,7 +9,9 @@ import uploadWithXhrChuncked from "./xhr-chuncked";
  */
 export const getUploader = (url: string, method: UploadOptions["method"]) => {
   const finalMethod =
-    method === "auto" && checkSupportsStreamingUpload(url) ? "stream" : method;
+    method === "auto" && checkSupportsStreamingUpload(url)
+      ? "stream"
+      : "xhr chunked";
 
   switch (finalMethod) {
     case "stream":
