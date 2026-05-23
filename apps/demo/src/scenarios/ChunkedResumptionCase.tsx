@@ -16,7 +16,7 @@ export const ChunkedResumptionCase = ({
   const [log, setLog] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
 
-  const { upload, status, result, error } = useUniversalUpload({
+  const { upload, status, result, error, abort, pause, resume } = useUniversalUpload({
     url: "/upload/fail-at-chunk-3",
     options: {
       method,
@@ -53,6 +53,27 @@ export const ChunkedResumptionCase = ({
       <div className="flex gap-2 mb-6">
         <Button onClick={handleRun} disabled={!file || status === "uploading"}>
           Run Test
+        </Button>
+        <Button
+          variant="outline"
+          onClick={abort}
+          disabled={status !== "uploading" && status !== "paused"}
+        >
+          Abort
+        </Button>
+        <Button
+          variant="outline"
+          onClick={pause}
+          disabled={status !== "uploading"}
+        >
+          Pause
+        </Button>
+        <Button
+          variant="outline"
+          onClick={resume}
+          disabled={status !== "paused"}
+        >
+          Resume
         </Button>
       </div>
 

@@ -18,18 +18,23 @@ const CardDescription = ({ children }: { children: React.ReactNode }) => (
 );
 
 const CardProgressBar = ({ value, variant = 'info' }: { value: number, variant?: 'info' | 'error' | 'success' }) => {
-  const colors = {
-    info: 'var(--primary)',
-    error: 'var(--error)',
-    success: 'var(--success)',
+  const barColors = {
+    info: 'bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]',
+    error: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]',
+    success: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]',
   };
+
   return (
-    <progress
-      value={value}
-      max="100"
-      className="w-full h-1.5 rounded-full"
-      style={{ accentColor: colors[variant] }}
-    />
+    <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden mb-2">
+      <div
+        className={`h-full transition-all duration-300 ease-out rounded-full ${barColors[variant]}`}
+        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+        role="progressbar"
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      />
+    </div>
   );
 };
 
