@@ -1,4 +1,4 @@
-import { UploadOptions } from "@usu/core";
+import { UploadOptions, UploadMethod as UploadMethodType } from "@usu/core";
 
 /**
  * Configuration options for the React hook.
@@ -10,3 +10,5 @@ export interface UploadHookOptions extends UploadOptions {
   /** Callback when the upload method changes. / 업로드 방식이 변경될 때 호출되는 콜백. */
   onMethodChange?: (method: UploadOptions["method"]) => void;
 }
+
+export type UploadMethod = UploadMethodType;

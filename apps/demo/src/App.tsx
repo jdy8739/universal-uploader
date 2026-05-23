@@ -65,6 +65,7 @@ const App = () => {
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <UploadCard title="Intelligent Auto" method="auto" file={file} />
           <UploadCard title="Modern Streaming" method="stream" file={file} />
+          <UploadCard title="Stream Chunked" method="stream chunked" file={file} />
           <UploadCard title="Reliable Chunking" method="xhr chunked" file={file} />
           <DisableChunkingCase file={file} />
         </div>

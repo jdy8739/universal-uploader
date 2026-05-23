@@ -1,25 +1,29 @@
 /* eslint-disable no-nested-ternary */
-import { useUniversalUpload } from "@usu/react";
+import { useUniversalUpload, UploadMethod } from "@usu/react";
 import { Card, Button, Log, Badge } from "../ui";
+import { useState } from "react";
 
 interface UploadCardProps {
   title: string;
-  method: "auto" | "stream" | "xhr chunked";
   file: File | null;
+  method: UploadMethod;
 }
 
 export const UploadCard = ({ title, method, file }: UploadCardProps) => {
+  const [progress, setProgress] = useState(0);
+
   const { upload, status, error, abort, retry, result } = useUniversalUpload({
     url: "/upload",
     options: {
       method,
       chunkSize: 1024 * 1024,
+      onProgress: (p) => setProgress(Math.round(p.percentage)),
     },
   });
-  const progress = Math.round(result.total);
 
   const handleUpload = () => {
     if (!file) return;
+    setProgress(0);
     upload(file);
   };
 

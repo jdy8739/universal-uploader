@@ -11,7 +11,7 @@ export interface OnProgressParams {
   percentage: number;
 }
 
-type uploadMethod = "auto" | "stream" | "stream chunked" | "xhr chunked";
+export type UploadMethod = "auto" | "stream" | "stream chunked" | "xhr chunked";
 
 /**
  * Configuration options for the upload process.
@@ -19,7 +19,7 @@ type uploadMethod = "auto" | "stream" | "stream chunked" | "xhr chunked";
  */
 export interface UploadOptions {
   /** Upload method. 'auto' defaults to stream if supported. / 업로드 방식. 'auto'는 지원 시 스트림을 사용합니다. */
-  method?: uploadMethod;
+  method?: UploadMethod;
   /** Size of each chunk in bytes. / 각 청크의 바이트 크기. */
   chunkSize?: number;
   /** Custom HTTP headers to be sent with the request. / 요청과 함께 전송될 커스텀 HTTP 헤더. */
