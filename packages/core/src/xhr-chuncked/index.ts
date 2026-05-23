@@ -96,13 +96,15 @@ const uploadWithXhrChuncked = async (
   args: UploadParams & { refresh: () => void },
 ): Promise<UploadResponse> => {
   const { url, file, refresh, options } = args;
+
   const {
     customHeaders = {},
     withCredentials,
     onProgress,
     onComplete,
+    onPause,
+    onResume,
     chunkSize,
-    offset: offsetFrom = 0,
   } = options;
 
   const response: UploadResponse = {
@@ -161,13 +163,14 @@ const uploadWithXhrChuncked = async (
 
     /**
      * Upload the file by chunks.
-     * offsetFrom is the offset of the file to upload.
+     * options.offset is the offset of the file to upload (used for resume).
      * startChunkIndex is the start chunk index.
      *
      * 오프셋으로 시작하는 청크부터 업로드합니다.
      * 청크 인덱스가 totalChunks보다 작을 때까지 반복합니다.
      */
-    const startChunkIndex = Math.floor(offsetFrom / safeChunkSize);
+    // Use the latest persisted offset so `resume()` continues from where we stopped.
+    const startChunkIndex = Math.floor((options.offset ?? 0) / safeChunkSize);
 
     for (
       let chunkIndex = startChunkIndex;
@@ -187,6 +190,11 @@ const uploadWithXhrChuncked = async (
       const uploadPromise = new Promise<Readonly<UploadResult>>(
         (resolve, reject) => {
           const xhr = new XMLHttpRequest();
+
+          /**
+           * Whether the chunk is paused.
+           * 청크가 일시정지된 경우 명시적으로 abort 에러를 던지지 않기 위한 플래그 값.
+           */
           let isPaused = false;
 
           if (withCredentials) {
@@ -238,7 +246,12 @@ const uploadWithXhrChuncked = async (
           xhr.onerror = () =>
             reject(new Error(`Upload failed with status ${xhr.status}`));
           xhr.onabort = () => {
-            if (isPaused) return;
+            // If the chunk is paused, do not reject the promise.
+            // 청크가 일시정지된 경우 명시적으로 abort 에러를 던지지 않습니다.
+            if (isPaused) {
+              return;
+            }
+
             const abortError = new DOMException("Aborted", "AbortError");
             reject(abortError);
           };
@@ -256,6 +269,8 @@ const uploadWithXhrChuncked = async (
             isPaused = true;
             xhr.abort();
 
+            onPause?.();
+
             resolve({
               ok: false,
               total: totalFileSize,
@@ -266,6 +281,8 @@ const uploadWithXhrChuncked = async (
           response.actions.resume = () => {
             if (uploadResult.status === "paused" && !isResuming) {
               isResuming = true;
+
+              onResume?.();
               response.result = uploadChunkedXhr();
             }
           };
