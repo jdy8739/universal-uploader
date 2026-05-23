@@ -187,6 +187,7 @@ const uploadWithXhrChuncked = async (
       const uploadPromise = new Promise<Readonly<UploadResult>>(
         (resolve, reject) => {
           const xhr = new XMLHttpRequest();
+          let isPaused = false;
 
           if (withCredentials) {
             xhr.withCredentials = true;
@@ -237,6 +238,7 @@ const uploadWithXhrChuncked = async (
           xhr.onerror = () =>
             reject(new Error(`Upload failed with status ${xhr.status}`));
           xhr.onabort = () => {
+            if (isPaused) return;
             const abortError = new DOMException("Aborted", "AbortError");
             reject(abortError);
           };
@@ -251,6 +253,7 @@ const uploadWithXhrChuncked = async (
             refresh();
           };
           response.actions.pause = () => {
+            isPaused = true;
             xhr.abort();
 
             resolve({

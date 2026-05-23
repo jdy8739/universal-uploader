@@ -8,12 +8,14 @@ interface DisableChunkingCaseProps {
 
 export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
   const [resultMessage, setResultMessage] = useState("Not started");
+  const [progress, setProgress] = useState(0);
 
   const { upload, status, result, abort, pause, resume } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "xhr chunked",
       chunkSize: 0, // Should trigger fallback to uploadWithoutChunking
+      onProgress: (p) => setProgress(p.percentage),
     },
   });
 
@@ -21,6 +23,7 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
     if (!file) return;
 
     setResultMessage("Running...");
+    setProgress(0);
     await upload(file);
     setResultMessage("Completed (Method: Standard XHR)");
   };
@@ -35,21 +38,34 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
         <Button onClick={handleRun} disabled={!file || status === "uploading"}>
           Run
         </Button>
-        <Button variant="outline" onClick={abort} disabled={status !== "uploading"}>
+        <Button
+          variant="outline"
+          onClick={abort}
+          disabled={status !== "uploading" && status !== "paused"}
+        >
           Abort
         </Button>
-        <Button variant="outline" onClick={pause} disabled={status !== "uploading"}>
+        <Button
+          variant="outline"
+          onClick={pause}
+          disabled={status !== "uploading"}
+        >
           Pause
         </Button>
-        <Button variant="outline" onClick={resume} disabled={status !== "uploading"}>
+        <Button
+          variant="outline"
+          onClick={resume}
+          disabled={status !== "paused"}
+        >
           Resume
         </Button>
       </div>
-      <Card.ProgressBar value={result.total} />
+      <Card.ProgressBar value={status === "success" ? 100 : progress} />
       <Log className="mt-4 p-3">
         <Log.Data
           items={[
             { label: "status", value: status },
+            { label: "progress", value: progress.toString() },
             { label: "resultOk", value: result.ok.toString() },
             { label: "message", value: resultMessage },
           ]}
