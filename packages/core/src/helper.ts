@@ -72,6 +72,10 @@ export const createBuffer = async ({
   return new Uint8Array(buffer);
 };
 
+/**
+ * Initializes a RequestInit object and AbortController for streaming uploads.
+ * 스트리밍 업로드를 위한 RequestInit 객체 및 AbortController를 초기화합니다.
+ */
 export const initializeStream = ({
   body,
   withCredentials,

@@ -1,5 +1,5 @@
-import type { StreamUploaderParams } from "../types";
 import { createBuffer } from "../helper";
+import type { StreamUploaderParams } from "../types";
 
 /**
  * Checks if the browser supports ReadableStream upload with Fetch.
@@ -25,12 +25,29 @@ export const checkSupportsStreamingUpload = (url: string) => {
 };
 
 /**
- * Initializes a ReadableStream for the provided file.
- * 제공된 파일을 위한 ReadableStream을 초기화합니다.
+ * Returns a ReadableStream that yields chunks of the file.
+ * 파일의 청크를 순차적으로 내보내는 ReadableStream을 반환합니다.
  */
-export const initializeStream = ({
+export const getStreamUploader = ({
   file,
   chunkSize,
-}: StreamUploaderParams): ReadableStream<Uint8Array> => {
-  return getStreamUploader({ file, chunkSize });
+}: StreamUploaderParams) => {
+  let offset = 0;
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      if (offset >= file.size) {
+        controller.close();
+        return;
+      }
+
+      const chunkBuffer = await createBuffer({ file, offset, chunkSize });
+      controller.enqueue(chunkBuffer);
+      offset += chunkSize;
+
+      if (offset >= file.size) {
+        controller.close();
+      }
+    },
+  });
 };
