@@ -2,11 +2,11 @@ import { UploadParams, UploadResponse, UploadResult } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 import {
   calculateSizes,
-  createBuffer,
   calculateChunkProgress,
+  initializeStream,
 } from "../helper";
 import { calculateChunkRange } from "../xhr-chuncked/helper";
-import { getStreamChunkHeaders } from "./helper";
+import { createChunkedStream, getStreamChunkHeaders } from "./helper";
 
 const uploadWithFetchStreamChunked = async ({
   url,
@@ -71,44 +71,25 @@ const uploadWithFetchStreamChunked = async ({
         totalFileSize,
       });
 
-      const chunkedStream = new ReadableStream<Uint8Array>({
-        pull: async (controller) => {
-          if (offset >= file.size) {
-            controller.close();
-            return;
-          }
-
-          const chunkBuffer = await createBuffer({
-            file,
-            offset,
-            chunkSize: safeChunkSize,
-          });
-
-          controller.enqueue(chunkBuffer);
-          offset += safeChunkSize;
-          controller.close();
-        },
+      const chunkedStream = createChunkedStream({
+        file,
+        offset,
+        chunkSize: safeChunkSize,
       });
 
-      const abortController = new AbortController();
+      offset += safeChunkSize;
 
-      const init: Readonly<RequestInit> = {
-        method: "POST",
+      const { abortController, streamInit } = initializeStream({
         body: chunkedStream,
-        duplex: "half",
-        signal: abortController.signal,
-        credentials: withCredentials ? "include" : "same-origin",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          ...getStreamChunkHeaders({
-            customHeaders: customHeaders || {},
-            chunkIndex,
-            totalChunks,
-            chunkSize: safeChunkSize,
-            totalFileSize,
-          }),
-        },
-      };
+        withCredentials: withCredentials ?? false,
+        customHeaders: getStreamChunkHeaders({
+          customHeaders: customHeaders || {},
+          chunkIndex,
+          totalChunks,
+          chunkSize: safeChunkSize,
+          totalFileSize,
+        }),
+      });
 
       response.actions.abort = () => abortController.abort();
       response.actions.refresh = () => {
@@ -119,7 +100,7 @@ const uploadWithFetchStreamChunked = async ({
       response.actions.resume = () => null;
 
       try {
-        const fetchResponse = await fetch(url, init);
+        const fetchResponse = await fetch(url, streamInit);
 
         if (!fetchResponse.ok || fetchResponse.status >= 300) {
           throw new Error(

@@ -1,3 +1,4 @@
+import type { StreamUploaderParams } from "./types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "./const";
 
 /**
@@ -56,17 +57,6 @@ export const calculateChunkProgress = ({
 };
 
 /**
- * Parameters for stream uploader configuration.
- * 스트림 업로더 구성을 위한 매개변수입니다.
- */
-interface StreamUploaderParams {
-  /** The file to be uploaded. / 업로드할 파일. */
-  file: File;
-  /** Chunk size in bytes. / 바이트 단위의 청크 크기. */
-  chunkSize: number;
-}
-
-/**
  * Creates a Uint8Array buffer from a specific slice of the file.
  * 파일의 특정 부분을 잘라 Uint8Array 버퍼를 생성합니다.
  */
@@ -82,30 +72,28 @@ export const createBuffer = async ({
   return new Uint8Array(buffer);
 };
 
-/**
- * Returns a ReadableStream that yields chunks of the file.
- * 파일의 청크를 순차적으로 내보내는 ReadableStream을 반환합니다.
- */
-export const getStreamUploader = ({
-  file,
-  chunkSize,
-}: StreamUploaderParams) => {
-  let offset = 0;
+export const initializeStream = ({
+  body,
+  withCredentials,
+  customHeaders,
+}: {
+  body: ReadableStream;
+  withCredentials: boolean;
+  customHeaders: Record<string, string>;
+}) => {
+  const abortController = new AbortController();
 
-  return new ReadableStream<Uint8Array>({
-    async pull(controller) {
-      if (offset >= file.size) {
-        controller.close();
-        return;
-      }
-
-      const chunkBuffer = await createBuffer({ file, offset, chunkSize });
-      controller.enqueue(chunkBuffer);
-      offset += chunkSize;
-
-      if (offset >= file.size) {
-        controller.close();
-      }
+  const streamInit: Readonly<RequestInit> = {
+    method: "POST",
+    body,
+    duplex: "half",
+    signal: abortController.signal,
+    credentials: withCredentials ? "include" : "same-origin",
+    headers: {
+      "Content-Type": "application/octet-stream",
+      ...(customHeaders || {}),
     },
-  });
+  };
+
+  return { abortController, streamInit };
 };

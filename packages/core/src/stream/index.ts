@@ -1,6 +1,7 @@
 import { UploadResponse, OnProgressParams, UploadParams } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
-import { calculateSizes, getStreamUploader } from "../helper";
+import { calculateSizes, initializeStream } from "../helper";
+import { getStreamUploader } from "./helper";
 
 /**
  * Creates a TransformStream that tracks the progress of the data flowing through it.
@@ -64,21 +65,13 @@ const uploadWithStream = async ({
       )
     : stream;
 
-  const abortController = new AbortController();
-
-  const init: Readonly<RequestInit> = {
-    method: "POST",
+  const { abortController, streamInit } = initializeStream({
     body,
-    duplex: "half",
-    signal: abortController.signal,
-    credentials: withCredentials ? "include" : "same-origin",
-    headers: {
-      "Content-Type": "application/octet-stream",
-      ...(customHeaders || {}),
-    },
-  };
+    withCredentials: withCredentials ?? false,
+    customHeaders,
+  });
 
-  const response = fetch(url, init);
+  const response = fetch(url, streamInit);
 
   return {
     result: response.then((res) => {

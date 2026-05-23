@@ -110,6 +110,17 @@ export interface UploadResponse {
   actions: UploadActions;
 }
 
+/**
+ * Parameters for stream uploader configuration.
+ * 스트림 업로더 구성을 위한 매개변수입니다.
+ */
+export interface StreamUploaderParams {
+  /** The file to be uploaded. / 업로드할 파일. */
+  file: File;
+  /** Chunk size in bytes. / 바이트 단위의 청크 크기. */
+  chunkSize: number;
+}
+
 declare global {
   interface RequestInit {
     /** Duplex mode for streaming fetch requests. / 스트리밍 fetch 요청을 위한 듀플렉스 모드. */
