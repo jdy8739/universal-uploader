@@ -95,18 +95,15 @@ const uploadWithoutChunking = ({
 const uploadWithXhrChuncked = async (
   args: UploadParams & { refresh: () => void },
 ): Promise<UploadResponse> => {
+  const { url, file, refresh, options } = args;
   const {
-    url,
-    file,
-    refresh,
-    options: {
-      customHeaders = {},
-      withCredentials,
-      onProgress,
-      onComplete,
-      chunkSize,
-    },
-  } = args;
+    customHeaders = {},
+    withCredentials,
+    onProgress,
+    onComplete,
+    chunkSize,
+    offset: offsetFrom = 0,
+  } = options;
 
   const response: UploadResponse = {
     result: Promise.resolve({
@@ -154,7 +151,13 @@ const uploadWithXhrChuncked = async (
       status: "uploading",
     };
 
-    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex += 1) {
+    const startChunkIndex = Math.floor(offsetFrom / safeChunkSize);
+
+    for (
+      let chunkIndex = startChunkIndex;
+      chunkIndex < totalChunks;
+      chunkIndex += 1
+    ) {
       const { start, end } = calculateChunkRange({
         chunkIndex,
         chunkSize: safeChunkSize,
@@ -196,6 +199,9 @@ const uploadWithXhrChuncked = async (
               if (isLastChunk) {
                 onComplete?.();
               }
+
+              // 성공 이후에 offset 갱신
+              options.offset = end;
 
               return resolve({
                 ok: true,

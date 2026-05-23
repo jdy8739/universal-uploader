@@ -126,9 +126,9 @@ const uploadWithFetchStreamChunked = async (
           onComplete?.();
         }
 
-        // 성공 이후에 offset 증가
-        offset += safeChunkSize;
-        options.offset = offset;
+        // 성공 이후에 offset 갱신
+        offset = end;
+        options.offset = end;
 
         uploadResult = {
           ok: true,

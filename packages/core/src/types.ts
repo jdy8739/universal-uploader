@@ -22,7 +22,7 @@ export interface UploadOptions {
   method?: UploadMethod;
   /** Size of each chunk in bytes. / 각 청크의 바이트 크기. */
   chunkSize?: number;
-  /** Start byte offset for resumed chunked uploads. / 재개 청크 업로드 시 시작 바이트 오프셋. */
+  /** Internal retry state for resumed chunked uploads. / 청크 재시도 내부 상태용 오프셋입니다(외부 입력용 아님). */
   offset?: number;
   /** Custom HTTP headers to be sent with the request. / 요청과 함께 전송될 커스텀 HTTP 헤더. */
   customHeaders?: Record<string, string>;

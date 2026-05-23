@@ -22,6 +22,10 @@ const upload = async (
 
   const retryCount = retryCountArg;
 
+  if (retryAttempt === 0) {
+    options.offset = undefined;
+  }
+
   /**
    * Determines whether to throw an error based on configuration.
    * 구성 설정에 따라 에러를 throw할지 결정합니다.
