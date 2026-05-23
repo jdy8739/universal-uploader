@@ -17,11 +17,13 @@ export interface OnProgressParams {
  */
 export interface UploadOptions {
   /** Upload method. 'auto' defaults to stream if supported. / 업로드 방식. 'auto'는 지원 시 스트림을 사용합니다. */
-  method?: 'auto' | 'stream' | 'xhr chunked';
+  method?: "auto" | "stream" | "chunked" | "xhr chunked";
   /** Size of each chunk in bytes. / 각 청크의 바이트 크기. */
   chunkSize?: number;
   /** Custom HTTP headers to be sent with the request. / 요청과 함께 전송될 커스텀 HTTP 헤더. */
   customHeaders?: Record<string, string>;
+  /** Whether to include credentials (cookies, etc.) in the request. / 요청에 자격 증명(쿠키 등)을 포함할지 여부. */
+  withCredentials?: boolean;
   /** Maximum number of retries. / 최대 재시도 횟수. */
   retryCount?: number;
   /** Delay before retrying (in ms or as a function). / 재시도 전 지연 시간(ms 또는 함수). */
@@ -41,20 +43,8 @@ export interface UploadOptions {
 }
 
 /**
- * Request details for initiating an upload.
- * 업로드를 시작하기 위한 요청 정보입니다.
- */
-export interface Upload {
-  /** The destination URL. / 대상 URL. */
-  url: string;
-  /** The file to upload. / 업로드할 파일. */
-  file: File;
-  /** Upload options. / 업로드 옵션. */
-  options: UploadOptions;
-}
+  * Parameters for starting an upload operation.
 
-/**
- * Parameters for starting an upload operation.
  * 업로드 작업을 시작하기 위한 매개변수입니다.
  */
 export interface UploadParams {
@@ -70,7 +60,12 @@ export interface UploadParams {
  * Possible status states of an upload.
  * 업로드의 가능한 상태 값들입니다.
  */
-export type UploadStatus = 'idle' | 'uploading' | 'success' | 'error' | 'aborted';
+export type UploadStatus =
+  | "idle"
+  | "uploading"
+  | "success"
+  | "error"
+  | "aborted";
 
 /**
  * The final result of an upload operation.
@@ -96,6 +91,10 @@ export interface UploadActions {
   abort: () => void;
   /** Restart or refresh the upload. / 업로드를 재시작하거나 갱신합니다. */
   refresh: () => void;
+  /** Pause the current upload. / 현재 업로드를 일시 중지합니다. */
+  pause: () => void;
+  /** Resume the paused upload. / 일시 중지된 업로드를 재개합니다. */
+  resume: () => void;
 }
 
 /**
@@ -112,6 +111,6 @@ export interface UploadResponse {
 declare global {
   interface RequestInit {
     /** Duplex mode for streaming fetch requests. / 스트리밍 fetch 요청을 위한 듀플렉스 모드. */
-    duplex?: 'half';
+    duplex?: "half";
   }
 }

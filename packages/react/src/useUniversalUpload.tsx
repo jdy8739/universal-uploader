@@ -2,8 +2,8 @@ import uploadCore, {
   UploadResult,
   UploadStatus,
   UploadActions,
-  UploadOptions,
 } from "@usu/core";
+import { UploadHookOptions } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {
@@ -13,11 +13,11 @@ const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {
   status: "idle",
 };
 
-const FALLBACK_UPLOAD_OPTIONS: Readonly<UploadOptions> = {};
+const FALLBACK_UPLOAD_OPTIONS: Readonly<UploadHookOptions> = {};
 
 interface UseUniversalUploadArgs {
   url: string;
-  options?: UploadOptions;
+  options?: UploadHookOptions;
 }
 
 /**
@@ -39,6 +39,8 @@ export default function useUniversalUpload({
   const prevReqAbortRef = useRef<UploadActions>({
     abort: () => null,
     refresh: () => null,
+    pause: () => null,
+    resume: () => null,
   });
 
   /**
@@ -51,7 +53,9 @@ export default function useUniversalUpload({
    * The options object.
    * deps에 포함되지 않는 옵션 객체입니다.
    */
-  const optionRef = useRef<UploadOptions>(options ?? FALLBACK_UPLOAD_OPTIONS);
+  const optionRef = useRef<UploadHookOptions>(
+    options ?? FALLBACK_UPLOAD_OPTIONS,
+  );
   // eslint-disable-next-line react-hooks/refs
   optionRef.current = options ?? FALLBACK_UPLOAD_OPTIONS;
 
@@ -245,5 +249,7 @@ export default function useUniversalUpload({
     status,
     error,
     abort: () => prevReqAbortRef.current.abort(),
+    pause: () => null,
+    resume: () => null,
   };
 }

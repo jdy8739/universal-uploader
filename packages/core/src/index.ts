@@ -1,6 +1,6 @@
 export * from "./types";
 import {
-  Upload,
+  UploadParams,
   UploadResponse,
   UploadResult,
   OnProgressParams,
@@ -13,7 +13,7 @@ import { getUploader } from "./helper";
  * 최적의 업로드 방식을 선택하고 재시도 및 에러 처리를 관리하여 파일 업로드를 수행합니다.
  */
 const upload = async (
-  { url, file, options: { method = "auto", ...options } }: Upload,
+  { url, file, options: { method = "auto", ...options } }: UploadParams,
   retryAttempt = 0,
 ): Promise<UploadResponse> => {
   const {
@@ -92,7 +92,7 @@ const upload = async (
    * Attempts to retry an upload operation.
    * 업로드 작업을 재시도합니다.
    */
-  const retryUpload = async (uploadArgs: Upload): Promise<UploadResponse> => {
+  const retryUpload = async (uploadArgs: UploadParams): Promise<UploadResponse> => {
     const nextRetryAttempt = retryAttempt + 1;
 
     const nextRetryDelay =
@@ -187,6 +187,8 @@ const upload = async (
     actions: {
       abort: () => null,
       refresh,
+      pause: () => null,
+      resume: () => null,
     },
   };
 };

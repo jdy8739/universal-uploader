@@ -111,6 +111,7 @@ const uploadWithStream = async ({
   options: {
     chunkSize = DEFAULT_STREAM_CHUNK_SIZE,
     customHeaders = {},
+    withCredentials,
     onProgress,
   },
 }: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
@@ -134,6 +135,7 @@ const uploadWithStream = async ({
     body,
     duplex: "half",
     signal: abortController.signal,
+    credentials: withCredentials ? "include" : "same-origin",
     headers: {
       "Content-Type": "application/octet-stream",
       ...(customHeaders || {}),
@@ -155,6 +157,8 @@ const uploadWithStream = async ({
         abortController.abort(); // Never put an argument when aborting.
         refresh();
       },
+      pause: () => null,
+      resume: () => null,
     },
   };
 };
