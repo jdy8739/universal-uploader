@@ -2,7 +2,7 @@ import { Card } from "../ui";
 import { Button } from "../ui";
 import { Log } from "../ui";
 import { useState } from "react";
-import { useUniversalUpload } from "@usu/react";
+import { useUniversalUpload } from "@universal-uploader/react";
 import { Badge } from "../ui";
 import { useI18n } from "../i18n";
 

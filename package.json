@@ -3,8 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "pnpm --filter @usu/demo dev",
-    "build-libs": "cd packages/core && pnpm build && cd ../react && pnpm build",
+    "dev": "pnpm --filter @universal-uploader/demo dev",
+    "build-libs": "pnpm --filter @universal-uploader/core build && pnpm --filter @universal-uploader/react build",
+    "build": "pnpm build-libs && pnpm --filter @universal-uploader/demo build",
+    "build-demo": "pnpm --filter @universal-uploader/demo build",
     "lint": "eslint packages --ext .ts,.tsx",
     "format": "prettier --write ."
   },

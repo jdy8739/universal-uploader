@@ -1,16 +1,16 @@
 {
-  "name": "@usu/demo",
+  "name": "@universal-uploader/demo",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "server": "nodemon ../../server.ts",
     "dev": "concurrently \"npm run server\" \"vite\"",
-    "build": "vite build",
+    "build": "pnpm --filter @universal-uploader/react build && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@usu/react": "workspace:*",
+    "@universal-uploader/react": "workspace:*",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.1.1",

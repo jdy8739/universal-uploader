@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { useUniversalUpload, UploadMethod } from "@usu/react";
+import { useUniversalUpload, UploadMethod } from "@universal-uploader/react";
 import { Card, Button, Log, Badge } from "../ui";
 import { useState } from "react";
 import { useI18n } from "../i18n";

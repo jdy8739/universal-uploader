@@ -1,6 +1,6 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
-import { useUniversalUpload } from "@usu/react";
+import { useUniversalUpload } from "@universal-uploader/react";
 import { useI18n } from "../i18n";
 
 interface DisableChunkingCaseProps {

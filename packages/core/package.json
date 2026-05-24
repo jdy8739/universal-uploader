@@ -1,5 +1,5 @@
 {
-  "name": "@usu/core",
+  "name": "@universal-uploader/core",
   "version": "1.0.0",
   "type": "module",
   "description": "Core streaming upload logic.",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jdy8739/universial-upload.git",
+    "url": "https://github.com/jdy8739/universal-uploader.git",
     "directory": "packages/core"
   },
   "keywords": [

@@ -1,6 +1,6 @@
 import { Card } from "../ui";
 import { Button } from "../ui";
-import { useUniversalUpload } from "@usu/react";
+import { useUniversalUpload } from "@universal-uploader/react";
 import { Badge } from "../ui";
 import { useState } from "react";
 import { useI18n } from "../i18n";

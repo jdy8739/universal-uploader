@@ -104,7 +104,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
             variant="outline"
             onClick={() =>
               window.open(
-                "https://github.com/jdy8739/universial-upload",
+                "https://github.com/jdy8739/universal-uploader",
                 "_blank",
               )
             }

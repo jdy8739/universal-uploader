@@ -1,5 +1,5 @@
 {
-  "name": "@usu/react",
+  "name": "@universal-uploader/react",
   "version": "1.0.0",
   "type": "module",
   "description": "React hook wrapper for Universal Stream Uploader.",
@@ -17,10 +17,19 @@
     "react": "^19.2.6"
   },
   "dependencies": {
-    "@usu/core": "workspace:*"
+    "@universal-uploader/core": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jdy8739/universal-uploader.git",
+    "directory": "packages/react"
+  },
+  "license": "MIT"
 }

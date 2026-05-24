@@ -1,4 +1,4 @@
-import { useUniversalUpload } from "@usu/react";
+import { useUniversalUpload } from "@universal-uploader/react";
 import { Card, Button, Badge } from "../ui";
 import { useI18n } from "../i18n";
 

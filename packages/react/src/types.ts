@@ -1,4 +1,4 @@
-import { UploadOptions, UploadMethod as UploadMethodType } from "@usu/core";
+import { UploadOptions, UploadMethod as UploadMethodType } from "@universal-uploader/core";
 
 /**
  * Configuration options for the React hook.

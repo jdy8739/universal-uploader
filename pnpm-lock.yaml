@@ -81,7 +81,7 @@ importers:
 
   apps/demo:
     dependencies:
-      '@usu/react':
+      '@universal-uploader/react':
         specifier: workspace:*
         version: link:../../packages/react
       cors:
@@ -135,7 +135,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@usu/core':
+      '@universal-uploader/core':
         specifier: workspace:*
         version: link:../core
       react:

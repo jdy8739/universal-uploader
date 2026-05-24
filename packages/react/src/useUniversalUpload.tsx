@@ -2,7 +2,7 @@ import uploadCore, {
   UploadResult,
   UploadStatus,
   UploadActions,
-} from "@usu/core";
+} from "@universal-uploader/core";
 import { UploadHookOptions } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
