@@ -19,8 +19,8 @@ Auto-selects the best method for your browser.
 ## Installation
 
 ```bash
-npm install @usu/core @usu/react
-# or use @usu/core alone for framework-agnostic usage
+npm install @universal-uploader/core @universal-uploader/react
+# or use @universal-uploader/core alone for framework-agnostic usage
 ```
 
 **NPM Packages:**
@@ -31,7 +31,7 @@ npm install @usu/core @usu/react
 
 ### Core
 ```typescript
-import { upload } from '@usu/core';
+import { upload } from '@universal-uploader/core';
 
 await upload('/api/upload', file, {
   method: 'auto',
@@ -43,7 +43,7 @@ await upload('/api/upload', file, {
 
 ### React Hook
 ```typescript
-import { useUniversalUpload } from '@usu/react';
+import { useUniversalUpload } from '@universal-uploader/react';
 
 const { upload, pause, resume, status, progress } = useUniversalUpload({
   url: '/api/upload',
@@ -70,7 +70,7 @@ return (
 - ✅ **Retry** - Automatic exponential backoff
 - ✅ **Controls** - abort(), pause(), resume(), refresh(), retry()
 - ✅ **Type-Safe** - Full TypeScript support
-- ✅ **Tiny** - < 5 kB gzipped, zero dependencies
+- ✅ **Tiny** - < 10 kB gzipped, zero dependencies
 
 ## Upload Controls
 
@@ -116,9 +116,10 @@ interface UploadOptions {
 
 ## Documentation
 
-- **[@usu/core](./packages/core/README.md)** - Core upload engine API
-- **[@usu/react](./packages/react/README.md)** - React Hook guide
-- **[Demo App](./apps/demo)** - Try all methods (두 가지 언어 지원: 한국어, English)
+- **[@universal-uploader/core](./packages/core/README.md)** - Core upload engine API
+- **[@universal-uploader/react](./packages/react/README.md)** - React Hook guide
+- **[Live Demo](https://jdy8739.github.io/universal-uploader/)** - Try all methods online (한국어, English)
+- **[Demo Source](./apps/demo)** - Demo app code
 
 ## License
 
