@@ -12,11 +12,16 @@ const failTwiceCounter = new Map<string, number>();
 
 const DESKTOP_PATH = path.join(os.homedir(), 'Desktop');
 
+// Ensure Desktop exists (though it almost always does)
+if (!fs.existsSync(DESKTOP_PATH)) {
+  console.warn(`[WARN] Desktop path not found: ${DESKTOP_PATH}. Files will be saved in current directory.`);
+}
+
 app.use(cors());
 
 /**
  * Reads bytes from the request and ensures they are fully written to the file.
- * 요청으로부터 바이트를 읽고 파일에 완전히 기록되는지 확인합니다.
+ * Handles backpressure for memory efficiency.
  */
 const readRequestBytes = (
   req: express.Request,
@@ -27,9 +32,16 @@ const readRequestBytes = (
 
     req.on('data', (chunk) => {
       receivedBytes += chunk.length;
+      
       if (writeStream) {
-        writeStream.write(chunk);
+        // Handle backpressure: if internal buffer is full, pause the request stream
+        const canWrite = writeStream.write(chunk);
+        if (!canWrite) {
+          req.pause();
+          writeStream.once('drain', () => req.resume());
+        }
       }
+
       if (receivedBytes % (1024 * 1024) < chunk.length) {
         console.log(
           `Server received: ${Math.round(receivedBytes / 1024 / 1024)} MB`,
@@ -40,8 +52,8 @@ const readRequestBytes = (
     req.on('end', () => {
       if (writeStream) {
         writeStream.end();
-        // Wait for the file to be fully flushed to disk
         writeStream.on('finish', () => resolve(receivedBytes));
+        writeStream.on('error', (err) => reject(err));
       } else {
         resolve(receivedBytes);
       }
@@ -52,45 +64,50 @@ const readRequestBytes = (
       reject(err);
     });
   });
-
 /**
  * Gets a consistent filename based on headers and creates a write stream.
  */
 const getFileWriteStream = (req: express.Request) => {
-  const testKey = req.header('x-test-key') || 'upload';
   const originalName = decodeURIComponent(
-    req.header('x-file-name') || 'file.bin',
+    req.header('x-file-name') || 'upload.bin',
   );
+  const testKey = req.header('x-test-key');
   const chunkIndex = parseInt(req.header('X-Chunk-Index') || '-1', 10);
-  
-  // Create a safe filename that keeps the original extension
-  const ext = path.extname(originalName);
-  const filename = `usu_${testKey}${ext}`;
-  const filePath = path.join(DESKTOP_PATH, filename);
 
+  // Use the original filename directly.
+  const filename = originalName;
+  const saveDir = fs.existsSync(DESKTOP_PATH) ? DESKTOP_PATH : process.cwd();
+  const filePath = path.join(saveDir, filename);
+
+  // 'w' for chunk 0 or single uploads, 'a' for subsequent chunks (resumption)
   const flags = chunkIndex <= 0 ? 'w' : 'a';
-  return fs.createWriteStream(filePath, { flags });
-};
 
+  if (chunkIndex <= 0) {
+    console.log(`[FILE] Creating file: ${filename}`);
+  }
+
+  return fs.createWriteStream(filePath, { flags });
+  };
 app.post('/upload', async (req, res) => {
-  console.log('Upload request received');
+  console.log('[POST] /upload');
 
   try {
     const writeStream = getFileWriteStream(req);
     const receivedBytes = await readRequestBytes(req, writeStream);
-    console.log(`Upload complete. Total bytes: ${receivedBytes}`);
+    console.log(`[SUCCESS] Upload complete. Total: ${receivedBytes} bytes`);
 
     res.status(200).json({
       message: 'Upload successful',
       size: receivedBytes,
     });
   } catch (err) {
-    console.error('Server error during upload:', err);
+    console.error('[ERROR] /upload:', err);
     res.status(500).json({ message: 'Upload failed' });
   }
 });
 
 app.post('/upload/fail-always', async (req, res) => {
+  console.log('[POST] /upload/fail-always');
   try {
     await readRequestBytes(req);
     res.status(500).json({ message: 'Intentional failure' });
@@ -103,6 +120,8 @@ app.post('/upload/fail-twice-then-success', async (req, res) => {
   const testKey = req.header('x-test-key') || 'default';
   const attempt = (failTwiceCounter.get(testKey) ?? 0) + 1;
   failTwiceCounter.set(testKey, attempt);
+
+  console.log(`[POST] /fail-twice-then-success: attempt=${attempt}`);
 
   try {
     const writeStream = attempt > 2 ? getFileWriteStream(req) : undefined;
@@ -122,8 +141,11 @@ app.post('/upload/fail-twice-then-success', async (req, res) => {
 
 app.post('/upload/fail-at-chunk-3', async (req, res) => {
   const testKey = req.header('x-test-key') || 'default';
+  const chunkIndex = req.header('X-Chunk-Index') || 'none';
   const attempt = (failTwiceCounter.get(testKey) ?? 0) + 1;
   failTwiceCounter.set(testKey, attempt);
+
+  console.log(`[POST] /fail-at-chunk-3: attempt=${attempt}, chunkIndex=${chunkIndex}`);
 
   try {
     const writeStream = attempt !== 3 ? getFileWriteStream(req) : undefined;
@@ -150,6 +172,7 @@ export { app };
 
 app.listen(port, () => {
   console.log(`Test server running at http://localhost:${port}`);
+  console.log(`Uploads will be saved to: ${DESKTOP_PATH}`);
 });
 
 process.on('SIGINT', () => {
