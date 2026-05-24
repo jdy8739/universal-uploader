@@ -1,0 +1,279 @@
+{
+  "home": {
+    "header": {
+      "badge": "안정 릴리스 · v1.0.0",
+      "title": "Universal Stream Uploader",
+      "subtitle": "현대적 브라우저를 위한 고성능 파일 업로드. 메모리 사용량이 일정하고, 똑똑한 스트림-XHR 폴백, 프로덕션 수준의 안정성까지 — 5 kB 이하.",
+      "exploreDashboard": "대시보드 둘러보기 →",
+      "sourceCode": "소스 코드"
+    },
+    "stats": {
+      "dependencies": {
+        "value": "0",
+        "label": "의존성"
+      },
+      "gzipped": {
+        "value": "<5kB",
+        "label": "압축 크기"
+      },
+      "uploadModes": {
+        "value": "3",
+        "label": "업로드 방식"
+      },
+      "typeSafe": {
+        "value": "100%",
+        "label": "타입 안전"
+      }
+    },
+    "features": {
+      "title": "핵심 기능",
+      "items": [
+        {
+          "title": "Zero-Buffer 스트리밍",
+          "description": "Web Streams API로 일정한 메모리 사용량을 유지하며 대용량 파일을 업로드하세요. 브라우저 메모리가 안정적으로 유지되고, 기가바이트 단위 전송에서도 탭이 멈추지 않습니다.",
+          "tag": "stream"
+        },
+        {
+          "title": "똑똑한 자동 폴백",
+          "description": "런타임에 최적의 전송 방식을 자동으로 선택합니다. 최신 fetch 스트리밍을 쓸 수 있으면 쓰고, 필요하면 청크 기반 전략으로 바뀝니다. 번거로운 분기 없이 넓은 호환성을 얻습니다.",
+          "tag": "xhr"
+        },
+        {
+          "title": "프로덕션급 복원력",
+          "description": "재시도 백오프, 재개 가능한 청크 흐름, 결정적인 새로고침 의미론을 조합하면 불안정한 네트워크에서도 예측 가능하게 복구됩니다. 업로드 제어는 명확하고 관찰 가능합니다.",
+          "tag": "retry"
+        },
+        {
+          "title": "명확한 실시간 제어",
+          "description": "직관적인 제어 의미론으로 업로드를 관리하세요. 중단은 종료, 일시 중지는 재개 가능, 재개는 계속, 새로고침은 깨끗한 재시작입니다.",
+          "tag": "control"
+        },
+        {
+          "title": "스마트한 작업 재바인딩",
+          "description": "재시도/재개/새로고침으로 다시 시작한 후에도 제어 작업은 최신 진행 중인 요청에 바인딩되므로, 중단이나 일시 중지가 항상 현재 업로드를 정확히 제어합니다.",
+          "tag": "lifecycle"
+        }
+      ]
+    },
+    "controlSemantics": {
+      "title": "업로드 제어 동작",
+      "description": "실제 업로드 중 각 제어 작업이 어떻게 작동하는지 직접 확인하세요. 재개 가능한 흐름과 완전히 종료되는 흐름의 차이를 알고 앱 상태 로직에 적용하면 됩니다.",
+      "items": [
+        {
+          "action": "abort",
+          "behavior": "완전히 중단합니다. 현재 업로드 세션이 종료되고 재개할 수 없습니다."
+        },
+        {
+          "action": "pause",
+          "behavior": "일시 중지합니다. 업로드가 멈추지만 나중에 재개할 수 있습니다."
+        },
+        {
+          "action": "resume",
+          "behavior": "지난 진행 상황에서 계속합니다. 처음부터 다시 시작하지 않습니다."
+        },
+        {
+          "action": "refresh",
+          "behavior": "초기 설정부터 완전히 다시 시작합니다. 재시도 횟수와 오프셋이 초기화됩니다."
+        }
+      ],
+      "badges": [
+        {
+          "label": "abort",
+          "description": "완전히 중단"
+        },
+        {
+          "label": "pause",
+          "description": "일시 중지"
+        },
+        {
+          "label": "resume",
+          "description": "진행 상황에서 계속"
+        },
+        {
+          "label": "refresh",
+          "description": "처음부터 다시"
+        }
+      ]
+    },
+    "developerExperience": {
+      "title": "개발자 경험",
+      "description": "간단한 업로드도 쉽고, 복잡한 스트리밍 파이프라인도 강력합니다. 의존성 없고 100% 타입 안전합니다.",
+      "items": [
+        "완전한 TypeScript 지원과 엄격한 타입 정의",
+        "10 kB 미만 (Core + React Hooks 전체 압축 크기)",
+        "진행률, 일시 중지/재개, 라이프사이클 이벤트를 위한 최고급 Hooks",
+        "초기 설정 스냅샷으로 결정적인 새로고침 흐름 제공",
+        "명확한 복구 동작을 가진 설정 가능한 재시도 + 백오프",
+        "스트림, 스트림 청크, XHR 청크 모두 하나의 API로 사용"
+      ]
+    },
+    "browserSupport": {
+      "title": "브라우저 지원",
+      "description": "스트리밍 fetch 지원 여부는 실행 시 자동 감지됩니다. 따로 설정할 필요 없이, 플래그나 폴리필 없이 청크 기반 XHR로 자동 전환됩니다.",
+      "items": [
+        {
+          "name": "Chrome / Edge",
+          "mode": "완전 스트리밍"
+        },
+        {
+          "name": "Firefox",
+          "mode": "완전 스트리밍"
+        },
+        {
+          "name": "Safari",
+          "mode": "XHR 폴백"
+        },
+        {
+          "name": "구형 브라우저",
+          "mode": "XHR 폴백"
+        }
+      ]
+    },
+    "methodComparison": {
+      "title": "업로드 방식 비교",
+      "description": "각 업로드 방식의 특성을 알고 선택하세요.",
+      "headers": [
+        "특성",
+        "Fetch 스트림",
+        "Fetch 청크",
+        "XHR 청크"
+      ],
+      "rows": [
+        {
+          "label": "HTTP 요청 수",
+          "values": ["1번", "N번", "N번"]
+        },
+        {
+          "label": "진행률",
+          "values": ["⚠️", "청크 단위", "청크 내부까지"]
+        },
+        {
+          "label": "실패 시 재시도",
+          "values": ["처음부터 ❌", "해당 청크만 ✅", "해당 청크만 ✅"]
+        },
+        {
+          "label": "이어올리기",
+          "values": ["❌", "✅", "✅"]
+        },
+        {
+          "label": "Service Worker 연동",
+          "values": ["✅", "✅", "❌"]
+        },
+        {
+          "label": "코드 스타일",
+          "values": ["async/await", "async/await", "콜백"]
+        },
+        {
+          "label": "대용량",
+          "values": ["⚠️", "✅", "✅"]
+        }
+      ],
+      "legend": [
+        {
+          "title": "Fetch 스트림",
+          "description": "소/중용량, 코드 간결함, 트랜스퍼 스트림에서 진행률 추적"
+        },
+        {
+          "title": "Fetch 청크",
+          "description": "대용량, 이어올리기, 정밀한 진행률"
+        },
+        {
+          "title": "XHR 청크",
+          "description": "광범위한 호환성, 세밀한 제어, 레거시 브라우저"
+        }
+      ]
+    },
+    "cta": {
+      "title": "직접 실행해보고 싶으신가요?",
+      "description": "인터랙티브 대시보드에서 스트리밍, XHR 폴백, 오류 복구를 실제로 테스트할 수 있습니다.",
+      "button": "테스트 대시보드 시작 →"
+    },
+    "footer": "Universal Upload © 2026 · Web Streams API & TypeScript로 성능 최적화됨."
+  },
+  "test": {
+    "backButton": "← 홈으로 돌아가기",
+    "header": {
+      "title": "Universal Stream Uploader",
+      "subtitle": "똑똑한 폴백으로 고성능 파일 업로드를 경험하세요."
+    },
+    "step1": {
+      "title": "1단계: 파일 선택",
+      "label": "업로드할 파일을 선택하세요",
+      "fileInfo": "📄 <strong>{fileName}</strong> • {fileSize} MB"
+    },
+    "step2": {
+      "title": "2단계: 업로드 방식 선택",
+      "methods": [
+        {
+          "title": "자동 선택",
+          "method": "auto"
+        },
+        {
+          "title": "최신 스트리밍",
+          "method": "stream"
+        },
+        {
+          "title": "스트림 청크",
+          "method": "stream chunked"
+        },
+        {
+          "title": "XHR 청크",
+          "method": "xhr chunked"
+        }
+      ]
+    },
+    "step3": {
+      "title": "3단계: 오류 처리 & 복구 테스트"
+    },
+    "step4": {
+      "title": "4단계: 고급 설정"
+    },
+    "step5": {
+      "title": "5단계: 라이프사이클 & Hooks"
+    },
+    "footer": "Web Streams API & TypeScript로 성능 최적화됨.",
+    "scenarios": {
+      "uploadCard": {
+        "stream": "Web Streams로 메모리 사용량이 일정합니다.",
+        "streamChunked": "Web Streams로 순차적 청크 전송.",
+        "xhrChunked": "XMLHttpRequest로 순차적 청크 전송.",
+        "auto": "최적의 전송 방식을 자동으로 선택합니다."
+      },
+      "customHeaders": {
+        "title": "커스텀 헤더 사례",
+        "description": "`customHeaders`로 메타데이터(예: 인증, 버전)를 전송하는 방식을 테스트합니다."
+      },
+      "disableChunking": {
+        "title": "청킹 비활성화 사례",
+        "description": "`chunkSize: 0`으로 표준 XHR 업로드로 폴백되는 것을 테스트합니다."
+      },
+      "exponentialBackoff": {
+        "title": "지수 백오프 사례",
+        "description": "`retryDelay` 함수를 테스트합니다. 각 시도마다 지연 시간이 지수적으로 증가합니다."
+      },
+      "lifecycleHooks": {
+        "title": "라이프사이클 Hooks 사례",
+        "description": "`onComplete`, `onAbort`, `onProgress`, `onPause`, `onResume`에서 발생하는 이벤트를 로깅합니다."
+      },
+      "retryAndOnError": {
+        "title": "재시도 + onError 사례",
+        "description": "`/upload/fail-always` 엔드포인트는 항상 실패합니다. 재시도 소진과 onError 콜백을 검증합니다."
+      },
+      "retryRecovery": {
+        "title": "재시도 복구 사례",
+        "description": "2번 실패한 후 성공합니다. `retryCount`, `onRetry`, `customHeaders`를 테스트합니다."
+      },
+      "smallChunkStressTest": {
+        "title": "소형 청크 스트레스 테스트",
+        "description": "16KB 청크를 사용합니다. 많은 순차 요청의 오버헤드와 안정성을 테스트합니다."
+      },
+      "throwOnError": {
+        "title": "throwOnError=true 사례",
+        "description": "`/upload/fail-always` 엔드포인트는 항상 실패합니다. 이 시나리오는 예외를 발생시켜야 합니다."
+      },
+      "chunkedResumption": {
+        "description": "{method}의 자동 재개를 테스트합니다."
+      }
+    }
+  }
+}

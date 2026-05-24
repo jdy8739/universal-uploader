@@ -1,0 +1,278 @@
+{
+  "home": {
+    "header": {
+      "badge": "Stable Release · v1.0.0",
+      "title": "Universal Stream Uploader",
+      "subtitle": "High-performance file uploads for modern browsers. Constant memory footprint, intelligent stream-to-XHR fallbacks, and production-grade resilience — in under <strong>5 kB</strong>.",
+      "exploreDashboard": "Explore Dashboard →",
+      "sourceCode": "Source Code"
+    },
+    "stats": {
+      "dependencies": {
+        "value": "0",
+        "label": "Dependencies"
+      },
+      "gzipped": {
+        "value": "<5kB",
+        "label": "Gzipped"
+      },
+      "uploadModes": {
+        "value": "3",
+        "label": "Upload Modes"
+      },
+      "typeSafe": {
+        "value": "100%",
+        "label": "Type-safe"
+      }
+    },
+    "features": {
+      "title": "Core Features",
+      "items": [
+        {
+          "title": "Zero-Buffer Streaming",
+          "description": "Use the Web Streams API to upload large files with a constant memory footprint. This keeps browser memory stable and avoids tab freezes even for multi-gigabyte transfers.",
+          "tag": "stream"
+        },
+        {
+          "title": "Adaptive Intelligent Fallbacks",
+          "description": "Automatically choose the best transport at runtime: modern fetch streaming when available, then chunked strategies when needed. You get broad compatibility without manual branching.",
+          "tag": "xhr"
+        },
+        {
+          "title": "Production-Grade Resilience",
+          "description": "Combine retry backoff, resumable chunk flows, and deterministic refresh semantics for predictable recovery on unstable networks. Upload control stays explicit and observable.",
+          "tag": "retry"
+        },
+        {
+          "title": "Explicit Runtime Controls",
+          "description": "Drive uploads with clear control semantics across methods: abort for terminal stop, pause for resumable interruption, resume for continuation, and refresh for clean restart.",
+          "tag": "control"
+        },
+        {
+          "title": "Deterministic Action Rebinding",
+          "description": "After retry/resume/refresh relaunches, control actions stay bound to the latest in-flight request so abort/pause always target the active upload operation.",
+          "tag": "lifecycle"
+        }
+      ]
+    },
+    "controlSemantics": {
+      "title": "Upload Control Behavior",
+      "description": "This dashboard shows exactly how each control action behaves during real uploads. Use it to distinguish resumable flows from terminal stop/reset flows before wiring them into your app state logic.",
+      "items": [
+        {
+          "action": "abort",
+          "behavior": "Terminal stop. Ends the current upload session and does not continue with resume."
+        },
+        {
+          "action": "pause",
+          "behavior": "Resumable stop. Moves upload into paused state where resume can continue."
+        },
+        {
+          "action": "resume",
+          "behavior": "Continue from persisted upload progress/context (not a full restart)."
+        },
+        {
+          "action": "refresh",
+          "behavior": "Full restart from initial options snapshot. Retry/offset state is reset."
+        }
+      ],
+      "badges": [
+        {
+          "label": "abort",
+          "description": "terminal stop"
+        },
+        {
+          "label": "pause",
+          "description": "resumable stop"
+        },
+        {
+          "label": "resume",
+          "description": "continue from progress"
+        },
+        {
+          "label": "refresh",
+          "description": "full restart"
+        }
+      ]
+    },
+    "developerExperience": {
+    "title": "Developer Experience",
+    "description": "Simple enough for basic uploads, powerful enough for complex streaming pipelines. Zero dependencies, 100% type-safe.",
+    "items": [
+    "Full TypeScript support with exhaustive, strict type definitions",
+    "< 10 kB gzipped for the full suite (Core + React hooks)",
+    "First-class hooks for progress, pause/resume, and lifecycle events",
+    "Deterministic refresh flow with initial-option snapshot semantics",
+    "Configurable retry + backoff with explicit recovery behaviors",
+    "One API over stream / stream chunked / xhr chunked execution paths"
+    ]
+    },    "browserSupport": {
+      "title": "Browser Support",
+      "description": "Streaming fetch support is detected at runtime. Falls back to chunked XHR silently — no configuration, no flags, no polyfills required.",
+      "items": [
+        {
+          "name": "Chrome / Edge",
+          "mode": "Full Streaming"
+        },
+        {
+          "name": "Firefox",
+          "mode": "Full Streaming"
+        },
+        {
+          "name": "Safari",
+          "mode": "XHR Fallback"
+        },
+        {
+          "name": "Legacy Browsers",
+          "mode": "XHR Fallback"
+        }
+      ]
+    },
+    "methodComparison": {
+      "title": "Method Comparison",
+      "description": "Choose the right upload method for your use case.",
+      "headers": [
+        "Aspect",
+        "Fetch Stream",
+        "Fetch Chunked",
+        "XHR Chunked"
+      ],
+      "rows": [
+        {
+          "label": "HTTP Requests",
+          "values": ["1 request", "N requests", "N requests"]
+        },
+        {
+          "label": "Progress",
+          "values": ["⚠️", "Per chunk", "Per chunk detail"]
+        },
+        {
+          "label": "Retry on Failure",
+          "values": ["Restart ❌", "Chunk only ✅", "Chunk only ✅"]
+        },
+        {
+          "label": "Resumption",
+          "values": ["❌", "✅", "✅"]
+        },
+        {
+          "label": "Service Worker Compatible",
+          "values": ["✅", "✅", "❌"]
+        },
+        {
+          "label": "Code Style",
+          "values": ["async/await", "async/await", "Callback"]
+        },
+        {
+          "label": "Large Files",
+          "values": ["⚠️", "✅", "✅"]
+        }
+      ],
+      "legend": [
+        {
+          "title": "Fetch Stream",
+          "description": "Small/Medium files, clean code, progress via TransformStream"
+        },
+        {
+          "title": "Fetch Chunked",
+          "description": "Large files, resumable, precise progress tracking"
+        },
+        {
+          "title": "XHR Chunked",
+          "description": "Broad compatibility, fine-grained control, legacy browsers"
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to see it in action?",
+      "description": "The interactive dashboard provides a live environment to test streaming, XHR fallbacks, and error recovery.",
+      "button": "Enter Test Dashboard →"
+    },
+    "footer": "Universal Upload © 2026 · Engineered for performance with the Web Streams API & TypeScript."
+  },
+  "test": {
+    "backButton": "← Back to Home",
+    "header": {
+      "title": "Universal Stream Uploader",
+      "subtitle": "High-performance file uploads with intelligent fallbacks."
+    },
+    "step1": {
+      "title": "Step 1: Select a File",
+      "label": "Choose file to upload",
+      "fileInfo": "📄 <strong>{fileName}</strong> • {fileSize} MB"
+    },
+    "step2": {
+      "title": "Step 2: Choose Upload Method",
+      "methods": [
+        {
+          "title": "Intelligent Auto",
+          "method": "auto"
+        },
+        {
+          "title": "Modern Streaming",
+          "method": "stream"
+        },
+        {
+          "title": "Stream Chunked",
+          "method": "stream chunked"
+        },
+        {
+          "title": "Reliable Chunking",
+          "method": "xhr chunked"
+        }
+      ]
+    },
+    "step3": {
+      "title": "Step 3: Error & Recovery Scenarios"
+    },
+    "step4": {
+      "title": "Step 4: Advanced Configurations"
+    },
+    "step5": {
+      "title": "Step 5: Lifecycle & Hooks"
+    },
+    "footer": "Engineered for performance with the Web Streams API & TypeScript.",
+    "scenarios": {
+      "uploadCard": {
+        "stream": "Constant memory usage via Web Streams.",
+        "streamChunked": "Sequential chunks via Web Streams.",
+        "xhrChunked": "Sequential chunks via XMLHttpRequest.",
+        "auto": "Automatically selects optimal transfer method."
+      },
+      "customHeaders": {
+        "title": "Custom Headers Case",
+        "description": "Tests sending metadata via `customHeaders` (e.g., Auth, Versioning)."
+      },
+      "disableChunking": {
+        "title": "Disable Chunking Case",
+        "description": "Sets `chunkSize: 0` to trigger the fallback to standard XHR upload."
+      },
+      "exponentialBackoff": {
+        "title": "Exponential Backoff Case",
+        "description": "Tests functional `retryDelay`. Delays increase exponentially with each attempt."
+      },
+      "lifecycleHooks": {
+        "title": "Lifecycle Hooks Case",
+        "description": "Logs events from `onComplete`, `onAbort`, `onProgress`, `onPause`, and `onResume`."
+      },
+      "retryAndOnError": {
+        "title": "Retry + onError Case",
+        "description": "`/upload/fail-always` endpoint always fails to validate retry exhaust + onError callback."
+      },
+      "retryRecovery": {
+        "title": "Retry Recovery Case",
+        "description": "Fails twice then succeeds. Tests `retryCount`, `onRetry`, and `customHeaders`."
+      },
+      "smallChunkStressTest": {
+        "title": "Small Chunk Stress Test",
+        "description": "Uses tiny 16KB chunks. Tests the overhead and stability of many sequential requests."
+      },
+      "throwOnError": {
+        "title": "throwOnError=true Case",
+        "description": "`/upload/fail-always` endpoint always fails. This scenario should throw."
+      },
+      "chunkedResumption": {
+        "description": "Tests auto-resumption of {method}."
+      }
+    }
+  }
+}
