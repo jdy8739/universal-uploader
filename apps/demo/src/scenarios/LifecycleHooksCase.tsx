@@ -13,13 +13,15 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
     setEvents((prev) => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${msg}`]);
   };
 
-  const { upload, abort, status } = useUniversalUpload({
+  const { upload, abort, status, pause, resume } = useUniversalUpload({
     url: '/upload',
     options: {
       method: 'auto',
       onComplete: () => addEvent('✅ Complete'),
       onAbort: () => addEvent('🛑 Aborted'),
       onError: (err) => addEvent(`❌ Error: ${err.message}`),
+      onPause: () => addEvent('⏸️ Paused'),
+      onResume: () => addEvent('▶️ Resumed'),
       onProgress: (p) => {
         if (p.percentage === 0 || p.percentage === 100) {
             addEvent(`📊 Progress: ${p.percentage}%`);
@@ -32,14 +34,28 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
     <Card>
       <Card.Title>Lifecycle Hooks Case</Card.Title>
       <Card.Description>
-        Logs events from `onComplete`, `onAbort`, and `onProgress`.
+        Logs events from `onComplete`, `onAbort`, `onProgress`, `onPause`, and `onResume`.
       </Card.Description>
       <div className="flex gap-2 mb-4">
         <Button onClick={() => file && upload(file)} disabled={!file || status === 'uploading'}>
           Start
         </Button>
-        <Button variant="outline" onClick={abort} disabled={status !== 'uploading'}>
+        <Button variant="outline" onClick={abort} disabled={status !== 'uploading' && status !== 'paused'}>
           Abort
+        </Button>
+        <Button
+          variant="outline"
+          onClick={pause}
+          disabled={status !== "uploading"}
+        >
+          Pause
+        </Button>
+        <Button
+          variant="outline"
+          onClick={resume}
+          disabled={status !== "paused"}
+        >
+          Resume
         </Button>
       </div>
       <Log className="h-24 overflow-y-auto">

@@ -12,14 +12,15 @@ interface UploadCardProps {
 export const UploadCard = ({ title, method, file }: UploadCardProps) => {
   const [progress, setProgress] = useState(0);
 
-  const { upload, status, error, abort, retry, result } = useUniversalUpload({
-    url: "/upload",
-    options: {
-      method,
-      chunkSize: 1024 * 1024,
-      onProgress: (p) => setProgress(Math.round(p.percentage)),
-    },
-  });
+  const { upload, status, error, abort, retry, result, pause, resume } =
+    useUniversalUpload({
+      url: "/upload",
+      options: {
+        method,
+        chunkSize: 1024 * 1024,
+        onProgress: (p) => setProgress(Math.round(p.percentage)),
+      },
+    });
 
   const handleUpload = () => {
     if (!file) return;
@@ -30,9 +31,11 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
   const tagClass =
     method === "stream"
       ? "tag tag-stream"
-      : method === "xhr chunked"
-        ? "tag tag-xhr"
-        : "tag";
+      : method === "stream chunked"
+        ? "tag tag-stream"
+        : method === "xhr chunked"
+          ? "tag tag-xhr"
+          : "tag";
 
   return (
     <Card>
@@ -42,13 +45,15 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
         <Card.Description>
           {method === "stream"
             ? "Constant memory usage via Web Streams."
-            : method === "xhr chunked"
-              ? "Sequential chunks via XMLHttpRequest."
-              : "Automatically selects optimal transfer method."}
+            : method === "stream chunked"
+              ? "Sequential chunks via Web Streams."
+              : method === "xhr chunked"
+                ? "Sequential chunks via XMLHttpRequest."
+                : "Automatically selects optimal transfer method."}
         </Card.Description>
       </header>
 
-      <div className="mb-6 flex gap-3 items-center">
+      <div className="mb-6 flex gap-3 items-center flex-wrap">
         <Button
           onClick={handleUpload}
           disabled={!file || status === "uploading"}
@@ -57,12 +62,14 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
             ? "Start Upload"
             : status === "success" || status === "error"
               ? "Retry Upload"
-              : "Uploading..."}
+              : status === "paused"
+                ? "Restart Upload"
+                : "Uploading..."}
         </Button>
         <Button
           variant="outline"
           onClick={abort}
-          disabled={status !== "uploading"}
+          disabled={status !== "uploading" && status !== "paused"}
         >
           Abort
         </Button>
@@ -73,6 +80,26 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
         >
           Retry
         </Button>
+        {(method === "xhr chunked" ||
+          method === "stream chunked" ||
+          method === "auto") && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={pause}
+              disabled={status !== "uploading"}
+            >
+              Pause
+            </Button>
+            <Button
+              variant="outline"
+              onClick={resume}
+              disabled={status !== "paused"}
+            >
+              Resume
+            </Button>
+          </div>
+        )}
       </div>
 
       {status !== "idle" && (
@@ -97,7 +124,9 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
                   ? "error"
                   : status === "success"
                     ? "success"
-                    : "info"
+                    : status === "paused"
+                      ? "info"
+                      : "info"
               }
             >
               {status.toUpperCase()}

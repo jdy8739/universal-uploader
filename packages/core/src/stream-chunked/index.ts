@@ -12,14 +12,17 @@ const uploadWithFetchStreamChunked = async (
   args: UploadParams & { refresh: () => void },
 ): Promise<UploadResponse> => {
   const { url, file, refresh, options } = args;
+
   const {
     chunkSize = DEFAULT_STREAM_CHUNK_SIZE,
-    offset: offsetFrom = 0,
     customHeaders = {},
     withCredentials,
     onProgress,
     onComplete,
+    onPause,
+    onResume,
   } = options;
+
   const response: UploadResponse = {
     result: Promise.resolve({
       ok: false,
@@ -54,7 +57,11 @@ const uploadWithFetchStreamChunked = async (
     return response;
   }
 
+  let isResuming = false;
+
   const uploadChunkedStream = async (): Promise<Readonly<UploadResult>> => {
+    isResuming = false;
+
     let uploadResult: Readonly<UploadResult> = {
       ok: false,
       total: 0,
@@ -62,7 +69,7 @@ const uploadWithFetchStreamChunked = async (
       status: "uploading",
     };
 
-    const startChunkIndex = Math.floor(offsetFrom / safeChunkSize);
+    const startChunkIndex = Math.floor((options.offset ?? 0) / safeChunkSize);
     let offset = startChunkIndex * safeChunkSize;
 
     for (
@@ -70,6 +77,10 @@ const uploadWithFetchStreamChunked = async (
       chunkIndex < totalChunks;
       chunkIndex += 1
     ) {
+      if (uploadResult.status === "paused") {
+        return uploadResult;
+      }
+
       const { end } = calculateChunkRange({
         chunkIndex,
         chunkSize: safeChunkSize,
@@ -94,13 +105,39 @@ const uploadWithFetchStreamChunked = async (
         }),
       });
 
+      /**
+       * Whether the chunk is paused.
+       * 청크가 일시정지된 경우 명시적으로 abort 에러를 던지지 않기 위한 플래그 값.
+       */
+      let isPaused = false;
+
       response.actions.abort = () => abortController.abort();
       response.actions.refresh = () => {
         abortController.abort();
         refresh();
       };
-      response.actions.pause = () => null;
-      response.actions.resume = () => null;
+      response.actions.pause = () => {
+        isPaused = true;
+        abortController.abort()
+
+        onPause?.();
+
+         uploadResult = {
+          ok: false,
+          total: totalFileSize,
+          message: undefined,
+          status: "paused",
+        }
+        return;
+      };
+      response.actions.resume = () => {
+        if (uploadResult.status === "paused" && !isResuming) {
+          isResuming = true;
+
+          onResume?.();
+          response.result = uploadChunkedStream();
+        }
+      }
 
       try {
         const fetchResponse = await fetch(url, streamInit);
@@ -137,7 +174,11 @@ const uploadWithFetchStreamChunked = async (
           status: "success",
         };
       } catch (e) {
-        throw e;
+        if (isPaused && e instanceof DOMException && e.name === "AbortError") {
+          // Do nothing
+        } else {
+          throw e;
+        }
       }
     }
 
