@@ -21,6 +21,8 @@ const upload = async (
   isResuming = false,
   initialOptions?: UploadParams["options"],
 ): Promise<UploadResponse> => {
+  const latestActionsRef: { current?: UploadResponse["actions"] } = {};
+
   const {
     onAbort,
     onRetry,
@@ -31,6 +33,44 @@ const upload = async (
   } = options;
 
   const retryCount = retryCountArg;
+  const optionsSnapshot = initialOptions ?? { ...options, method };
+
+  /**
+   * Keeps externally exposed actions pointing at the latest upload controls.
+   * 외부에 노출된 actions가 항상 최신 업로드 제어 함수를 가리키도록 동기화합니다.
+   */
+  const syncLatestActions = (uploadResponse: UploadResponse) => {
+    if (latestActionsRef.current) {
+      Object.assign(latestActionsRef.current, uploadResponse.actions);
+    }
+
+    return uploadResponse;
+  };
+
+  /**
+   * Re-runs upload with shared snapshot/context and optional action sync.
+   * 공통 스냅샷/컨텍스트로 업로드를 재실행하고 필요 시 actions를 동기화합니다.
+   */
+  const runUpload = ({
+    uploadArgs,
+    nextRetryAttempt = retryAttempt,
+    nextIsResuming = false,
+    shouldSyncActions = false,
+  }: {
+    uploadArgs: UploadParams;
+    nextRetryAttempt?: number;
+    nextIsResuming?: boolean;
+    shouldSyncActions?: boolean;
+  }) => {
+    const uploadTask = upload(
+      uploadArgs,
+      nextRetryAttempt,
+      nextIsResuming,
+      optionsSnapshot,
+    );
+
+    return shouldSyncActions ? uploadTask.then(syncLatestActions) : uploadTask;
+  };
 
   if (retryAttempt === 0 && !isResuming) {
     options.offset = undefined;
@@ -89,20 +129,19 @@ const upload = async (
    * retries/offset을 초기화하고 처음부터 시작합니다.
    */
   const refresh = () =>
-    upload(
-      {
+    runUpload({
+      uploadArgs: {
         url,
         file,
         options: {
-          ...(initialOptions ?? options),
-          method: initialOptions?.method ?? method,
+          ...optionsSnapshot,
           offset: 0,
         },
       },
-      0,
-      false,
-      initialOptions ?? { ...options, method },
-    );
+      nextRetryAttempt: 0,
+      nextIsResuming: false,
+      shouldSyncActions: true,
+    });
 
   /**
    * Resume upload using the current retry context and persisted offset.
@@ -112,12 +151,19 @@ const upload = async (
    * retryAttempt를 유지하고 offset을 초기화하지 않습니다.
    */
   const resume = () =>
-    upload(
-      { url, file, options: { ...options, method } },
-      retryAttempt,
-      true,
-      initialOptions ?? { ...options, method },
-    );
+    runUpload({
+      uploadArgs: {
+        url,
+        file,
+        options: {
+          ...optionsSnapshot,
+          offset: options.offset,
+        },
+      },
+      nextRetryAttempt: retryAttempt,
+      nextIsResuming: true,
+      shouldSyncActions: true,
+    });
 
   /**
    * Attempts to retry an upload operation.
@@ -135,12 +181,12 @@ const upload = async (
 
     await wait(nextRetryDelay);
 
-    const uploadResponse = await upload(
+    const uploadResponse = await runUpload({
       uploadArgs,
       nextRetryAttempt,
-      false,
-      initialOptions ?? { ...options, method },
-    );
+      nextIsResuming: false,
+      shouldSyncActions: false,
+    });
 
     onRetry?.();
 
@@ -202,15 +248,17 @@ const upload = async (
   try {
     const uploadFile = getUploader(url, method);
 
-    const uploadResult = await wrapPromiseErrorHandler(
-      await uploadFile({
-        url,
-        file,
-        refresh,
-        resume,
-        options,
-      }),
-    );
+    const uploadResponse = await uploadFile({
+      url,
+      file,
+      refresh,
+      resume,
+      options,
+    });
+
+    latestActionsRef.current = uploadResponse.actions;
+
+    const uploadResult = await wrapPromiseErrorHandler(uploadResponse);
 
     return uploadResult;
   } catch (e) {
