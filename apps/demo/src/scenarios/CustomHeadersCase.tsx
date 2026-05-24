@@ -1,6 +1,5 @@
-import React from 'react';
-import { useUniversalUpload } from '@usu/react';
-import { Card, Button, Badge } from '../ui';
+import { useUniversalUpload } from "@usu/react";
+import { Card, Button, Badge } from "../ui";
 
 interface CustomHeadersCaseProps {
   file: File | null;
@@ -8,13 +7,13 @@ interface CustomHeadersCaseProps {
 
 export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
   const { upload, status, pause, resume } = useUniversalUpload({
-    url: '/upload',
+    url: "/upload",
     options: {
-      method: 'auto',
+      method: "auto",
       customHeaders: {
-        'Authorization': 'Bearer demo-token-123',
-        'X-Client-Version': '1.0.0',
-        'X-Purpose': 'Demo Testing'
+        Authorization: "Bearer demo-token-123",
+        "X-Client-Version": "1.0.0",
+        "X-Purpose": "Demo Testing",
       },
     },
   });
@@ -26,7 +25,10 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
         Tests sending metadata via `customHeaders` (e.g., Auth, Versioning).
       </Card.Description>
       <div className="flex gap-2 flex-wrap mb-4">
-        <Button onClick={() => file && upload(file)} disabled={!file || status === 'uploading'}>
+        <Button
+          onClick={() => file && upload(file)}
+          disabled={!file || status === "uploading"}
+        >
           Upload with Headers
         </Button>
         <Button
@@ -44,8 +46,8 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
           Resume
         </Button>
       </div>
-      
-      {status === 'success' && (
+
+      {status === "success" && (
         <div className="mt-4">
           <Badge variant="success">
             Success! Check network tab to verify headers:

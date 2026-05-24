@@ -15,7 +15,7 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
     options: {
       method: "xhr chunked",
       chunkSize: 0, // Should trigger fallback to uploadWithoutChunking
-      onProgress: (p) => setProgress(p.percentage),
+      onProgress: (p) => setProgress(Math.round(p.percentage)),
     },
   });
 
@@ -65,7 +65,7 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
         <Log.Data
           items={[
             { label: "status", value: status },
-            { label: "progress", value: progress.toString() },
+            { label: "progress", value: `${progress}%` },
             { label: "resultOk", value: result.ok.toString() },
             { label: "message", value: resultMessage },
           ]}
