@@ -1,8 +1,8 @@
 {
   "name": "@universal-uploader/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
-  "description": "Core streaming upload logic.",
+  "description": "Zero-dependency browser file upload library with Web Streams, Fetch Duplex, XHR fallback, progress tracking, chunked uploads, and automatic retries.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,9 +26,20 @@
   },
   "keywords": [
     "upload",
-    "stream",
+    "file-upload",
+    "streaming",
+    "web-streams",
     "fetch",
-    "xhr"
+    "xhr",
+    "progress",
+    "chunked-upload",
+    "multipart",
+    "large-files",
+    "browser",
+    "duplex",
+    "retry",
+    "resumable",
+    "universal-uploader"
   ],
   "license": "MIT"
 }
