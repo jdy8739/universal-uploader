@@ -1,23 +1,23 @@
-# @usu/react
+# @universal-uploader/react
 
-[![npm version](https://img.shields.io/npm/v/@usu/react.svg)](https://www.npmjs.com/package/@usu/react)
-[![npm downloads](https://img.shields.io/npm/dm/@usu/react.svg)](https://www.npmjs.com/package/@usu/react)
+[![npm version](https://img.shields.io/npm/v/@universal-uploader/react.svg)](https://www.npmjs.com/package/@universal-uploader/react)
+[![npm downloads](https://img.shields.io/npm/dm/@universal-uploader/react.svg)](https://www.npmjs.com/package/@universal-uploader/react)
 
-**[📦 NPM](https://www.npmjs.com/package/@usu/react)** | **[🔗 Main README](../../README.md)** | **[⚙️ Core](./packages/core)**
+**[📦 NPM](https://www.npmjs.com/package/@universal-uploader/react)** | **[🔗 Main README](../../README.md)** | **[⚙️ Core](./packages/core)**
 
 React Hook wrapper for @usu/core. Minimal, powerful, type-safe.
 
 ## Installation
 
 ```bash
-npm install @usu/react @usu/core
+npm install @universal-uploader/react @universal-uploader/core
 yarn add @usu/react @usu/core
 pnpm add @usu/react @usu/core
 ```
 
 NPM Packages:
-- [@usu/react](https://www.npmjs.com/package/@usu/react)
-- [@usu/core](https://www.npmjs.com/package/@usu/core)
+- [@universal-uploader/react](https://www.npmjs.com/package/@universal-uploader/react)
+- [@universal-uploader/core](https://www.npmjs.com/package/@universal-uploader/core)
 
 ## Quick Start
 

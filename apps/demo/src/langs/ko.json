@@ -13,7 +13,7 @@
         "label": "의존성"
       },
       "gzipped": {
-        "value": "<5kB",
+        "value": "<10kB",
         "label": "압축 크기"
       },
       "uploadModes": {

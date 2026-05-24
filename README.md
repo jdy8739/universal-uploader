@@ -1,10 +1,10 @@
 # Universal Stream Uploader
 
-[![npm version](https://img.shields.io/npm/v/@usu/core.svg)](https://www.npmjs.com/package/@usu/core)
-[![npm downloads](https://img.shields.io/npm/dm/@usu/core.svg)](https://www.npmjs.com/package/@usu/core)
+[![npm version](https://img.shields.io/npm/v/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
+[![npm downloads](https://img.shields.io/npm/dm/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-High-performance file uploads with Web Streams API, automatic fallbacks, and resumable uploads. < 5 kB gzipped, zero dependencies, 100% TypeScript.
+High-performance file uploads with Web Streams API, automatic fallbacks, and resumable uploads. < 10 kB gzipped, zero dependencies, 100% TypeScript.
 
 ## Three Upload Methods
 
@@ -24,8 +24,8 @@ npm install @usu/core @usu/react
 ```
 
 **NPM Packages:**
-- [@usu/core](https://www.npmjs.com/package/@usu/core)
-- [@usu/react](https://www.npmjs.com/package/@usu/react)
+- [@universal-uploader/core](https://www.npmjs.com/package/@universal-uploader/core)
+- [@universal-uploader/react](https://www.npmjs.com/package/@universal-uploader/react)
 
 ## Quick Start
 

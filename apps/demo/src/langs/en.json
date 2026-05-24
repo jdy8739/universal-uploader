@@ -13,7 +13,7 @@
         "label": "Dependencies"
       },
       "gzipped": {
-        "value": "<5kB",
+        "value": "<10kB",
         "label": "Gzipped"
       },
       "uploadModes": {

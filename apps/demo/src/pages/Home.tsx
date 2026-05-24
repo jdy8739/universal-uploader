@@ -85,32 +85,56 @@ export const Home = ({ onNavigate }: HomeProps) => {
           {language === "en" ? (
             <>
               High-performance file uploads for modern browsers. Constant memory
-              footprint, intelligent stream-to-XHR fallbacks, and production-grade
-              resilience — in under <strong className="text-gray-700">5 kB</strong>.
+              footprint, intelligent stream-to-XHR fallbacks, and
+              production-grade resilience — in under{" "}
+              <strong className="text-gray-700">10 kB</strong>.
             </>
           ) : (
             <>
-              현대 브라우저를 위한 고성능 파일 업로드. 일정한 메모리 사용량, 지능형
-              스트림-XHR 폴백, 프로덕션 등급의 복원력 —{" "}
-              <strong className="text-gray-700">5 kB 이하</strong>.
+              현대 브라우저를 위한 고성능 파일 업로드. 일정한 메모리 사용량,
+              지능형 스트림-XHR 폴백, 프로덕션 등급의 복원력 —{" "}
+              <strong className="text-gray-700">10 kB 이하</strong>.
             </>
           )}
         </p>
-        <div className="flex justify-center gap-3 flex-wrap">
-          <Button onClick={onNavigate} className="px-7 py-2.5 font-semibold">
-            {t("home.header.exploreDashboard")}
-          </Button>
+        <div className="flex justify-center gap-2 flex-wrap">
+          {process.env.NODE_ENV === "development" && (
+            <Button
+              onClick={onNavigate}
+              className="px-6 py-2.5 font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all"
+            >
+              {t("home.header.exploreDashboard")}
+            </Button>
+          )}
+          <a
+            href="https://www.npmjs.com/package/@universal-uploader/core"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-2.5 font-semibold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 hover:border-red-300 transition-all shadow-sm hover:shadow-md inline-flex items-center gap-2"
+          >
+            <span>@universal-uploader/core</span>
+            <span className="text-lg">↗</span>
+          </a>
+          <a
+            href="https://www.npmjs.com/package/@universal-uploader/react"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-2.5 font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-sm hover:shadow-md inline-flex items-center gap-2"
+          >
+            <span>@universal-uploader/react</span>
+            <span className="text-lg">↗</span>
+          </a>
           <Button
             variant="outline"
             onClick={() =>
               window.open(
-                "https://github.com/jdy8739/universal-uploader",
+                "https://github.com/jdy8739/universial-upload",
                 "_blank",
               )
             }
-            className="px-7 py-2.5 font-semibold"
+            className="px-6 py-2.5 font-semibold"
           >
-            {t("home.header.sourceCode")}
+            {t("home.header.sourceCode")} ↗
           </Button>
         </div>
       </header>
@@ -178,6 +202,66 @@ export const Home = ({ onNavigate }: HomeProps) => {
         </div>
       </section>
 
+      {/* ── Quick Start / Installation ───────────────────────── */}
+      <section className="mb-12">
+        <h2 className="mt-0 mb-6 text-2xl font-bold">Quick Start</h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Core Package */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                @universal-uploader/core
+              </h3>
+              <a
+                href="https://www.npmjs.com/package/@universal-uploader/core"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-medium hover:bg-red-200 transition"
+              >
+                NPM ↗
+              </a>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Core upload engine with three strategies
+            </p>
+            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto mb-3">
+              <code>npm install @universal-uploader/core</code>
+            </pre>
+            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto">
+              <code className="text-emerald-400">{`const { upload } = require('@universal-uploader/core');\nawait upload('/api/upload', file);`}</code>
+            </pre>
+          </div>
+
+          {/* React Package */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                @universal-uploader/react
+              </h3>
+              <a
+                href="https://www.npmjs.com/package/@universal-uploader/react"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium hover:bg-blue-200 transition"
+              >
+                NPM ↗
+              </a>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              React Hook wrapper for seamless integration
+            </p>
+            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto mb-3">
+              <code>
+                npm install @universal-uploader/react @universal-uploader/core
+              </code>
+            </pre>
+            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto">
+              <code className="text-emerald-400">{`const { upload, progress } = useUniversalUpload({\n  url: '/api/upload'\n});`}</code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
       {/* ── Upload Controls ─────────────────────────────── */}
       <section className="mb-12">
         <h2 className="mt-0 mb-6 text-2xl font-bold">
@@ -230,14 +314,13 @@ export const Home = ({ onNavigate }: HomeProps) => {
                   resume: "text-green-600 text-green-700",
                   refresh: "text-slate-600 text-slate-700",
                 };
-                const bgClass = bgColorClasses[badge.label] || "border-red-100 bg-red-50";
-                const textClass = textColorClasses[badge.label] || "text-red-600 text-red-700";
+                const bgClass =
+                  bgColorClasses[badge.label] || "border-red-100 bg-red-50";
+                const textClass =
+                  textColorClasses[badge.label] || "text-red-600 text-red-700";
 
                 return (
-                  <div
-                    key={idx}
-                    className={`rounded-lg border ${bgClass} p-3`}
-                  >
+                  <div key={idx} className={`rounded-lg border ${bgClass} p-3`}>
                     <div
                       className={`text-[11px] uppercase tracking-wider ${textClass.split(" ")[0]} font-semibold mb-1`}
                     >
@@ -321,7 +404,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
           <p className="text-sm text-gray-500 leading-relaxed mt-0 mb-6">
             {t("home.methodComparison.description")}
           </p>
-          
+
           {/* 비교 표 */}
           <div className="overflow-x-auto mb-8">
             <table className="w-full border-collapse">
@@ -438,22 +521,24 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────── */}
-      <section className="mb-12">
-        <div className="card text-center py-12">
-          <h2 className="mt-0 text-3xl font-extrabold mb-3 text-gray-900">
-            {t("home.cta.title")}
-          </h2>
-          <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
-            {t("home.cta.description")}
-          </p>
-          <Button
-            onClick={onNavigate}
-            className="px-9 py-3 text-base font-semibold"
-          >
-            {t("home.cta.button")}
-          </Button>
-        </div>
-      </section>
+      {process.env.NODE_ENV === "development" && (
+        <section className="mb-12">
+          <div className="card text-center py-12">
+            <h2 className="mt-0 text-3xl font-extrabold mb-3 text-gray-900">
+              {t("home.cta.title")}
+            </h2>
+            <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+              {t("home.cta.description")}
+            </p>
+            <Button
+              onClick={onNavigate}
+              className="px-9 py-3 text-base font-semibold"
+            >
+              {t("home.cta.button")}
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* ── Footer ──────────────────────────────────────── */}
       <footer className="pt-8 border-t border-gray-200 text-center text-sm text-gray-400">

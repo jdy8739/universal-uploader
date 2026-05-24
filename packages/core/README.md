@@ -1,9 +1,9 @@
-# @usu/core
+# @universal-uploader/core
 
-[![npm version](https://img.shields.io/npm/v/@usu/core.svg)](https://www.npmjs.com/package/@usu/core)
-[![npm downloads](https://img.shields.io/npm/dm/@usu/core.svg)](https://www.npmjs.com/package/@usu/core)
+[![npm version](https://img.shields.io/npm/v/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
+[![npm downloads](https://img.shields.io/npm/dm/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
 
-**[📦 NPM](https://www.npmjs.com/package/@usu/core)** | **[🔗 Main README](../README.md)** | **[⚛️ React](./packages/react)**
+**[📦 NPM](https://www.npmjs.com/package/@universal-uploader/core)** | **[🔗 Main README](../README.md)** | **[⚛️ React](./packages/react)**
 
 Core file upload orchestrator. Three adaptive strategies, one unified API.
 
@@ -44,12 +44,12 @@ await upload('/api/upload', file, {
 ## Installation
 
 ```bash
-npm install @usu/core
+npm install @universal-uploader/core
 yarn add @usu/core
 pnpm add @usu/core
 ```
 
-NPM: https://www.npmjs.com/package/@usu/core
+NPM: https://www.npmjs.com/package/@universal-uploader/core
 
 ## Upload Control
 
@@ -116,7 +116,7 @@ try {
 
 ## Performance
 
-- < 5 kB gzipped
+- < 10 kB gzipped
 - Zero dependencies
 - 100% TypeScript
 - Constant memory (Stream) or bounded (Chunked)
