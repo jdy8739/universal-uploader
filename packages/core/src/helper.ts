@@ -57,6 +57,23 @@ export const calculateChunkProgress = ({
 };
 
 /**
+ * Calculates the resume start position from a persisted offset.
+ * 저장된 오프셋으로부터 재개 시작 위치를 계산합니다.
+ */
+export const calculateResumePosition = ({
+  offset,
+  chunkSize,
+}: {
+  offset?: number;
+  chunkSize: number;
+}) => {
+  const startChunkIndex = Math.floor((offset ?? 0) / chunkSize);
+  const startOffset = startChunkIndex * chunkSize;
+
+  return { startChunkIndex, startOffset };
+};
+
+/**
  * Creates a Uint8Array buffer from a specific slice of the file.
  * 파일의 특정 부분을 잘라 Uint8Array 버퍼를 생성합니다.
  */

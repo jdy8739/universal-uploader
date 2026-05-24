@@ -12,10 +12,10 @@ export const isSuccessfulHttpStatus = (status: number) =>
   status < HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE;
 
 /**
- * Calculates the start and end byte positions for a specific chunk.
- * 특정 청크의 시작 및 종료 바이트 위치를 계산합니다.
+ * Calculates the end byte position for a specific chunk.
+ * 특정 청크의 종료 바이트 위치를 계산합니다.
  */
-export const calculateChunkRange = ({
+export const calculateChunkEnd = ({
   chunkIndex,
   chunkSize,
   totalFileSize,
@@ -23,15 +23,7 @@ export const calculateChunkRange = ({
   chunkIndex: number;
   chunkSize: number;
   totalFileSize: number;
-}) => {
-  const start = chunkIndex * chunkSize;
-  const end = Math.min(start + chunkSize, totalFileSize);
-
-  return {
-    start,
-    end,
-  };
-};
+}) => Math.min((chunkIndex + 1) * chunkSize, totalFileSize);
 
 /**
  * Applies chunking-related headers and custom headers to the XMLHttpRequest object.

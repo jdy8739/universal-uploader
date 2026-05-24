@@ -1,10 +1,14 @@
 import { UploadParams, UploadResponse, UploadResult } from "../types";
 import {
   isSuccessfulHttpStatus,
-  calculateChunkRange,
+  calculateChunkEnd,
   applyChunkHeaders,
 } from "./helper";
-import { calculateSizes, calculateChunkProgress } from "../helper";
+import {
+  calculateSizes,
+  calculateChunkProgress,
+  calculateResumePosition,
+} from "../helper";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 
 /**
@@ -164,15 +168,18 @@ const uploadWithXhrChuncked = async (
     };
 
     /**
-     * Upload the file by chunks.
-     * options.offset is the offset of the file to upload (used for resume).
-     * startChunkIndex is the start chunk index.
+     * Upload the file by chunks starting from the persisted resume position.
+     * options.offset is converted to startChunkIndex/startOffset for resume.
      *
-     * 오프셋으로 시작하는 청크부터 업로드합니다.
+     * 저장된 offset을 기준으로 재개 시작 청크/오프셋을 계산해 업로드를 이어갑니다.
      * 청크 인덱스가 totalChunks보다 작을 때까지 반복합니다.
      */
-    // Use the latest persisted offset so `resume()` continues from where we stopped.
-    const startChunkIndex = Math.floor((options.offset ?? 0) / safeChunkSize);
+    const { startChunkIndex, startOffset } = calculateResumePosition({
+      offset: options.offset,
+      chunkSize: safeChunkSize,
+    });
+
+    let offset = startOffset;
 
     for (
       let chunkIndex = startChunkIndex;
@@ -183,7 +190,7 @@ const uploadWithXhrChuncked = async (
         return uploadResult;
       }
 
-      const { start, end } = calculateChunkRange({
+      const chunkEnd = calculateChunkEnd({
         chunkIndex,
         chunkSize: safeChunkSize,
         totalFileSize,
@@ -218,12 +225,12 @@ const uploadWithXhrChuncked = async (
           xhr.onload = () => {
             if (isSuccessfulHttpStatus(xhr.status)) {
               const { isLastChunk, percentage } = calculateChunkProgress({
-                loaded: end,
+                loaded: chunkEnd,
                 total: totalFileSize,
               });
 
               onProgress?.({
-                loaded: end,
+                loaded: chunkEnd,
                 total: totalFileSize,
                 percentage: totalFileSize === 0 ? 100 : percentage,
               });
@@ -233,7 +240,8 @@ const uploadWithXhrChuncked = async (
               }
 
               // 성공 이후에 offset 갱신
-              options.offset = end;
+              offset = chunkEnd;
+              options.offset = chunkEnd;
 
               return resolve({
                 ok: true,
@@ -259,7 +267,7 @@ const uploadWithXhrChuncked = async (
             reject(abortError);
           };
 
-          const chunk = file.slice(start, end);
+          const chunk = file.slice(offset, chunkEnd);
           xhr.send(chunk);
 
           // 클로저로 밖에서 참조하는 response.actions 객체를 업데이트합니다.

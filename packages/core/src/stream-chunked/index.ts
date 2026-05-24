@@ -3,10 +3,11 @@ import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 import {
   calculateSizes,
   calculateChunkProgress,
+  calculateResumePosition,
   getCustomHeaders,
   initializeStream,
 } from "../helper";
-import { calculateChunkRange } from "../xhr-chuncked/helper";
+import { calculateChunkEnd } from "../xhr-chuncked/helper";
 import { createChunkedStream } from "./helper";
 
 const uploadWithFetchStreamChunked = async (
@@ -70,8 +71,16 @@ const uploadWithFetchStreamChunked = async (
       status: "uploading",
     };
 
-    const startChunkIndex = Math.floor((options.offset ?? 0) / safeChunkSize);
-    let offset = startChunkIndex * safeChunkSize;
+    /**
+     * Resume from persisted offset by deriving chunk index + stream offset.
+     * 저장된 offset으로부터 재개 시작 청크 인덱스와 오프셋을 계산합니다.
+     */
+    const { startChunkIndex, startOffset } = calculateResumePosition({
+      offset: options.offset,
+      chunkSize: safeChunkSize,
+    });
+
+    let offset = startOffset;
 
     for (
       let chunkIndex = startChunkIndex;
@@ -82,7 +91,7 @@ const uploadWithFetchStreamChunked = async (
         return uploadResult;
       }
 
-      const { end } = calculateChunkRange({
+      const end = calculateChunkEnd({
         chunkIndex,
         chunkSize: safeChunkSize,
         totalFileSize,
