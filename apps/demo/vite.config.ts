@@ -6,7 +6,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
   plugins: [tailwindcss(), react(), basicSsl()],
-  base: '/universial-upload/',
+  base: '/universal-uploader/',
   server: {
     proxy: {
       '/upload': {
