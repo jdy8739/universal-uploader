@@ -12,6 +12,7 @@ import {
   ChunkedResumptionCase,
 } from "../scenarios";
 import { Button } from "../ui";
+import { useI18n } from "../i18n";
 
 interface TestProps {
   onBack: () => void;
@@ -19,6 +20,7 @@ interface TestProps {
 
 export const Test = ({ onBack }: TestProps) => {
   const [file, setFile] = useState<File | null>(null);
+  const { t, language, setLanguage } = useI18n();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -29,23 +31,51 @@ export const Test = ({ onBack }: TestProps) => {
   return (
     <main className="max-w-[1200px] mx-auto p-8">
       <div className="mb-8">
-        <Button variant="outline" onClick={onBack}>
-          ← Back to Home
-        </Button>
+        <div className="flex justify-between items-center">
+          <Button variant="outline" onClick={onBack}>
+            {t("test.backButton")}
+          </Button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setLanguage("en")}
+              className={`px-3 py-1 rounded text-sm font-medium transition ${
+                language === "en"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setLanguage("ko")}
+              className={`px-3 py-1 rounded text-sm font-medium transition ${
+                language === "ko"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              한국어
+            </button>
+          </div>
+        </div>
       </div>
 
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold mb-2">Universal Stream Uploader</h1>
+        <h1 className="text-4xl font-extrabold mb-2">
+          {t("test.header.title")}
+        </h1>
         <p className="text-lg text-gray-500">
-          High-performance file uploads with intelligent fallbacks.
+          {t("test.header.subtitle")}
         </p>
       </header>
 
       <section className="mb-12">
-        <h2 className="mt-0 mb-4 text-2xl font-bold">Step 1: Select a File</h2>
+        <h2 className="mt-0 mb-4 text-2xl font-bold">
+          {t("test.step1.title")}
+        </h2>
         <div className="card">
           <label htmlFor="file-upload" className="sr-only">
-            Choose file to upload
+            {t("test.step1.label")}
           </label>
           <input
             id="file-upload"
@@ -62,18 +92,20 @@ export const Test = ({ onBack }: TestProps) => {
       </section>
 
       <section>
-        <h2 className="mb-6 text-2xl font-bold">Step 2: Choose Upload Method</h2>
+        <h2 className="mb-6 text-2xl font-bold">{t("test.step2.title")}</h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
-          <UploadCard title="Intelligent Auto" method="auto" file={file} />
-          <UploadCard title="Modern Streaming" method="stream" file={file} />
-          <UploadCard title="Stream Chunked" method="stream chunked" file={file} />
-          <UploadCard title="Reliable Chunking" method="xhr chunked" file={file} />
+          <UploadCard title={language === "en" ? "Intelligent Auto" : "지능형 자동"} method="auto" file={file} />
+          <UploadCard title={language === "en" ? "Modern Streaming" : "최신 스트리밍"} method="stream" file={file} />
+          <UploadCard title={language === "en" ? "Stream Chunked" : "스트림 청크"} method="stream chunked" file={file} />
+          <UploadCard title={language === "en" ? "Reliable Chunking" : "신뢰할 수 있는 청킹"} method="xhr chunked" file={file} />
           <DisableChunkingCase file={file} />
         </div>
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-6 text-2xl font-bold">Step 3: Error & Recovery Scenarios</h2>
+        <h2 className="mb-6 text-2xl font-bold">
+          {t("test.step3.title")}
+        </h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <RetryAndOnErrorCase file={file} />
           <ThrowOnErrorCase file={file} />
@@ -82,18 +114,20 @@ export const Test = ({ onBack }: TestProps) => {
           <ChunkedResumptionCase
             file={file}
             method="stream chunked"
-            title="Stream Chunked Resumption"
+            title={language === "en" ? "Stream Chunked Resumption" : "스트림 청크 재개"}
           />
           <ChunkedResumptionCase
             file={file}
             method="xhr chunked"
-            title="XHR Chunked Resumption"
+            title={language === "en" ? "XHR Chunked Resumption" : "XHR 청크 재개"}
           />
         </div>
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-6 text-2xl font-bold">Step 4: Advanced Configurations</h2>
+        <h2 className="mb-6 text-2xl font-bold">
+          {t("test.step4.title")}
+        </h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <SmallChunkStressTest file={file} />
           <CustomHeadersCase file={file} />
@@ -101,14 +135,16 @@ export const Test = ({ onBack }: TestProps) => {
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-6 text-2xl font-bold">Step 5: Lifecycle & Hooks</h2>
+        <h2 className="mb-6 text-2xl font-bold">
+          {t("test.step5.title")}
+        </h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <LifecycleHooksCase file={file} />
         </div>
       </section>
 
       <footer className="mt-16 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-        <p>Engineered for performance with the Web Streams API & TypeScript.</p>
+        <p>{t("test.footer")}</p>
       </footer>
     </main>
   );

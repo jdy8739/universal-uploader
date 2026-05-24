@@ -1,6 +1,7 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload } from "@usu/react";
+import { useI18n } from "../i18n";
 
 interface DisableChunkingCaseProps {
   file: File | null;
@@ -9,6 +10,7 @@ interface DisableChunkingCaseProps {
 export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
   const [resultMessage, setResultMessage] = useState("Not started");
   const [progress, setProgress] = useState(0);
+  const { t } = useI18n();
 
   const { upload, status, result, abort, pause, resume } = useUniversalUpload({
     url: "/upload",
@@ -30,9 +32,9 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
 
   return (
     <Card>
-      <Card.Title>Disable Chunking Case</Card.Title>
+      <Card.Title>{t("test.scenarios.disableChunking.title")}</Card.Title>
       <Card.Description>
-        Sets `chunkSize: 0` to trigger the fallback to standard XHR upload.
+        {t("test.scenarios.disableChunking.description")}
       </Card.Description>
       <div className="flex gap-2 flex-wrap mb-4">
         <Button onClick={handleRun} disabled={!file || status === "uploading"}>

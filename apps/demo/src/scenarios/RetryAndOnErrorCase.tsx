@@ -4,6 +4,7 @@ import { Log } from "../ui";
 import { useState } from "react";
 import { useUniversalUpload } from "@usu/react";
 import { Badge } from "../ui";
+import { useI18n } from "../i18n";
 
 interface RetryAndOnErrorCaseProps {
   file: File | null;
@@ -13,6 +14,7 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
   const [retryCalls, setRetryCalls] = useState(0);
   const [onErrorCalls, setOnErrorCalls] = useState(0);
   const [lastRunMessage, setLastRunMessage] = useState("Not started");
+  const { t } = useI18n();
 
   const { upload, status, error, result } = useUniversalUpload({
     url: "/upload/fail-always",
@@ -38,10 +40,9 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
 
   return (
     <Card>
-      <Card.Title>Retry + onError Case</Card.Title>
+      <Card.Title>{t("test.scenarios.retryAndOnError.title")}</Card.Title>
       <Card.Description>
-        `/upload/fail-always` endpoint always fails to validate retry exhaust +
-        onError callback.
+        {t("test.scenarios.retryAndOnError.description")}
       </Card.Description>
       <Button onClick={handleRun} disabled={!file || status === "uploading"}>
         Run Retry Scenario

@@ -3,12 +3,14 @@ import { Button } from "../ui";
 import { useUniversalUpload } from "@usu/react";
 import { Badge } from "../ui";
 import { useState } from "react";
+import { useI18n } from "../i18n";
 
 interface SmallChunkStressTestProps {
   file: File | null;
 }
 export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
   const [progress, setProgress] = useState(0);
+  const { t } = useI18n();
 
   // Use a very small chunk size (16KB) to force many network requests
   const { upload, status, result, error, pause, resume } = useUniversalUpload({
@@ -28,10 +30,9 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
 
   return (
     <Card>
-      <Card.Title>Small Chunk Stress Test</Card.Title>
+      <Card.Title>{t("test.scenarios.smallChunkStressTest.title")}</Card.Title>
       <Card.Description>
-        Uses tiny 16KB chunks. Tests the overhead and stability of many
-        sequential requests.
+        {t("test.scenarios.smallChunkStressTest.description")}
       </Card.Description>
       <div className="flex gap-2 flex-wrap">
         <Button onClick={handleRun} disabled={!file || status === "uploading"}>

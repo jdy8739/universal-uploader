@@ -1,5 +1,6 @@
 import { useUniversalUpload } from "@usu/react";
 import { Card, Button, Badge } from "../ui";
+import { useI18n } from "../i18n";
 
 interface CustomHeadersCaseProps {
   file: File | null;
@@ -17,12 +18,13 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
       },
     },
   });
+  const { t } = useI18n();
 
   return (
     <Card>
-      <Card.Title>Custom Headers Case</Card.Title>
+      <Card.Title>{t("test.scenarios.customHeaders.title")}</Card.Title>
       <Card.Description>
-        Tests sending metadata via `customHeaders` (e.g., Auth, Versioning).
+        {t("test.scenarios.customHeaders.description")}
       </Card.Description>
       <div className="flex gap-2 flex-wrap mb-4">
         <Button

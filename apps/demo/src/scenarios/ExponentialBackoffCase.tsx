@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useUniversalUpload } from "@usu/react";
 import { Card, Button, Badge } from "../ui";
+import { useI18n } from "../i18n";
 
 interface ExponentialBackoffCaseProps {
   file: File | null;
@@ -13,6 +14,7 @@ export const ExponentialBackoffCase = ({
     [],
   );
   const startTime = React.useRef<number>(0);
+  const { t } = useI18n();
 
   const { upload, status } = useUniversalUpload({
     url: "/upload/fail-always",
@@ -38,10 +40,9 @@ export const ExponentialBackoffCase = ({
 
   return (
     <Card>
-      <Card.Title>Exponential Backoff Case</Card.Title>
+      <Card.Title>{t("test.scenarios.exponentialBackoff.title")}</Card.Title>
       <Card.Description>
-        Tests functional `retryDelay`. Delays increase exponentially with each
-        attempt.
+        {t("test.scenarios.exponentialBackoff.description")}
       </Card.Description>
       <Button onClick={handleRun} disabled={!file || status === "uploading"}>
         Run Backoff Scenario

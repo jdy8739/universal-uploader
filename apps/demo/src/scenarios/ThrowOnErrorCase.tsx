@@ -1,6 +1,7 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload } from "@usu/react";
+import { useI18n } from "../i18n";
 
 interface ThrowOnErrorCaseProps {
   file: File | null;
@@ -11,6 +12,7 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
     null,
   );
   const [onErrorCalls, setOnErrorCalls] = useState(0);
+  const { t } = useI18n();
 
   const { upload, status, result } = useUniversalUpload({
     url: "/upload/fail-always",
@@ -38,9 +40,9 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
 
   return (
     <Card>
-      <Card.Title>throwOnError=true Case</Card.Title>
+      <Card.Title>{t("test.scenarios.throwOnError.title")}</Card.Title>
       <Card.Description>
-        `/upload/fail-always` endpoint always fails. This scenario should throw.
+        {t("test.scenarios.throwOnError.description")}
       </Card.Description>
       <Button onClick={handleRun} disabled={!file || status === "uploading"}>
         Run Throw Scenario

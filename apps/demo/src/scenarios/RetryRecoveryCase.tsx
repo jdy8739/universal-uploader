@@ -1,6 +1,7 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload } from "@usu/react";
+import { useI18n } from "../i18n";
 
 interface RetryRecoveryCaseProps {
   file: File | null;
@@ -12,6 +13,7 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
     () => `test-${Math.random().toString(36).slice(2, 9)}`,
     [],
   );
+  const { t } = useI18n();
 
   const { upload, status, result, error } = useUniversalUpload({
     url: "/upload/fail-twice-then-success",
@@ -34,10 +36,9 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
 
   return (
     <Card>
-      <Card.Title>Retry Recovery Case</Card.Title>
+      <Card.Title>{t("test.scenarios.retryRecovery.title")}</Card.Title>
       <Card.Description>
-        Fails twice then succeeds. Tests `retryCount`, `onRetry`, and
-        `customHeaders`.
+        {t("test.scenarios.retryRecovery.description")}
       </Card.Description>
       <Button onClick={handleRun} disabled={!file || status === "uploading"}>
         Run Recovery Scenario

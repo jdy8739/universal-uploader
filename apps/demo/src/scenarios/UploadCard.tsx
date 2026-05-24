@@ -2,6 +2,7 @@
 import { useUniversalUpload, UploadMethod } from "@usu/react";
 import { Card, Button, Log, Badge } from "../ui";
 import { useState } from "react";
+import { useI18n } from "../i18n";
 
 interface UploadCardProps {
   title: string;
@@ -11,6 +12,7 @@ interface UploadCardProps {
 
 export const UploadCard = ({ title, method, file }: UploadCardProps) => {
   const [progress, setProgress] = useState(0);
+  const { t } = useI18n();
 
   const { upload, status, error, abort, retry, result, pause, resume } =
     useUniversalUpload({
@@ -44,12 +46,12 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
         <Card.Title>{title}</Card.Title>
         <Card.Description>
           {method === "stream"
-            ? "Constant memory usage via Web Streams."
+            ? t("test.scenarios.uploadCard.stream")
             : method === "stream chunked"
-              ? "Sequential chunks via Web Streams."
+              ? t("test.scenarios.uploadCard.streamChunked")
               : method === "xhr chunked"
-                ? "Sequential chunks via XMLHttpRequest."
-                : "Automatically selects optimal transfer method."}
+                ? t("test.scenarios.uploadCard.xhrChunked")
+                : t("test.scenarios.uploadCard.auto")}
         </Card.Description>
       </header>
 

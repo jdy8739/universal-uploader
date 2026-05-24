@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Home } from "./pages/Home";
 import { Test } from "./pages/Test";
+import { I18nProvider } from "./i18n";
 
 const App = () => {
   const [showDashboard, setShowDashboard] = useState(false);
@@ -12,4 +13,10 @@ const App = () => {
   return <Test onBack={() => setShowDashboard(false)} />;
 };
 
-export default App;
+export default function AppWithI18n() {
+  return (
+    <I18nProvider>
+      <App />
+    </I18nProvider>
+  );
+}

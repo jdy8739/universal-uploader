@@ -1,6 +1,7 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload, UploadMethod } from "@usu/react";
+import { useI18n } from "../i18n";
 
 interface ChunkedResumptionCaseProps {
   file: File | null;
@@ -15,6 +16,7 @@ export const ChunkedResumptionCase = ({
 }: ChunkedResumptionCaseProps) => {
   const [log, setLog] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const { t } = useI18n();
 
   const { upload, status, result, error, abort, pause, resume } = useUniversalUpload({
     url: "/upload/fail-at-chunk-3",
@@ -48,7 +50,9 @@ export const ChunkedResumptionCase = ({
   return (
     <Card>
       <Card.Title>{title}</Card.Title>
-      <Card.Description>Tests auto-resumption of {method}.</Card.Description>
+      <Card.Description>
+        {t("test.scenarios.chunkedResumption.description", "").replace("{method}", method)}
+      </Card.Description>
 
       <div className="flex gap-2 mb-6">
         <Button onClick={handleRun} disabled={!file || status === "uploading"}>

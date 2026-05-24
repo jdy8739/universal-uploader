@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useUniversalUpload } from '@usu/react';
 import { Card, Button, Log } from '../ui';
+import { useI18n } from '../i18n';
 
 interface LifecycleHooksCaseProps {
   file: File | null;
@@ -8,6 +9,7 @@ interface LifecycleHooksCaseProps {
 
 export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
   const [events, setEvents] = useState<string[]>([]);
+  const { t } = useI18n();
 
   const addEvent = (msg: string) => {
     setEvents((prev) => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${msg}`]);
@@ -32,9 +34,9 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
 
   return (
     <Card>
-      <Card.Title>Lifecycle Hooks Case</Card.Title>
+      <Card.Title>{t("test.scenarios.lifecycleHooks.title")}</Card.Title>
       <Card.Description>
-        Logs events from `onComplete`, `onAbort`, `onProgress`, `onPause`, and `onResume`.
+        {t("test.scenarios.lifecycleHooks.description")}
       </Card.Description>
       <div className="flex gap-2 mb-4">
         <Button onClick={() => file && upload(file)} disabled={!file || status === 'uploading'}>
