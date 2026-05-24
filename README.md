@@ -116,9 +116,9 @@ interface UploadOptions {
 
 ## Documentation
 
+- **[Online Documentation](https://jdy8739.github.io/universal-uploader/)** - Interactive guide (한국어, English)
 - **[@universal-uploader/core](./packages/core/README.md)** - Core upload engine API
 - **[@universal-uploader/react](./packages/react/README.md)** - React Hook guide
-- **[Live Demo](https://jdy8739.github.io/universal-uploader/)** - Try all methods online (한국어, English)
 - **[Demo Source](./apps/demo)** - Demo app code
 
 ## License
