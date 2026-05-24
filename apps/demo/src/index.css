@@ -43,7 +43,7 @@ body {
 }
 
 .card {
-  @apply bg-white border border-gray-200 rounded-xl p-6 shadow-sm;
+  @apply bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm;
 }
 
 .tag {
@@ -56,4 +56,67 @@ body {
 
 .tag-xhr {
   @apply bg-orange-100 text-orange-800;
+}
+
+.copy-btn {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.copy-btn:hover {
+  background-color: rgb(30 41 59 / 0.8);
+}
+
+.copy-btn:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 2px;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.lang-toggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  cursor: pointer;
+  background-color: #2563eb;
+  color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+.lang-toggle:hover {
+  background-color: #1d4ed8;
+}
+
+.lang-toggle:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.lang-toggle-icon {
+  font-size: 0.75rem;
+  opacity: 0.85;
 }

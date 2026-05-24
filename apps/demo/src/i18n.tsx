@@ -4,9 +4,23 @@ import ko from "./langs/ko.json";
 
 export type Language = "en" | "ko";
 
+function getBrowserLanguage(): Language {
+  const langs =
+    typeof navigator !== "undefined"
+      ? [...(navigator.languages ?? []), navigator.language]
+      : [];
+
+  for (const lang of langs) {
+    if (lang.toLowerCase().startsWith("ko")) return "ko";
+  }
+
+  return "en";
+}
+
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
+  toggleLanguage: () => void;
   t: (path: string, defaultValue?: string) => string;
 }
 
@@ -18,8 +32,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
       const stored = localStorage.getItem("lang");
       if (stored === "en" || stored === "ko") return stored;
 
-      const browserLang = navigator.language.startsWith("ko") ? "ko" : "en";
-      return browserLang;
+      return getBrowserLanguage();
     }
     return "en";
   });
@@ -39,9 +52,13 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const toggleLanguage = () => {
+    handleSetLanguage(language === "en" ? "ko" : "en");
+  };
+
   return (
     <I18nContext.Provider
-      value={{ language, setLanguage: handleSetLanguage, t }}
+      value={{ language, setLanguage: handleSetLanguage, toggleLanguage, t }}
     >
       {children}
     </I18nContext.Provider>

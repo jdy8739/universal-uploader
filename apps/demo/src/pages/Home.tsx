@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge, Button, Card } from "../ui";
+import { Badge, Button, Card, CopyButton, LanguageToggle } from "../ui";
 import { useI18n } from "../i18n";
 
 interface HomeProps {
@@ -43,45 +43,24 @@ const { upload, pause, resume, refresh, status } = useUniversalUpload({
 </button>`;
 
 export const Home = ({ onNavigate }: HomeProps) => {
-  const { t, language, setLanguage } = useI18n();
+  const { t, language } = useI18n();
 
   return (
-    <main className="max-w-[1200px] mx-auto p-8">
+    <main className="max-w-[1200px] mx-auto px-4 py-6 sm:px-6 sm:py-8 md:p-8 min-w-0">
       {/* ── Language Toggle ──────────────────────────────── */}
-      <div className="flex justify-end mb-6">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setLanguage("en")}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${
-              language === "en"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            English
-          </button>
-          <button
-            onClick={() => setLanguage("ko")}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${
-              language === "ko"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            한국어
-          </button>
-        </div>
+      <div className="flex justify-end mb-4 sm:mb-6">
+        <LanguageToggle />
       </div>
 
       {/* ── Header ─────────────────────────────────────── */}
-      <header className="text-center mb-16 pt-8">
-        <div className="inline-flex items-center gap-2 mb-6 px-3 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold">
+      <header className="text-center mb-10 sm:mb-16 pt-4 sm:pt-8">
+        <div className="inline-flex items-center gap-2 mb-4 sm:mb-6 px-3 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold">
           {t("home.header.badge")}
         </div>
-        <h1 className="text-5xl font-extrabold mb-4 text-gray-900 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4 text-gray-900 tracking-tight px-2">
           {t("home.header.title")}
         </h1>
-        <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed mb-8">
+        <p className="text-base sm:text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed mb-6 sm:mb-8 px-2">
           {language === "en" ? (
             <>
               High-performance file uploads for modern browsers. Constant memory
@@ -97,7 +76,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
             </>
           )}
         </p>
-        <div className="flex justify-center gap-2 flex-wrap">
+        <div className="flex justify-center gap-2 flex-wrap px-2">
           {process.env.NODE_ENV === "development" && (
             <Button
               onClick={onNavigate}
@@ -140,8 +119,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </header>
 
       {/* ── Stats ──────────────────────────────────────── */}
-      <section className="mb-12">
-        <div className="card grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100 p-0 overflow-hidden">
+      <section className="mb-10 sm:mb-12">
+        <div className="card grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-gray-100 p-0 overflow-hidden">
           {[
             {
               value: t("home.stats.dependencies.value"),
@@ -160,8 +139,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
               label: t("home.stats.typeSafe.label"),
             },
           ].map(({ value, label }) => (
-            <div key={label} className="text-center py-7 px-4">
-              <div className="text-3xl font-extrabold text-gray-900 mb-1">
+            <div key={label} className="text-center py-5 sm:py-7 px-3 sm:px-4">
+              <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">
                 {value}
               </div>
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
@@ -173,11 +152,11 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── Features ───────────────────────────────────── */}
-      <section className="mb-12">
-        <h2 className="mt-0 mb-6 text-2xl font-bold">
+      <section className="mb-10 sm:mb-12">
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">
           {t("home.features.title")}
         </h2>
-        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
           {(t("home.features.items") as any).map(
             (feature: any, idx: number) => (
               <Card key={idx}>
@@ -203,13 +182,13 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── Quick Start / Installation ───────────────────────── */}
-      <section className="mb-12">
-        <h2 className="mt-0 mb-6 text-2xl font-bold">Quick Start</h2>
-        <div className="grid md:grid-cols-2 gap-6">
+      <section className="mb-10 sm:mb-12">
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">Quick Start</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Core Package */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
+          <div className="card min-w-0">
+            <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 break-all">
                 @universal-uploader/core
               </h3>
               <a
@@ -224,18 +203,24 @@ export const Home = ({ onNavigate }: HomeProps) => {
             <p className="text-sm text-gray-600 mb-4">
               Core upload engine with three strategies
             </p>
-            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto mb-3">
-              <code>npm install @universal-uploader/core</code>
-            </pre>
-            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto">
+            <div className="bg-slate-950 text-slate-100 p-3 rounded text-xs mb-3 flex items-center gap-2 font-mono">
+              <code className="flex-1 min-w-0 overflow-x-auto whitespace-nowrap scrollbar-hidden">
+                npm install @universal-uploader/core
+              </code>
+              <CopyButton
+                text="npm install @universal-uploader/core"
+                label="Copy install command"
+              />
+            </div>
+            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
               <code className="text-emerald-400">{`const { upload } = require('@universal-uploader/core');\nawait upload('/api/upload', file);`}</code>
             </pre>
           </div>
 
           {/* React Package */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
+          <div className="card min-w-0">
+            <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 break-all">
                 @universal-uploader/react
               </h3>
               <a
@@ -250,12 +235,16 @@ export const Home = ({ onNavigate }: HomeProps) => {
             <p className="text-sm text-gray-600 mb-4">
               React Hook wrapper for seamless integration
             </p>
-            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto mb-3">
-              <code>
+            <div className="bg-slate-950 text-slate-100 p-3 rounded text-xs mb-3 flex items-center gap-2 font-mono">
+              <code className="flex-1 min-w-0 overflow-x-auto whitespace-nowrap scrollbar-hidden">
                 npm install @universal-uploader/react @universal-uploader/core
               </code>
-            </pre>
-            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto">
+              <CopyButton
+                text="npm install @universal-uploader/react @universal-uploader/core"
+                label="Copy install command"
+              />
+            </div>
+            <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
               <code className="text-emerald-400">{`const { upload, progress } = useUniversalUpload({\n  url: '/api/upload'\n});`}</code>
             </pre>
           </div>
@@ -263,11 +252,11 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── Upload Controls ─────────────────────────────── */}
-      <section className="mb-12">
-        <h2 className="mt-0 mb-6 text-2xl font-bold">
+      <section className="mb-10 sm:mb-12">
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">
           {t("home.controlSemantics.title")}
         </h2>
-        <div className="card">
+        <div className="card min-w-0">
           <p className="text-sm text-gray-500 leading-relaxed mt-0 mb-6">
             {t("home.controlSemantics.description")}
           </p>
@@ -299,7 +288,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
               ),
             )}
           </div>
-          <div className="grid gap-3 md:grid-cols-4 mt-4">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-4">
             {(t("home.controlSemantics.badges") as any).map(
               (badge: any, idx: number) => {
                 const bgColorClasses: Record<string, string> = {
@@ -338,13 +327,13 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── Developer Experience ────────────────────────── */}
-      <section className="mb-12">
-        <h2 className="mt-0 mb-6 text-2xl font-bold">
+      <section className="mb-10 sm:mb-12">
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">
           {t("home.developerExperience.title")}
         </h2>
-        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-stretch">
           {/* DX list */}
-          <div className="card h-full">
+          <div className="card h-full min-w-0">
             <p className="text-gray-500 leading-relaxed mb-6">
               {t("home.developerExperience.description")}
             </p>
@@ -365,26 +354,26 @@ export const Home = ({ onNavigate }: HomeProps) => {
           </div>
 
           {/* Code block */}
-          <div className="card bg-slate-950 border-slate-800 p-0 overflow-hidden h-full">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
-              <div className="flex gap-1.5">
+          <div className="card bg-slate-950 border-slate-800 p-0 overflow-hidden h-full min-w-0">
+            <div className="flex items-center justify-between px-3 sm:px-5 py-3 border-b border-slate-800 gap-2">
+              <div className="flex gap-1.5 flex-shrink-0">
                 <div className="w-3 h-3 rounded-full bg-red-500/60" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                 <div className="w-3 h-3 rounded-full bg-green-500/60" />
               </div>
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-slate-400 font-mono truncate">
                 upload.ts
               </span>
-              <div className="w-14" />
+              <div className="w-8 sm:w-14 flex-shrink-0" />
             </div>
-            <pre className="px-6 py-5 text-[12.5px] leading-[1.85] overflow-x-auto m-0 bg-slate-950">
+            <pre className="px-3 sm:px-6 py-4 sm:py-5 text-[11px] sm:text-[12.5px] leading-[1.85] overflow-x-auto scrollbar-hidden m-0 bg-slate-950">
               <code>
                 {CODE_SNIPPET.split("\n").map((line, i) => (
-                  <div key={i} className="flex">
-                    <span className="select-none w-5 text-slate-600 text-right mr-5 flex-shrink-0 tabular-nums text-[11px]">
+                  <div key={i} className="flex min-w-0">
+                    <span className="select-none w-4 sm:w-5 text-slate-600 text-right mr-3 sm:mr-5 flex-shrink-0 tabular-nums text-[10px] sm:text-[11px]">
                       {i + 1}
                     </span>
-                    <span className={getLineColor(line)}>
+                    <span className={`${getLineColor(line)} break-all sm:break-normal`}>
                       {line || "\u00A0"}
                     </span>
                   </div>
@@ -396,18 +385,18 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── Method Comparison ──────────────────────────── */}
-      <section className="mb-12">
-        <h2 className="mt-0 mb-6 text-2xl font-bold">
+      <section className="mb-10 sm:mb-12">
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">
           {t("home.methodComparison.title")}
         </h2>
-        <div className="card">
+        <div className="card min-w-0">
           <p className="text-sm text-gray-500 leading-relaxed mt-0 mb-6">
             {t("home.methodComparison.description")}
           </p>
 
           {/* 비교 표 */}
-          <div className="overflow-x-auto mb-8">
-            <table className="w-full border-collapse">
+          <div className="overflow-x-auto scrollbar-hidden -mx-4 sm:mx-0 px-4 sm:px-0 mb-6 sm:mb-8">
+            <table className="w-full min-w-[540px] border-collapse">
               <thead>
                 <tr className="border-b border-gray-200">
                   {(t("home.methodComparison.headers") as any).map(
@@ -454,7 +443,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
           </div>
 
           {/* 범례 */}
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {(t("home.methodComparison.legend") as any).map(
               (item: any, idx: number) => {
                 const colors = [
@@ -482,12 +471,12 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── Browser Support ─────────────────────────────── */}
-      <section className="mb-12">
-        <h2 className="mt-0 mb-6 text-2xl font-bold">
+      <section className="mb-10 sm:mb-12">
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">
           {t("home.browserSupport.title")}
         </h2>
-        <div className="card">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="card min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {(t("home.browserSupport.items") as any).map(
               (item: any, idx: number) => {
                 const isFull = idx < 2;
@@ -522,9 +511,9 @@ export const Home = ({ onNavigate }: HomeProps) => {
 
       {/* ── CTA ─────────────────────────────────────────── */}
       {process.env.NODE_ENV === "development" && (
-        <section className="mb-12">
-          <div className="card text-center py-12">
-            <h2 className="mt-0 text-3xl font-extrabold mb-3 text-gray-900">
+        <section className="mb-10 sm:mb-12">
+          <div className="card text-center py-8 sm:py-12 px-4">
+            <h2 className="mt-0 text-2xl sm:text-3xl font-extrabold mb-3 text-gray-900">
               {t("home.cta.title")}
             </h2>
             <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
@@ -541,7 +530,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
       )}
 
       {/* ── Footer ──────────────────────────────────────── */}
-      <footer className="pt-8 border-t border-gray-200 text-center text-sm text-gray-400">
+      <footer className="pt-6 sm:pt-8 border-t border-gray-200 text-center text-sm text-gray-400 px-2">
         <p>{t("home.footer")}</p>
       </footer>
     </main>

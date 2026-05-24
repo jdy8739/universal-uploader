@@ -11,7 +11,7 @@ import {
   DisableChunkingCase,
   ChunkedResumptionCase,
 } from "../scenarios";
-import { Button } from "../ui";
+import { Button, LanguageToggle } from "../ui";
 import { useI18n } from "../i18n";
 
 interface TestProps {
@@ -20,7 +20,7 @@ interface TestProps {
 
 export const Test = ({ onBack }: TestProps) => {
   const [file, setFile] = useState<File | null>(null);
-  const { t, language, setLanguage } = useI18n();
+  const { t, language } = useI18n();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -35,28 +35,7 @@ export const Test = ({ onBack }: TestProps) => {
           <Button variant="outline" onClick={onBack}>
             {t("test.backButton")}
           </Button>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setLanguage("en")}
-              className={`px-3 py-1 rounded text-sm font-medium transition ${
-                language === "en"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setLanguage("ko")}
-              className={`px-3 py-1 rounded text-sm font-medium transition ${
-                language === "ko"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              한국어
-            </button>
-          </div>
+          <LanguageToggle />
         </div>
       </div>
 
