@@ -129,8 +129,8 @@ const uploadWithFetchStreamChunked = async (
       };
       response.actions.pause = () => {
         isPaused = true;
-        abortController.abort();
 
+        abortController.abort();
         onPause?.();
 
         uploadResult = {
@@ -145,8 +145,8 @@ const uploadWithFetchStreamChunked = async (
         if (uploadResult.status === "paused" && !isResuming) {
           isResuming = true;
 
-          onResume?.();
           response.result = uploadChunkedStream();
+          onResume?.();
         }
       };
 

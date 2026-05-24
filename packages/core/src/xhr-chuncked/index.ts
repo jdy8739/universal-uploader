@@ -1,4 +1,9 @@
-import { UploadParams, UploadResponse, UploadResult } from "../types";
+import {
+  UploadParams,
+  UploadParamsInternal,
+  UploadResponse,
+  UploadResult,
+} from "../types";
 import {
   isSuccessfulHttpStatus,
   calculateChunkEnd,
@@ -19,9 +24,18 @@ const uploadWithoutChunking = ({
   url,
   file,
   refresh,
-  options: { customHeaders = {}, withCredentials, onProgress, onComplete },
-}: UploadParams & { refresh: () => void }): UploadResponse => {
+  resume,
+  options: {
+    customHeaders = {},
+    withCredentials,
+    onProgress,
+    onComplete,
+    onPause,
+    onResume,
+  },
+}: UploadParamsInternal): UploadResponse => {
   const xhr = new XMLHttpRequest();
+  let isPaused = false;
 
   const response = new Promise<UploadResult>((resolve, reject) => {
     xhr.open("POST", url);
@@ -66,11 +80,21 @@ const uploadWithoutChunking = ({
       reject(new Error(`Upload failed with status ${xhr.status}`));
     };
 
-    xhr.onerror = () =>
-      reject(new Error(`Upload failed with status ${xhr.status}`));
     xhr.onabort = () => {
+      if (isPaused) {
+        resolve({
+          ok: false,
+          total: file.size,
+          message: undefined,
+          status: "paused",
+        });
+        return;
+      }
+
       reject(new DOMException("Aborted", "AbortError"));
     };
+    xhr.onerror = () =>
+      reject(new Error(`Upload failed with status ${xhr.status}`));
 
     xhr.send(file);
   });
@@ -79,17 +103,38 @@ const uploadWithoutChunking = ({
     result: response.then((res) => ({
       ok: res.ok,
       total: file.size,
-      message: undefined,
-      status: "success",
+      message: res.message,
+      status: res.status,
     })),
     actions: {
-      abort: () => xhr.abort(),
+      abort: () => {
+        isPaused = false;
+
+        xhr.abort();
+      },
       refresh: () => {
+        isPaused = false;
+
         xhr.abort();
         refresh();
       },
-      pause: () => null,
-      resume: () => null,
+      pause: () => {
+        // Actually pause means abort the upload because it is not chunked to catch the chunk upload progress.
+        // 실제로 일시정지는 청크 업로드 진행률을 캐치하지 않기 떄문에 업로드를 중단하게 되고 재개 시 업로드를 다시 시작합니다.
+        isPaused = true;
+        xhr.abort();
+        onPause?.();
+      },
+      resume: () => {
+        if (!isPaused) {
+          return;
+        }
+
+        isPaused = false;
+
+        resume();
+        onResume?.();
+      },
     },
   };
 };
@@ -99,7 +144,7 @@ const uploadWithoutChunking = ({
  * XMLHttpRequest를 사용하여 파일을 여러 개의 청크로 나누어 순차적으로 업로드합니다.
  */
 const uploadWithXhrChuncked = async (
-  args: UploadParams & { refresh: () => void },
+  args: UploadParamsInternal,
 ): Promise<UploadResponse> => {
   const { url, file, refresh, options } = args;
 
@@ -128,16 +173,16 @@ const uploadWithXhrChuncked = async (
     },
   };
 
+  // If the chunk size is invalid, upload the file as a single request.
+  // 청크 크기가 유효하지 않은 경우 단일 요청으로 업로드합니다.
+  if (typeof chunkSize === "number" && chunkSize <= 0) {
+    return uploadWithoutChunking(args);
+  }
+
   const { safeChunkSize, totalFileSize, totalChunks } = calculateSizes({
     chunkSize: chunkSize ?? DEFAULT_STREAM_CHUNK_SIZE,
     fileSize: file.size,
   });
-
-  // If the chunk size is invalid, upload the file as a single request.
-  // 청크 크기가 유효하지 않은 경우 단일 요청으로 업로드합니다.
-  if (!safeChunkSize || safeChunkSize <= 0) {
-    return uploadWithoutChunking(args);
-  }
 
   // If the file size is 0, upload the file as a single request.
   // 파일 크기가 0인 경우 바로 성공 처리합니다.
@@ -263,8 +308,7 @@ const uploadWithXhrChuncked = async (
               return;
             }
 
-            const abortError = new DOMException("Aborted", "AbortError");
-            reject(abortError);
+            reject(new DOMException("Aborted", "AbortError"));
           };
 
           const chunk = file.slice(offset, chunkEnd);
@@ -278,8 +322,8 @@ const uploadWithXhrChuncked = async (
           };
           response.actions.pause = () => {
             isPaused = true;
-            xhr.abort();
 
+            xhr.abort();
             onPause?.();
 
             resolve({
@@ -293,8 +337,10 @@ const uploadWithXhrChuncked = async (
             if (uploadResult.status === "paused" && !isResuming) {
               isResuming = true;
 
-              onResume?.();
+              // Resume the upload based on the options.offset in the closure. No separate resume function is used because it restarts the upload itself.
+              // 업로드를 클로저인 options.offset 기준으로 재개합니다. 별도의 resume 함수는 업로드 자체를 재실행하므로 쓰지 않습니다.
               response.result = uploadChunkedXhr();
+              onResume?.();
             }
           };
         },

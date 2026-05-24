@@ -1,37 +1,13 @@
-import { UploadResponse, OnProgressParams, UploadParams } from "../types";
+import {
+  UploadResponse,
+  OnProgressParams,
+  UploadParams,
+  UploadParamsInternal,
+  UploadResult,
+} from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 import { calculateSizes, getCustomHeaders, initializeStream } from "../helper";
-import { getStreamUploader } from "./helper";
-
-/**
- * Creates a TransformStream that tracks the progress of the data flowing through it.
- * 데이터 흐름을 추적하여 진행률을 계산하는 TransformStream을 생성합니다.
- */
-const createProgressStream = ({
-  totalFileSize,
-  onProgress,
-}: {
-  totalFileSize: number;
-  onProgress?: (args: OnProgressParams) => void;
-}) => {
-  let bytesRead = 0;
-
-  return new TransformStream<Uint8Array, Uint8Array>({
-    // Calculate progress by obtaining chunks from the readable stream piped through. No separate data processing is performed.
-    // 각 리더블 스트림에 파이프를 걸어 청크를 얻어 진행율을 계산합니다. 별도의 chunk 데이터 가공은 하지 않습니다.
-    transform: (chunk, controller) => {
-      bytesRead += chunk.byteLength;
-
-      onProgress?.({
-        loaded: bytesRead,
-        percentage: (bytesRead / totalFileSize) * 100,
-        total: totalFileSize,
-      });
-
-      controller.enqueue(chunk);
-    },
-  });
-};
+import { createUploadBody, getStreamUploader } from "./helper";
 
 /**
  * Uploads a file using the Fetch streaming request body.
@@ -40,6 +16,7 @@ const createProgressStream = ({
 const uploadWithStream = async ({
   url,
   file,
+  resume,
   refresh,
   options: {
     chunkSize = DEFAULT_STREAM_CHUNK_SIZE,
@@ -47,8 +24,10 @@ const uploadWithStream = async ({
     withCredentials,
     onProgress,
     onComplete,
+    onPause,
+    onResume,
   },
-}: UploadParams & { refresh: () => void }): Promise<UploadResponse> => {
+}: UploadParamsInternal): Promise<UploadResponse> => {
   const { safeChunkSize } = calculateSizes({
     chunkSize,
     fileSize: file.size,
@@ -56,14 +35,11 @@ const uploadWithStream = async ({
 
   const stream = getStreamUploader({ file, chunkSize: safeChunkSize });
 
-  const body = onProgress
-    ? stream.pipeThrough(
-        createProgressStream({
-          totalFileSize: file.size,
-          onProgress,
-        }),
-      )
-    : stream;
+  const body = createUploadBody({
+    stream,
+    totalFileSize: file.size,
+    onProgress,
+  });
 
   const { abortController, streamInit } = initializeStream({
     body,
@@ -72,33 +48,75 @@ const uploadWithStream = async ({
   });
 
   const response = fetch(url, streamInit);
+  let isPaused = false;
 
   return {
-    result: response.then((res) => {
-      if (res.ok) {
-        // No chunks are transformed for empty files, so emit terminal progress here.
-        if (file.size === 0) {
-          onProgress?.({ loaded: 0, total: 0, percentage: 100 });
+    result: response
+      .then((res) => {
+        if (res.ok) {
+          // No chunks are transformed for empty files, so emit terminal progress here.
+          if (file.size === 0) {
+            onProgress?.({ loaded: 0, total: 0, percentage: 100 });
+          }
+
+          onComplete?.();
         }
 
-        onComplete?.();
-      }
+        const resultSuccess = {
+          ok: res.ok,
+          total: file.size,
+          message: res.ok
+            ? undefined
+            : `Upload failed with status ${res.status}`,
+          status: res.ok ? "success" : "error",
+        } satisfies UploadResult;
 
-      return {
-        ok: res.ok,
-        total: file.size,
-        message: res.ok ? undefined : `Upload failed with status ${res.status}`,
-        status: res.ok ? "success" : "error",
-      };
-    }),
+        return resultSuccess;
+      })
+      .catch((e) => {
+        if (isPaused && e instanceof DOMException && e.name === "AbortError") {
+          const resultAborted = {
+            ok: false,
+            total: file.size,
+            message: undefined,
+            status: "paused",
+          } satisfies UploadResult;
+
+          return resultAborted;
+        }
+
+        throw e;
+      }),
     actions: {
-      abort: () => abortController.abort(), // Never put an argument when aborting.
+      abort: () => {
+        isPaused = false;
+
+        abortController.abort(); // Never put an argument when aborting.
+      },
       refresh: () => {
+        isPaused = false;
+
         abortController.abort(); // Never put an argument when aborting.
         refresh();
       },
-      pause: () => null,
-      resume: () => null,
+      pause: () => {
+        // Actually pause means abort the upload because it is not chunked to catch the chunk upload progress.
+        // 실제로 일시정지는 청크 업로드 진행률을 캐치하지 않기 떄문에 업로드를 중단하게 되고 재개 시 업로드를 다시 시작합니다.
+        isPaused = true;
+
+        abortController.abort();
+        onPause?.();
+      },
+      resume: () => {
+        if (!isPaused) {
+          return;
+        }
+
+        isPaused = false;
+
+        resume();
+        onResume?.();
+      },
     },
   };
 };

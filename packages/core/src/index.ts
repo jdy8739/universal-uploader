@@ -6,10 +6,20 @@ import { getUploader } from "./orchestrator";
 /**
  * Orchestrates file upload by selecting the optimal method and managing retries and errors.
  * 최적의 업로드 방식을 선택하고 재시도 및 에러 처리를 관리하여 파일 업로드를 수행합니다.
+ *
+ * retryAttempt: current retry depth used for retry delay/backoff handling.
+ * isResuming: true when explicitly resuming so offset reset is skipped.
+ * initialOptions: initial call snapshot used to make refresh deterministic.
+ *
+ * retryAttempt: 현재 재시도 단계(지연/백오프 계산용)입니다.
+ * isResuming: 명시적 resume 호출 여부(오프셋 초기화 스킵)입니다.
+ * initialOptions: refresh를 항상 동일하게 만들기 위한 최초 옵션 스냅샷입니다.
  */
 const upload = async (
   { url, file, options: { method = "auto", ...options } }: UploadParams,
   retryAttempt = 0,
+  isResuming = false,
+  initialOptions?: UploadParams["options"],
 ): Promise<UploadResponse> => {
   const {
     onAbort,
@@ -22,7 +32,7 @@ const upload = async (
 
   const retryCount = retryCountArg;
 
-  if (retryAttempt === 0) {
+  if (retryAttempt === 0 && !isResuming) {
     options.offset = undefined;
   }
 
@@ -71,7 +81,43 @@ const upload = async (
     return { ok: false, total: 0, message: e.message, status: "error" };
   };
 
-  const refresh = () => upload({ url, file, options: { ...options, method } });
+  /**
+   * Restart upload from the initial options snapshot.
+   * retries/offset are reset to start from scratch.
+   *
+   * 초기 옵션 스냅샷으로 업로드를 재시작합니다.
+   * retries/offset을 초기화하고 처음부터 시작합니다.
+   */
+  const refresh = () =>
+    upload(
+      {
+        url,
+        file,
+        options: {
+          ...(initialOptions ?? options),
+          method: initialOptions?.method ?? method,
+          offset: 0,
+        },
+      },
+      0,
+      false,
+      initialOptions ?? { ...options, method },
+    );
+
+  /**
+   * Resume upload using the current retry context and persisted offset.
+   * retryAttempt is kept and offset is not reset.
+   *
+   * 현재 재시도 컨텍스트와 저장된 offset으로 업로드를 재개합니다.
+   * retryAttempt를 유지하고 offset을 초기화하지 않습니다.
+   */
+  const resume = () =>
+    upload(
+      { url, file, options: { ...options, method } },
+      retryAttempt,
+      true,
+      initialOptions ?? { ...options, method },
+    );
 
   /**
    * Attempts to retry an upload operation.
@@ -89,7 +135,12 @@ const upload = async (
 
     await wait(nextRetryDelay);
 
-    const uploadResponse = await upload(uploadArgs, nextRetryAttempt);
+    const uploadResponse = await upload(
+      uploadArgs,
+      nextRetryAttempt,
+      false,
+      initialOptions ?? { ...options, method },
+    );
 
     onRetry?.();
 
@@ -156,6 +207,7 @@ const upload = async (
         url,
         file,
         refresh,
+        resume,
         options,
       }),
     );

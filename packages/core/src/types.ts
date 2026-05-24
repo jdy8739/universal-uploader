@@ -64,6 +64,13 @@ export interface UploadParams {
   options: UploadOptions;
 }
 
+export interface UploadParamsInternal extends UploadParams {
+  /** Restart upload from the initial options snapshot. / 초기 옵션 스냅샷으로 업로드를 재시작합니다. */
+  refresh: () => void;
+  /** Resume upload with current retry context and persisted offset. / 현재 재시도 컨텍스트와 저장된 오프셋으로 업로드를 재개합니다. */
+  resume: () => void;
+}
+
 /**
  * Possible status states of an upload.
  * 업로드의 가능한 상태 값들입니다.
@@ -98,11 +105,11 @@ export interface UploadResult {
 export interface UploadActions {
   /** Abort the current upload. / 현재 업로드를 중단합니다. */
   abort: () => void;
-  /** Restart or refresh the upload. / 업로드를 재시작하거나 갱신합니다. */
+  /** Restart upload from the initial options snapshot (retry/offset reset). / 초기 옵션 스냅샷으로 업로드를 재시작합니다(재시도/오프셋 초기화). */
   refresh: () => void;
   /** Pause the current upload. / 현재 업로드를 일시 중지합니다. */
   pause: () => void;
-  /** Resume the paused upload. / 일시 중지된 업로드를 재개합니다. */
+  /** Resume upload from persisted progress without resetting retry context. / 저장된 진행 상태로 재개하며 재시도 컨텍스트를 초기화하지 않습니다. */
   resume: () => void;
 }
 
