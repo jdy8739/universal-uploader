@@ -1,4 +1,4 @@
-import { CHUNK_HEADER_KEYS } from "../const";
+import { getCustomHeaders } from "../helper";
 
 const HTTP_STATUS_SUCCESS_MIN = 200;
 const HTTP_STATUS_SUCCESS_MAX_EXCLUSIVE = 300;
@@ -34,30 +34,6 @@ export const calculateChunkRange = ({
 };
 
 /**
- * Returns chunking-related headers merged with custom headers.
- * 청크 관련 헤더와 커스텀 헤더를 병합해 반환합니다.
- */
-export const getChunkHeaders = ({
-  customHeaders,
-  chunkIndex,
-  totalChunks,
-  chunkSize,
-  totalFileSize,
-}: {
-  customHeaders: Record<string, string>;
-  chunkIndex: number;
-  totalChunks: number;
-  chunkSize: number;
-  totalFileSize: number;
-}) => ({
-  [CHUNK_HEADER_KEYS.chunkIndex]: String(chunkIndex),
-  [CHUNK_HEADER_KEYS.totalChunks]: String(totalChunks),
-  [CHUNK_HEADER_KEYS.chunkSize]: String(chunkSize),
-  [CHUNK_HEADER_KEYS.fileSize]: String(totalFileSize),
-  ...customHeaders,
-});
-
-/**
  * Applies chunking-related headers and custom headers to the XMLHttpRequest object.
  * XMLHttpRequest 객체에 청크 관련 헤더 및 커스텀 헤더를 적용합니다.
  */
@@ -68,25 +44,26 @@ export const applyChunkHeaders = ({
   totalChunks,
   safeChunkSize,
   totalFileSize,
+  fileName,
 }: {
   xhr: XMLHttpRequest;
-  customHeaders: Record<string, string>;
-  chunkIndex: number;
-  totalChunks: number;
-  safeChunkSize: number;
-  totalFileSize: number;
+  customHeaders?: Record<string, string>;
+  chunkIndex?: number;
+  totalChunks?: number;
+  safeChunkSize?: number;
+  totalFileSize?: number;
+  fileName: string;
 }) => {
-  const headers = getChunkHeaders({
+  const headers = getCustomHeaders({
     customHeaders,
     chunkIndex,
     totalChunks,
     chunkSize: safeChunkSize,
     totalFileSize,
+    fileName,
   });
 
   Object.entries(headers).forEach(([key, value]) => {
     xhr.setRequestHeader(key, value);
   });
-
-  return xhr;
 };

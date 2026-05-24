@@ -16,4 +16,5 @@ export const CHUNK_HEADER_KEYS = {
   totalChunks: "X-Total-Chunks",
   chunkSize: "X-Chunk-Size",
   fileSize: "X-File-Size",
+  fileName: "X-File-Name",
 } as const;

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "server": "nodemon ./server.js",
+    "server": "nodemon ../../server.ts",
     "dev": "concurrently \"npm run server\" \"vite\"",
     "build": "vite build",
     "preview": "vite preview"

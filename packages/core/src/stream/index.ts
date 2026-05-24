@@ -1,6 +1,6 @@
 import { UploadResponse, OnProgressParams, UploadParams } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
-import { calculateSizes, initializeStream } from "../helper";
+import { calculateSizes, getCustomHeaders, initializeStream } from "../helper";
 import { getStreamUploader } from "./helper";
 
 /**
@@ -68,7 +68,7 @@ const uploadWithStream = async ({
   const { abortController, streamInit } = initializeStream({
     body,
     withCredentials: withCredentials ?? false,
-    customHeaders,
+    customHeaders: getCustomHeaders({ customHeaders, fileName: file.name }),
   });
 
   const response = fetch(url, streamInit);

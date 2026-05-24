@@ -3,10 +3,11 @@ import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 import {
   calculateSizes,
   calculateChunkProgress,
+  getCustomHeaders,
   initializeStream,
 } from "../helper";
 import { calculateChunkRange } from "../xhr-chuncked/helper";
-import { createChunkedStream, getStreamChunkHeaders } from "./helper";
+import { createChunkedStream } from "./helper";
 
 const uploadWithFetchStreamChunked = async (
   args: UploadParams & { refresh: () => void },
@@ -96,12 +97,13 @@ const uploadWithFetchStreamChunked = async (
       const { abortController, streamInit } = initializeStream({
         body: chunkedStream,
         withCredentials: withCredentials ?? false,
-        customHeaders: getStreamChunkHeaders({
-          customHeaders: customHeaders || {},
+        customHeaders: getCustomHeaders({
+          customHeaders,
           chunkIndex,
           totalChunks,
           chunkSize: safeChunkSize,
           totalFileSize,
+          fileName: file.name,
         }),
       });
 
@@ -118,16 +120,16 @@ const uploadWithFetchStreamChunked = async (
       };
       response.actions.pause = () => {
         isPaused = true;
-        abortController.abort()
+        abortController.abort();
 
         onPause?.();
 
-         uploadResult = {
+        uploadResult = {
           ok: false,
           total: totalFileSize,
           message: undefined,
           status: "paused",
-        }
+        };
         return;
       };
       response.actions.resume = () => {
@@ -137,7 +139,7 @@ const uploadWithFetchStreamChunked = async (
           onResume?.();
           response.result = uploadChunkedStream();
         }
-      }
+      };
 
       try {
         const fetchResponse = await fetch(url, streamInit);

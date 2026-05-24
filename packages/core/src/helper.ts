@@ -1,5 +1,5 @@
 import type { StreamUploaderParams } from "./types";
-import { DEFAULT_STREAM_CHUNK_SIZE } from "./const";
+import { CHUNK_HEADER_KEYS, DEFAULT_STREAM_CHUNK_SIZE } from "./const";
 
 /**
  * Metadata for chunked uploads.
@@ -70,6 +70,49 @@ export const createBuffer = async ({
   const buffer = await chunk.arrayBuffer();
 
   return new Uint8Array(buffer);
+};
+
+/**
+ * Returns chunk-related headers merged with custom headers.
+ * 청크 관련 헤더와 커스텀 헤더를 병합해 반환합니다.
+ */
+export const getCustomHeaders = ({
+  customHeaders,
+  chunkIndex,
+  totalChunks,
+  chunkSize,
+  totalFileSize,
+  fileName,
+}: {
+  customHeaders?: Record<string, string>;
+  chunkIndex?: number;
+  totalChunks?: number;
+  chunkSize?: number;
+  totalFileSize?: number;
+  fileName: string;
+}) => {
+  const headers: Record<string, string> = {
+    [CHUNK_HEADER_KEYS.fileName]: encodeURIComponent(fileName),
+    ...(customHeaders || {}),
+  };
+
+  if (chunkIndex !== undefined) {
+    headers[CHUNK_HEADER_KEYS.chunkIndex] = String(chunkIndex);
+  }
+
+  if (totalChunks !== undefined) {
+    headers[CHUNK_HEADER_KEYS.totalChunks] = String(totalChunks);
+  }
+
+  if (chunkSize !== undefined) {
+    headers[CHUNK_HEADER_KEYS.chunkSize] = String(chunkSize);
+  }
+
+  if (totalFileSize !== undefined) {
+    headers[CHUNK_HEADER_KEYS.fileSize] = String(totalFileSize);
+  }
+
+  return headers;
 };
 
 /**

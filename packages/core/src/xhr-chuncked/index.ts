@@ -26,8 +26,10 @@ const uploadWithoutChunking = ({
       xhr.withCredentials = true;
     }
 
-    Object.entries(customHeaders).forEach(([key, value]) => {
-      xhr.setRequestHeader(key, value);
+    applyChunkHeaders({
+      xhr,
+      customHeaders,
+      fileName: file.name,
     });
 
     if (onProgress) {
@@ -210,6 +212,7 @@ const uploadWithXhrChuncked = async (
             totalChunks,
             safeChunkSize,
             totalFileSize,
+            fileName: file.name,
           });
 
           xhr.onload = () => {
