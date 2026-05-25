@@ -16,7 +16,7 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
   const [lastRunMessage, setLastRunMessage] = useState("Not started");
   const { t } = useI18n();
 
-  const { upload, status, error, result } = useUniversalUpload({
+  const { upload, status, error, result, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
       method: "auto",
@@ -55,6 +55,7 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
             { label: "onErrorCalls", value: onErrorCalls },
             { label: "resultOk", value: result.ok.toString() },
             { label: "message", value: result.message || lastRunMessage },
+            { label: "uploadMethod", value: uploadMethod ?? "pending" },
           ]}
         />
       </Log>

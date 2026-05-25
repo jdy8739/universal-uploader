@@ -51,7 +51,7 @@ import { useUniversalUpload } from '@universal-uploader/react';
 export const Upload = () => {
   const [progress, setProgress] = useState(0);
   
-  const { upload, pause, resume, abort, status, result, error } = useUniversalUpload({
+  const { upload, pause, resume, abort, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
       method: 'auto', 
@@ -65,6 +65,7 @@ export const Upload = () => {
       <input type="file" onChange={(e) => e.target.files && upload(e.target.files[0])} />
       <progress value={progress} max={100} />
       <p>Status: {status}</p>
+      <p>Method: {uploadMethod ?? 'pending'}</p>
       {status === 'uploading' && (
         <>
           <button onClick={pause}>Pause</button>

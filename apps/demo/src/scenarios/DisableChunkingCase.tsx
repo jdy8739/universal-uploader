@@ -12,7 +12,7 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, result, abort, pause, resume } = useUniversalUpload({
+  const { upload, status, result, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "xhr chunked",
@@ -70,6 +70,7 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
             { label: "progress", value: `${progress}%` },
             { label: "resultOk", value: result.ok.toString() },
             { label: "message", value: resultMessage },
+            { label: "uploadMethod", value: uploadMethod ?? "pending" },
           ]}
         />
       </Log>

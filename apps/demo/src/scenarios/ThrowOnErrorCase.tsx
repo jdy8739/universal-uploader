@@ -14,7 +14,7 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
   const [onErrorCalls, setOnErrorCalls] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, result } = useUniversalUpload({
+  const { upload, status, result, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
       method: "auto",
@@ -54,6 +54,7 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
             { label: "onErrorCalls", value: onErrorCalls },
             { label: "resultOk", value: result.ok.toString() },
             { label: "caughtError", value: caughtErrorMessage || "No throw yet" },
+            { label: "uploadMethod", value: uploadMethod ?? "pending" },
           ]}
         />
       </Log>

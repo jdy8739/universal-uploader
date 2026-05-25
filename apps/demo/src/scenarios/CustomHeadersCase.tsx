@@ -7,7 +7,7 @@ interface CustomHeadersCaseProps {
 }
 
 export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
-  const { upload, status, pause, resume } = useUniversalUpload({
+  const { upload, status, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "auto",
@@ -48,6 +48,7 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
           Resume
         </Button>
       </div>
+      <Badge variant="info">Resolved method: {uploadMethod ?? "pending"}</Badge>
 
       {status === "success" && (
         <div className="mt-4">

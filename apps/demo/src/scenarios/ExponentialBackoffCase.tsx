@@ -16,7 +16,7 @@ export const ExponentialBackoffCase = ({
   const startTime = React.useRef<number>(0);
   const { t } = useI18n();
 
-  const { upload, status } = useUniversalUpload({
+  const { upload, status, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
       method: "auto",
@@ -48,6 +48,9 @@ export const ExponentialBackoffCase = ({
         Run Backoff Scenario
       </Button>
       <div className="mt-4 space-y-2">
+        <Badge variant="info">
+          Resolved method: {uploadMethod ?? "pending"}
+        </Badge>
         {retries.map((r, i) => (
           <Badge key={i} variant="info">
             Retry #{r.count} triggered after ~{r.delay}ms

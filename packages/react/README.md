@@ -28,7 +28,7 @@ import { useState } from 'react';
 export const Upload = () => {
   const [progress, setProgress] = useState(0);
   
-  const { upload, pause, resume, abort, status, result, error } = useUniversalUpload({
+  const { upload, pause, resume, abort, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
       method: 'auto', 
@@ -50,6 +50,7 @@ export const Upload = () => {
       />
       <progress value={progress} max={100} />
       <p>Status: {status}</p>
+      <p>Method: {uploadMethod ?? 'pending'}</p>
       
       {status === 'uploading' && (
         <>
@@ -79,6 +80,7 @@ const {
   retry,      // (file: File) => Promise<UploadResult> (alias for upload)
   
   status,     // 'idle' | 'uploading' | 'paused' | 'success' | 'error' | 'aborted'
+  uploadMethod, // 'stream' | 'stream chunked' | 'xhr chunked' | undefined
   result,     // { ok: boolean; total: number; status: ... }
   error       // Error | null
 } = useUniversalUpload({ url, options });

@@ -73,10 +73,30 @@ export const Test = ({ onBack }: TestProps) => {
       <section>
         <h2 className="mb-6 text-2xl font-bold">{t("test.step2.title")}</h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
-          <UploadCard title={language === "en" ? "Intelligent Auto" : "지능형 자동"} method="auto" file={file} />
-          <UploadCard title={language === "en" ? "Modern Streaming" : "최신 스트리밍"} method="stream" file={file} />
-          <UploadCard title={language === "en" ? "Stream Chunked" : "스트림 청크"} method="stream chunked" file={file} />
-          <UploadCard title={language === "en" ? "Reliable Chunking" : "신뢰할 수 있는 청킹"} method="xhr chunked" file={file} />
+          <UploadCard
+            title={language === "en" ? "Intelligent Auto" : "지능형 자동"}
+            method="auto"
+            file={file}
+            showResolvedMethod
+          />
+          <UploadCard
+            title={language === "en" ? "Modern Streaming" : "최신 스트리밍"}
+            method="stream"
+            file={file}
+            showResolvedMethod
+          />
+          <UploadCard
+            title={language === "en" ? "Stream Chunked" : "스트림 청크"}
+            method="stream chunked"
+            file={file}
+            showResolvedMethod
+          />
+          <UploadCard
+            title={language === "en" ? "Reliable Chunking" : "신뢰할 수 있는 청킹"}
+            method="xhr chunked"
+            file={file}
+            showResolvedMethod
+          />
           <DisableChunkingCase file={file} />
         </div>
       </section>

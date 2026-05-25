@@ -36,9 +36,11 @@ const { result } = await upload('/api/upload', file, {
 
 ### Auto-Select (Default)
 ```typescript
-const { result } = await upload('/api/upload', file, {
-  method: 'auto' // Fetch Stream → Fetch Chunked → XHR Chunked
+const { result, uploadMethod } = await upload('/api/upload', file, {
+  method: 'auto' // Resolves to 'stream' or 'xhr chunked' based on browser support
 });
+
+console.log(uploadMethod); // 'stream' | 'stream chunked' | 'xhr chunked'
 ```
 
 ## Installation
@@ -54,8 +56,10 @@ NPM: https://www.npmjs.com/package/@universal-uploader/core
 ## Upload Control
 
 ```typescript
-const { result, actions } = await upload(url, file, options);
+const { result, actions, uploadMethod } = await upload(url, file, options);
 const { abort, pause, resume, refresh } = actions;
+
+console.log(uploadMethod); // Resolved upload strategy (never 'auto')
 
 pause();   // Status: "paused" (resumable)
 resume();  // Continue from offset
@@ -91,6 +95,8 @@ interface UploadOptions {
 import type {
   UploadResult,           // { ok: boolean; total: number; status: 'success' | 'error' | ... }
   UploadStatus,           // 'idle' | 'uploading' | 'paused' | 'success' | 'error' | 'aborted'
+  UploadMethod,           // 'auto' | 'stream' | 'stream chunked' | 'xhr chunked'
+  UploadResponseWithMethod, // UploadResponse & { uploadMethod: UploadMethod }
   OnProgressParams,       // { loaded: number; total: number; percentage: number }
   UploadOptions,
   UploadParams

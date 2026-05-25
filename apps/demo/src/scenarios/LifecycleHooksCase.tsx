@@ -15,7 +15,7 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
     setEvents((prev) => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${msg}`]);
   };
 
-  const { upload, abort, status, pause, resume } = useUniversalUpload({
+  const { upload, abort, status, pause, resume, uploadMethod } = useUniversalUpload({
     url: '/upload',
     options: {
       method: 'auto',
@@ -65,6 +65,7 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
         {events.map((ev, i) => (
           <Log.Entry key={i}>{ev}</Log.Entry>
         ))}
+        <Log.Entry>Resolved method: {uploadMethod ?? "pending"}</Log.Entry>
       </Log>
     </Card>
   );

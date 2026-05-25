@@ -15,7 +15,7 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
   );
   const { t } = useI18n();
 
-  const { upload, status, result, error } = useUniversalUpload({
+  const { upload, status, result, error, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-twice-then-success",
     options: {
       method: "auto",
@@ -50,6 +50,7 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
             { label: "retries", value: retryCount },
             { label: "resultOk", value: result.ok.toString() },
             { label: "message", value: result.message || "N/A" },
+            { label: "uploadMethod", value: uploadMethod ?? "pending" },
           ]}
         />
       </Log>

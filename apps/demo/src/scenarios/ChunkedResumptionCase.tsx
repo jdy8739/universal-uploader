@@ -18,7 +18,7 @@ export const ChunkedResumptionCase = ({
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, result, error, abort, pause, resume } = useUniversalUpload({
+  const { upload, status, result, error, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-at-chunk-3",
     options: {
       method,
@@ -107,6 +107,7 @@ export const ChunkedResumptionCase = ({
             { label: "status", value: status },
             { label: "resultOk", value: result.ok.toString() },
             { label: "message", value: result.message || "N/A" },
+            { label: "uploadMethod", value: uploadMethod ?? "pending" },
           ]}
         />
         <div className="mt-4 pt-4 border-t border-stone-200">

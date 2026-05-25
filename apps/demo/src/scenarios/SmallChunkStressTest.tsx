@@ -13,7 +13,7 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
   const { t } = useI18n();
 
   // Use a very small chunk size (16KB) to force many network requests
-  const { upload, status, result, error, pause, resume } = useUniversalUpload({
+  const { upload, status, result, error, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "xhr chunked",
@@ -73,6 +73,7 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
               {status.toUpperCase()}
             </Badge>
             <Badge>{Math.round(progress)}%</Badge>
+            <Badge>Resolved method: {uploadMethod ?? "pending"}</Badge>
           </div>
         </div>
       )}

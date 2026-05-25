@@ -8,13 +8,19 @@ interface UploadCardProps {
   title: string;
   file: File | null;
   method: UploadMethod;
+  showResolvedMethod?: boolean;
 }
 
-export const UploadCard = ({ title, method, file }: UploadCardProps) => {
+export const UploadCard = ({
+  title,
+  method,
+  file,
+  showResolvedMethod = false,
+}: UploadCardProps) => {
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, error, abort, retry, result, pause, resume } =
+  const { upload, status, error, abort, retry, result, pause, resume, uploadMethod } =
     useUniversalUpload({
       url: "/upload",
       options: {
@@ -143,6 +149,14 @@ export const UploadCard = ({ title, method, file }: UploadCardProps) => {
                 { label: "message", value: result.message || "N/A" },
                 { label: "status", value: result.status },
                 { label: "progress", value: `${progress}%` },
+                ...(showResolvedMethod
+                  ? [
+                      {
+                        label: "uploadMethod",
+                        value: uploadMethod ?? "pending",
+                      },
+                    ]
+                  : []),
               ]}
             />
           </Log>
