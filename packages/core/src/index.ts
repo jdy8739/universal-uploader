@@ -1,5 +1,10 @@
 export * from "./types";
-import { UploadParams, UploadResponse, UploadResult } from "./types";
+import {
+  UploadParams,
+  UploadResponse,
+  UploadResponseWithMethod,
+  UploadResult,
+} from "./types";
 import { wait } from "./utils";
 import { getUploader } from "./orchestrator";
 
@@ -20,7 +25,7 @@ const upload = async (
   retryAttempt = 0,
   isResuming = false,
   initialOptions?: UploadParams["options"],
-): Promise<UploadResponse> => {
+): Promise<UploadResponseWithMethod> => {
   /**
    * Holds the externally shared actions object so refresh/resume can update
    * handlers in place while keeping the same reference.
@@ -257,9 +262,9 @@ const upload = async (
     return { result: Promise.resolve(retriedResult), actions: originalActions };
   };
 
-  try {
-    const uploadFile = getUploader(url, method);
+  const { method: uploadMethod, upload: uploadFile } = getUploader(url, method);
 
+  try {
     const uploadResponse = await uploadFile({
       url,
       file,
@@ -274,7 +279,7 @@ const upload = async (
 
     const uploadResult = await wrapPromiseErrorHandler(uploadResponse);
 
-    return uploadResult;
+    return { ...uploadResult, uploadMethod };
   } catch (e) {
     const uploadResult: UploadResult =
       e instanceof DOMException && e.name === "AbortError"
@@ -285,6 +290,7 @@ const upload = async (
 
     return {
       result: Promise.resolve(uploadResult),
+      uploadMethod,
       actions: {
         abort: () => null,
         refresh,

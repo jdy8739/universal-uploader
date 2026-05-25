@@ -125,6 +125,14 @@ export interface UploadResponse {
 }
 
 /**
+ * Upload response enriched with the resolved upload method.
+ * 최종적으로 선택된 업로드 방식을 포함한 업로드 응답 타입입니다.
+ */
+export type UploadResponseWithMethod = UploadResponse & {
+  uploadMethod: UploadMethod;
+};
+
+/**
  * Parameters for stream uploader configuration.
  * 스트림 업로더 구성을 위한 매개변수입니다.
  */

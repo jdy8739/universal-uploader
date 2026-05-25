@@ -3,7 +3,7 @@ import uploadCore, {
   UploadStatus,
   UploadActions,
 } from "@universal-uploader/core";
-import { UploadHookOptions } from "./types";
+import { UploadHookOptions, UploadMethod } from "./types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const INITIAL_UPLOAD_RESULT: Readonly<UploadResult> = {
@@ -31,6 +31,9 @@ export default function useUniversalUpload({
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [error, setError] = useState<Error | null>(null);
   const [result, setResult] = useState<UploadResult>(INITIAL_UPLOAD_RESULT);
+  const [uploadMethod, setUploadMethod] = useState<UploadMethod | undefined>(
+    undefined,
+  );
 
   /**
    * The previous request abort function.
@@ -111,91 +114,95 @@ export default function useUniversalUpload({
       setStatus("uploading");
       setError(null);
       setResult(INITIAL_UPLOAD_RESULT);
+      setUploadMethod(undefined);
 
       const { current: $options } = optionRef;
 
-      const { result: uploadResultPromise, actions: uploadActions } =
-        await uploadCore({
-          url,
-          file,
-          options: {
-            ...$options,
-            onComplete: () => {
-              $options.onComplete?.();
-              if (isLatestUploadRequest()) {
-                setStatus("success");
-                setResult((prevResult) => ({
-                  ...prevResult,
-                  ok: true,
-                  status: "success",
-                }));
-              }
-            },
-            onError: (e) => {
-              $options.onError?.(e);
-              if (isLatestUploadRequest()) {
-                setError(e);
-                setStatus("error");
-                setResult((prevResult) => ({
-                  ...prevResult,
-                  ok: false,
-                  status: "error",
-                }));
-              }
-            },
-            onAbort: (e) => {
-              $options.onAbort?.(e);
-              if (isLatestUploadRequest()) {
-                setStatus("aborted");
-                setResult((prevResult) => ({
-                  ...prevResult,
-                  ok: false,
-                  status: "aborted",
-                }));
-              }
-            },
-            onProgress: (args) => {
-              $options.onProgress?.(args);
-              if (isLatestUploadRequest()) {
-                setStatus("uploading");
-                setResult({
-                  ok: false,
-                  total: args.total,
-                  status: "uploading",
-                });
-              }
-            },
-            onRetry: () => {
-              $options.onRetry?.();
-              if (isLatestUploadRequest()) {
-                setStatus("uploading");
-                setResult(INITIAL_UPLOAD_RESULT);
-                setError(null);
-              }
-            },
-            onPause: () => {
-              $options.onPause?.();
-              if (isLatestUploadRequest()) {
-                setStatus("paused");
-                setResult((prevResult) => ({
-                  ...prevResult,
-                  ok: false,
-                  status: "paused",
-                }));
-              }
-            },
-            onResume: () => {
-              $options.onResume?.();
-              if (isLatestUploadRequest()) {
-                setStatus("uploading");
-                setResult((prevResult) => ({
-                  ...prevResult,
-                  status: "uploading",
-                }));
-              }
-            },
+      const {
+        result: uploadResultPromise,
+        actions: uploadActions,
+        uploadMethod,
+      } = await uploadCore({
+        url,
+        file,
+        options: {
+          ...$options,
+          onComplete: () => {
+            $options.onComplete?.();
+            if (isLatestUploadRequest()) {
+              setStatus("success");
+              setResult((prevResult) => ({
+                ...prevResult,
+                ok: true,
+                status: "success",
+              }));
+            }
           },
-        });
+          onError: (e) => {
+            $options.onError?.(e);
+            if (isLatestUploadRequest()) {
+              setError(e);
+              setStatus("error");
+              setResult((prevResult) => ({
+                ...prevResult,
+                ok: false,
+                status: "error",
+              }));
+            }
+          },
+          onAbort: (e) => {
+            $options.onAbort?.(e);
+            if (isLatestUploadRequest()) {
+              setStatus("aborted");
+              setResult((prevResult) => ({
+                ...prevResult,
+                ok: false,
+                status: "aborted",
+              }));
+            }
+          },
+          onProgress: (args) => {
+            $options.onProgress?.(args);
+            if (isLatestUploadRequest()) {
+              setStatus("uploading");
+              setResult({
+                ok: false,
+                total: args.total,
+                status: "uploading",
+              });
+            }
+          },
+          onRetry: () => {
+            $options.onRetry?.();
+            if (isLatestUploadRequest()) {
+              setStatus("uploading");
+              setResult(INITIAL_UPLOAD_RESULT);
+              setError(null);
+            }
+          },
+          onPause: () => {
+            $options.onPause?.();
+            if (isLatestUploadRequest()) {
+              setStatus("paused");
+              setResult((prevResult) => ({
+                ...prevResult,
+                ok: false,
+                status: "paused",
+              }));
+            }
+          },
+          onResume: () => {
+            $options.onResume?.();
+            if (isLatestUploadRequest()) {
+              setStatus("uploading");
+              setResult((prevResult) => ({
+                ...prevResult,
+                status: "uploading",
+              }));
+            }
+          },
+        },
+      });
 
       /**
        * If the current request is not the latest upload request, abort the request.
@@ -205,6 +212,8 @@ export default function useUniversalUpload({
         uploadActions.abort();
         return;
       }
+
+      setUploadMethod(uploadMethod);
 
       // Set the previous request abort function to the current abort function.
       // 이전의 요청 중단 함수를 현재의 요청 중단 함수로 설정합니다.
@@ -275,6 +284,7 @@ export default function useUniversalUpload({
      */
     retry: uploadSafely,
     result,
+    uploadMethod,
     status,
     error,
     abort: () => prevReqAbortRef.current.abort(),
