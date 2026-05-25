@@ -1,6 +1,6 @@
 {
   "name": "@universal-uploader/react",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "React hook for streaming file uploads with progress tracking, retries, pause/resume, and fetch/XHR fallback powered by @universal-uploader/core.",
   "main": "dist/index.cjs",

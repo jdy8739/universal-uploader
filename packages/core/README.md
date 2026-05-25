@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
 [![npm downloads](https://img.shields.io/npm/dm/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
 
-**[📦 NPM](https://www.npmjs.com/package/@universal-uploader/core)** | **[🔗 Main README](../README.md)** | **[⚛️ React](./packages/react)**
+**[📦 NPM](https://www.npmjs.com/package/@universal-uploader/core)** | **[🔗 Main README](../README.md)** | **[⚛️ React](../react)**
 
 Core file upload orchestrator. Three adaptive strategies, one unified API.
 
@@ -12,13 +12,13 @@ Core file upload orchestrator. Three adaptive strategies, one unified API.
 ### 1. Fetch Stream (1 request, O(1) memory)
 Perfect for small/medium files on modern browsers.
 ```typescript
-await upload('/api/upload', file, { method: 'stream' });
+const { result } = await upload('/api/upload', file, { method: 'stream' });
 ```
 
 ### 2. Fetch Chunked (N requests, resumable)
 Best for large files with precise progress and resumption.
 ```typescript
-await upload('/api/upload', file, {
+const { result } = await upload('/api/upload', file, {
   method: 'stream chunked',
   chunkSize: 1024 * 1024, // 1MB
   onProgress: (p) => console.log(p.percentage)
@@ -28,7 +28,7 @@ await upload('/api/upload', file, {
 ### 3. XHR Chunked (N requests, legacy support)
 Broadest compatibility with byte-level progress.
 ```typescript
-await upload('/api/upload', file, {
+const { result } = await upload('/api/upload', file, {
   method: 'xhr chunked',
   chunkSize: 512 * 1024
 });
@@ -36,7 +36,7 @@ await upload('/api/upload', file, {
 
 ### Auto-Select (Default)
 ```typescript
-await upload('/api/upload', file, {
+const { result } = await upload('/api/upload', file, {
   method: 'auto' // Fetch Stream → Fetch Chunked → XHR Chunked
 });
 ```
@@ -45,8 +45,8 @@ await upload('/api/upload', file, {
 
 ```bash
 npm install @universal-uploader/core
-yarn add @usu/core
-pnpm add @usu/core
+yarn add @universal-uploader/core
+pnpm add @universal-uploader/core
 ```
 
 NPM: https://www.npmjs.com/package/@universal-uploader/core
@@ -54,13 +54,13 @@ NPM: https://www.npmjs.com/package/@universal-uploader/core
 ## Upload Control
 
 ```typescript
-const { upload, pause, resume, abort, refresh, retry } = await upload(url, file, options);
+const { result, actions } = await upload(url, file, options);
+const { abort, pause, resume, refresh } = actions;
 
 pause();   // Status: "paused" (resumable)
 resume();  // Continue from offset
 abort();   // Status: "aborted" (terminal)
 refresh(); // Full restart from initial options
-retry(file); // Manual retry
 ```
 
 ## Configuration
@@ -73,10 +73,15 @@ interface UploadOptions {
   retryDelay?: number | ((attempt: number) => number);
   customHeaders?: Record<string, string>;
   withCredentials?: boolean;
+  offset?: number;
   onProgress?: (p: { loaded: number; total: number; percentage: number }) => void;
+  onComplete?: () => void;
   onError?: (error: Error) => void;
   onRetry?: () => void;
-  throwOnError?: boolean; // false default
+  onPause?: () => void;
+  onResume?: () => void;
+  onAbort?: (error: DOMException) => void;
+  throwOnError?: boolean | ((error: unknown) => boolean); // false default
 }
 ```
 
@@ -84,25 +89,26 @@ interface UploadOptions {
 
 ```typescript
 import type {
-  UploadResult,    // { ok: boolean; total: number; status: 'success' | 'error' | ... }
-  UploadStatus,    // 'idle' | 'uploading' | 'paused' | 'success' | 'error' | 'aborted'
+  UploadResult,           // { ok: boolean; total: number; status: 'success' | 'error' | ... }
+  UploadStatus,           // 'idle' | 'uploading' | 'paused' | 'success' | 'error' | 'aborted'
+  OnProgressParams,       // { loaded: number; total: number; percentage: number }
   UploadOptions,
   UploadParams
-} from '@usu/core';
+} from '@universal-uploader/core';
 ```
 
 ## Error Handling
 
 ```typescript
 // Automatic retry with exponential backoff
-await upload('/api/upload', file, {
+const { result } = await upload('/api/upload', file, {
   retryCount: 5,
   retryDelay: (attempt) => Math.pow(2, attempt) * 1000
 });
 
 // Throw on error
 try {
-  await upload('/api/upload', file, { throwOnError: true });
+  const { result } = await upload('/api/upload', file, { throwOnError: true });
 } catch (err) {
   console.error(err);
 }

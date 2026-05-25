@@ -19,8 +19,10 @@ Auto-selects the best method for your browser.
 ## Installation
 
 ```bash
-npm install @universal-uploader/core @universal-uploader/react
-# or use @universal-uploader/core alone for framework-agnostic usage
+npm install @universal-uploader/core
+# or use @universal-uploader/react for React hook version
+yarn add @universal-uploader/core
+pnpm add @universal-uploader/core
 ```
 
 **NPM Packages:**
@@ -31,9 +33,9 @@ npm install @universal-uploader/core @universal-uploader/react
 
 ### Core
 ```typescript
-import { upload } from '@universal-uploader/core';
+import upload from '@universal-uploader/core';
 
-await upload('/api/upload', file, {
+const { result, actions } = await upload('/api/upload', file, {
   method: 'auto',
   onProgress: ({ percentage }) => console.log(`${percentage}%`),
   onRetry: () => console.log('Retrying...'),
@@ -43,22 +45,37 @@ await upload('/api/upload', file, {
 
 ### React Hook
 ```typescript
+import { useState } from 'react';
 import { useUniversalUpload } from '@universal-uploader/react';
 
-const { upload, pause, resume, status, progress } = useUniversalUpload({
-  url: '/api/upload',
-  options: { method: 'auto', retryCount: 3 }
-});
+export const Upload = () => {
+  const [progress, setProgress] = useState(0);
+  
+  const { upload, pause, resume, abort, status, result, error } = useUniversalUpload({
+    url: '/api/upload',
+    options: { 
+      method: 'auto', 
+      retryCount: 3,
+      onProgress: (p) => setProgress(Math.round(p.percentage))
+    }
+  });
 
-return (
-  <div>
-    <input type="file" onChange={(e) => e.target.files && upload(e.target.files[0])} />
-    <progress value={progress} max={100} />
-    <p>Status: {status}</p>
-    {status === 'uploading' && <button onClick={pause}>Pause</button>}
-    {status === 'paused' && <button onClick={resume}>Resume</button>}
-  </div>
-);
+  return (
+    <div>
+      <input type="file" onChange={(e) => e.target.files && upload(e.target.files[0])} />
+      <progress value={progress} max={100} />
+      <p>Status: {status}</p>
+      {status === 'uploading' && (
+        <>
+          <button onClick={pause}>Pause</button>
+          <button onClick={abort}>Abort</button>
+        </>
+      )}
+      {status === 'paused' && <button onClick={resume}>Resume</button>}
+      {error && <p style={{ color: 'red' }}>{error.message}</p>}
+    </div>
+  );
+};
 ```
 
 ## Features
@@ -72,16 +89,18 @@ return (
 - ✅ **Type-Safe** - Full TypeScript support
 - ✅ **Tiny** - < 10 kB gzipped, zero dependencies
 
+> 📚 **[Interactive Guide & Documentation](https://jdy8739.github.io/universal-uploader/)** - Full documentation with examples (한국어, English)
+
 ## Upload Controls
 
 ```typescript
-const { upload, abort, pause, resume, refresh, retry } = useUniversalUpload({ url });
+const { result, actions } = await upload(url, file, options);
+const { abort, pause, resume, refresh } = actions;
 
-pause();   // Paused state, can resume
+pause();   // Status: "paused" (resumable)
 resume();  // Continue from offset
-abort();   // Terminal stop, cannot resume
+abort();   // Status: "aborted" (terminal)
 refresh(); // Full restart from initial options
-retry(file); // Manual retry
 ```
 
 ## Configuration
@@ -94,14 +113,16 @@ interface UploadOptions {
   retryDelay?: number | ((attempt: number) => number);
   customHeaders?: Record<string, string>;
   withCredentials?: boolean;
+  offset?: number;
   
   onProgress?: (p: { loaded: number; total: number; percentage: number }) => void;
+  onComplete?: () => void;
   onError?: (error: Error) => void;
   onRetry?: () => void;
   onPause?: () => void;
   onResume?: () => void;
-  onAbort?: () => void;
-  throwOnError?: boolean; // Default: false
+  onAbort?: (error: DOMException) => void;
+  throwOnError?: boolean | ((error: unknown) => boolean); // Default: false
 }
 ```
 

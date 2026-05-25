@@ -14,9 +14,9 @@ const FEATURE_BADGE_VARIANTS: Record<string, "info" | "error" | "success"> = {
   lifecycle: "success",
 };
 
-const CODE_SNIPPET = `import { useUniversalUpload } from 'universal-upload';
+const CODE_SNIPPET = `import { useUniversalUpload } from '@universal-uploader/react';
 
-const { upload, pause, resume, refresh, status } = useUniversalUpload({
+const { upload, pause, resume, abort, status } = useUniversalUpload({
   url: '/api/upload',
   options: {
     method: 'auto',       // stream → xhr fallback
@@ -38,8 +38,8 @@ const { upload, pause, resume, refresh, status } = useUniversalUpload({
   Resume
 </button>
 
-<button onClick={refresh} disabled={status === 'idle'}>
-  Refresh
+<button onClick={abort} disabled={status === 'idle'}>
+  Abort
 </button>`;
 
 export const Home = ({ onNavigate }: HomeProps) => {
@@ -213,7 +213,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
               />
             </div>
             <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
-              <code className="text-emerald-400">{`const { upload } = require('@universal-uploader/core');\nawait upload('/api/upload', file);`}</code>
+              <code className="text-emerald-400">{`import upload from '@universal-uploader/core';\nconst { result } = await upload('/api/upload', file);`}</code>
             </pre>
           </div>
 
@@ -237,15 +237,15 @@ export const Home = ({ onNavigate }: HomeProps) => {
             </p>
             <div className="bg-slate-950 text-slate-100 p-3 rounded text-xs mb-3 flex items-center gap-2 font-mono">
               <code className="flex-1 min-w-0 overflow-x-auto whitespace-nowrap scrollbar-hidden">
-                npm install @universal-uploader/react @universal-uploader/core
+                npm install @universal-uploader/react
               </code>
               <CopyButton
-                text="npm install @universal-uploader/react @universal-uploader/core"
+                text="npm install @universal-uploader/react"
                 label="Copy install command"
               />
             </div>
             <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
-              <code className="text-emerald-400">{`const { upload, progress } = useUniversalUpload({\n  url: '/api/upload'\n});`}</code>
+              <code className="text-emerald-400">{`const { upload, result } = useUniversalUpload({\n  url: '/api/upload'\n});`}</code>
             </pre>
           </div>
         </div>

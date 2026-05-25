@@ -21,18 +21,30 @@ const upload = async (
   isResuming = false,
   initialOptions?: UploadParams["options"],
 ): Promise<UploadResponse> => {
+  /**
+   * Holds the externally shared actions object so refresh/resume can update
+   * handlers in place while keeping the same reference.
+   *
+   * 외부로 공유된 actions 객체를 보관하여 refresh/resume 이후에도
+   * 동일 참조를 유지한 채 핸들러를 제자리에서 갱신할 수 있게 합니다.
+   */
   const latestActionsRef: { current?: UploadResponse["actions"] } = {};
 
   const {
     onAbort,
     onRetry,
     onError,
-    retryCount: retryCountArg = 3,
+    retryCount = 3,
     retryDelay = 1000,
     throwOnError = false,
   } = options;
-
-  const retryCount = retryCountArg;
+  /**
+   * Immutable options baseline shared across nested upload calls.
+   * It keeps refresh/resume deterministic by reusing the initial inputs.
+   *
+   * 중첩 upload 호출 전반에서 공유되는 불변 옵션 기준값입니다.
+   * 최초 입력을 재사용해 refresh/resume 동작을 일관되게 유지합니다.
+   */
   const optionsSnapshot = initialOptions ?? { ...options, method };
 
   /**
@@ -256,6 +268,8 @@ const upload = async (
       options,
     });
 
+    // Keep a stable external actions reference while swapping in latest handlers.
+    // 외부 actions 참조는 유지한 채 최신 핸들러로 교체하기 위해 저장합니다.
     latestActionsRef.current = uploadResponse.actions;
 
     const uploadResult = await wrapPromiseErrorHandler(uploadResponse);

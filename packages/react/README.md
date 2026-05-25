@@ -3,16 +3,16 @@
 [![npm version](https://img.shields.io/npm/v/@universal-uploader/react.svg)](https://www.npmjs.com/package/@universal-uploader/react)
 [![npm downloads](https://img.shields.io/npm/dm/@universal-uploader/react.svg)](https://www.npmjs.com/package/@universal-uploader/react)
 
-**[📦 NPM](https://www.npmjs.com/package/@universal-uploader/react)** | **[🔗 Main README](../../README.md)** | **[⚙️ Core](./packages/core)**
+**[📦 NPM](https://www.npmjs.com/package/@universal-uploader/react)** | **[🔗 Main README](../../README.md)** | **[⚙️ Core](../core)**
 
-React Hook wrapper for @usu/core. Minimal, powerful, type-safe.
+React Hook wrapper for @universal-uploader/core. Minimal, powerful, type-safe.
 
 ## Installation
 
 ```bash
-npm install @universal-uploader/react @universal-uploader/core
-yarn add @usu/react @usu/core
-pnpm add @usu/react @usu/core
+npm install @universal-uploader/react
+yarn add @universal-uploader/react
+pnpm add @universal-uploader/react
 ```
 
 NPM Packages:
@@ -22,12 +22,19 @@ NPM Packages:
 ## Quick Start
 
 ```typescript
-import { useUniversalUpload } from '@usu/react';
+import { useUniversalUpload } from '@universal-uploader/react';
+import { useState } from 'react';
 
 export const Upload = () => {
-  const { upload, pause, resume, status, progress, error } = useUniversalUpload({
+  const [progress, setProgress] = useState(0);
+  
+  const { upload, pause, resume, abort, status, result, error } = useUniversalUpload({
     url: '/api/upload',
-    options: { method: 'auto', retryCount: 3 }
+    options: { 
+      method: 'auto', 
+      retryCount: 3,
+      onProgress: (p) => setProgress(Math.round(p.percentage))
+    }
   });
 
   const handleUpload = async (file: File) => {
@@ -47,7 +54,7 @@ export const Upload = () => {
       {status === 'uploading' && (
         <>
           <button onClick={pause}>Pause</button>
-          <button onClick={() => /* abort */}>Abort</button>
+          <button onClick={abort}>Abort</button>
         </>
       )}
       
@@ -69,11 +76,9 @@ const {
   pause,      // () => void
   resume,     // () => void
   abort,      // () => void
-  refresh,    // () => void
-  retry,      // (file: File) => Promise<UploadResult>
+  retry,      // (file: File) => Promise<UploadResult> (alias for upload)
   
   status,     // 'idle' | 'uploading' | 'paused' | 'success' | 'error' | 'aborted'
-  progress,   // 0-100
   result,     // { ok: boolean; total: number; status: ... }
   error       // Error | null
 } = useUniversalUpload({ url, options });
@@ -85,8 +90,7 @@ const {
 pause();   // → status: "paused" (resumable)
 resume();  // → continues from offset
 abort();   // → status: "aborted" (terminal)
-refresh(); // → full restart from initial options
-retry(file); // → manual retry
+retry(file); // → alias for upload(file)
 ```
 
 ## Configuration
@@ -102,15 +106,14 @@ interface UseUniversalUploadConfig {
     customHeaders?: Record<string, string>;
     withCredentials?: boolean;
     onProgress?: (p: { loaded: number; total: number; percentage: number }) => void;
+    onComplete?: () => void;
     onError?: (error: Error) => void;
     onRetry?: () => void;
     onPause?: () => void;
     onResume?: () => void;
-    onAbort?: () => void;
-    throwOnError?: boolean;
+    onAbort?: (error: DOMException) => void;
+    throwOnError?: boolean | ((error: unknown) => boolean);
   };
-  onUrlChange?: (url: string) => void;
-  onMethodChange?: (method: UploadMethod) => void;
 }
 ```
 
@@ -141,11 +144,11 @@ const { upload } = useUniversalUpload({
   url: '/api/upload',
   options: {
     onProgress: ({ percentage }) => console.log(`${percentage}%`),
-    onComplete: () => console.log('✅ Done'),
     onError: (err) => console.error('❌', err),
     onRetry: () => console.log('🔄 Retrying'),
     onPause: () => console.log('⏸️ Paused'),
-    onResume: () => console.log('▶️ Resumed')
+    onResume: () => console.log('▶️ Resumed'),
+    onAbort: (err) => console.log('❌ Aborted', err)
   }
 });
 ```
@@ -169,9 +172,9 @@ export const MultiUpload = ({ files }: { files: File[] }) => {
 import type {
   UploadStatus,
   UploadResult,
-  UploadOptions,
-  UploadMethod
-} from '@usu/react';
+  OnProgressParams,
+  UploadOptions
+} from '@universal-uploader/core';
 ```
 
 ## Browser Support

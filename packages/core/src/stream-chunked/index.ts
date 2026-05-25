@@ -1,4 +1,4 @@
-import { UploadParams, UploadResponse, UploadResult } from "../types";
+import { UploadParamsInternal, UploadResponse, UploadResult } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 import {
   calculateSizes,
@@ -11,7 +11,7 @@ import { calculateChunkEnd } from "../xhr-chuncked/helper";
 import { createChunkedStream } from "./helper";
 
 const uploadWithFetchStreamChunked = async (
-  args: UploadParams & { refresh: () => void },
+  args: UploadParamsInternal,
 ): Promise<UploadResponse> => {
   const { url, file, refresh, options } = args;
 

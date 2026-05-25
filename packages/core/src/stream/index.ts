@@ -1,10 +1,4 @@
-import {
-  UploadResponse,
-  OnProgressParams,
-  UploadParams,
-  UploadParamsInternal,
-  UploadResult,
-} from "../types";
+import { UploadResponse, UploadParamsInternal, UploadResult } from "../types";
 import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 import { calculateSizes, getCustomHeaders, initializeStream } from "../helper";
 import { createUploadBody, getStreamUploader } from "./helper";
