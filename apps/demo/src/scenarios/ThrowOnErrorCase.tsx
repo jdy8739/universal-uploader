@@ -14,7 +14,7 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
   const [onErrorCalls, setOnErrorCalls] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, result, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, result, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
       method: "auto",
@@ -44,9 +44,18 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
       <Card.Description>
         {t("test.scenarios.throwOnError.description")}
       </Card.Description>
-      <Button onClick={handleRun} disabled={!file || status === "uploading"}>
-        Run Throw Scenario
-      </Button>
+      <div className="scenario-actions">
+        <Button onClick={handleRun} disabled={!file || status !== "idle"}>
+          Start Scenario
+        </Button>
+        <Button
+          variant="outline"
+          onClick={refresh}
+          disabled={status === "idle" || status === "uploading"}
+        >
+          Refresh
+        </Button>
+      </div>
       <Log className="mt-4 p-3">
         <Log.Data
           items={[

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Home } from "./pages/Home";
 import { Test } from "./pages/Test";
 import { I18nProvider } from "./i18n";

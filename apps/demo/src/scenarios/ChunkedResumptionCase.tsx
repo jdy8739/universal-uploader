@@ -18,7 +18,7 @@ export const ChunkedResumptionCase = ({
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, result, error, abort, pause, resume, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, result, error, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-at-chunk-3",
     options: {
       method,
@@ -54,9 +54,16 @@ export const ChunkedResumptionCase = ({
         {t("test.scenarios.chunkedResumption.description", "").replace("{method}", method)}
       </Card.Description>
 
-      <div className="flex gap-2 mb-6">
-        <Button onClick={handleRun} disabled={!file || status === "uploading"}>
-          Run Test
+      <div className="scenario-actions">
+        <Button onClick={handleRun} disabled={!file || status !== "idle"}>
+          Start Test
+        </Button>
+        <Button
+          variant="outline"
+          onClick={refresh}
+          disabled={status === "idle" || status === "uploading"}
+        >
+          Refresh
         </Button>
         <Button
           variant="outline"

@@ -28,7 +28,7 @@ import { useState } from 'react';
 export const Upload = () => {
   const [progress, setProgress] = useState(0);
   
-  const { upload, pause, resume, abort, status, uploadMethod, result, error } = useUniversalUpload({
+  const { upload, pause, resume, abort, refresh, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
       method: 'auto', 
@@ -62,6 +62,10 @@ export const Upload = () => {
       {status === 'paused' && (
         <button onClick={resume}>Resume</button>
       )}
+
+      {(status === 'error' || status === 'aborted') && (
+        <button onClick={refresh}>Restart</button>
+      )}
       
       {error && <p style={{ color: 'red' }}>{error.message}</p>}
     </div>
@@ -77,8 +81,9 @@ const {
   pause,      // () => void
   resume,     // () => void
   abort,      // () => void
-  retry,      // (file: File) => Promise<UploadResult> (alias for upload)
-  
+  refresh,    // () => void — restart from initial options (offset/retry reset)
+  /** @deprecated */ retry, // (file: File) => Promise<UploadResult> — alias for upload; use upload or refresh
+
   status,     // 'idle' | 'uploading' | 'paused' | 'success' | 'error' | 'aborted'
   uploadMethod, // 'stream' | 'stream chunked' | 'xhr chunked' | undefined
   result,     // { ok: boolean; total: number; status: ... }
@@ -89,11 +94,17 @@ const {
 ## Control Semantics
 
 ```typescript
-pause();   // → status: "paused" (resumable)
-resume();  // → continues from offset
-abort();   // → status: "aborted" (terminal)
-retry(file); // → alias for upload(file)
+pause();    // → status: "paused" (resumable)
+resume();   // → continues from offset
+abort();    // → status: "aborted" (terminal)
+refresh();  // → abort current + restart from initial options snapshot
+upload(file); // → start a new upload (aborts any in-flight request)
+retry(file);  // @deprecated — same as upload(file); prefer upload or refresh
 ```
+
+Automatic retries on failure are handled by core via `retryCount` / `retryDelay` / `onRetry` in options — not by the hook return value.
+
+> **Deprecated:** `retry(file)` remains as an alias for `upload(file)` for backward compatibility. Use `upload(file)` for a new upload or `refresh()` to restart the current session from the initial options snapshot.
 
 ## Configuration
 
@@ -123,11 +134,13 @@ interface UseUniversalUploadConfig {
 
 ### With Error Recovery
 ```typescript
-const { upload, retry, error } = useUniversalUpload({ url });
+const { upload, refresh, error } = useUniversalUpload({ url: '/api/upload' });
+const [file, setFile] = useState<File | null>(null);
 
-const handleUpload = async (file: File) => {
+const handleUpload = async (nextFile: File) => {
+  setFile(nextFile);
   try {
-    await upload(file);
+    await upload(nextFile);
   } catch (err) {
     console.error(err);
   }
@@ -135,7 +148,10 @@ const handleUpload = async (file: File) => {
 
 return (
   <>
-    {error && <button onClick={() => retry(file)}>Retry</button>}
+    {error && <button onClick={refresh}>Restart upload</button>}
+    {error && file && (
+      <button onClick={() => upload(file)}>Upload again</button>
+    )}
   </>
 );
 ```

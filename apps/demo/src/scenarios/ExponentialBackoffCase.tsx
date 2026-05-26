@@ -16,7 +16,7 @@ export const ExponentialBackoffCase = ({
   const startTime = React.useRef<number>(0);
   const { t } = useI18n();
 
-  const { upload, status, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
       method: "auto",
@@ -44,9 +44,18 @@ export const ExponentialBackoffCase = ({
       <Card.Description>
         {t("test.scenarios.exponentialBackoff.description")}
       </Card.Description>
-      <Button onClick={handleRun} disabled={!file || status === "uploading"}>
-        Run Backoff Scenario
-      </Button>
+      <div className="scenario-actions">
+        <Button onClick={handleRun} disabled={!file || status !== "idle"}>
+          Start Scenario
+        </Button>
+        <Button
+          variant="outline"
+          onClick={refresh}
+          disabled={status === "idle" || status === "uploading"}
+        >
+          Refresh
+        </Button>
+      </div>
       <div className="mt-4 space-y-2">
         <Badge variant="info">
           Resolved method: {uploadMethod ?? "pending"}

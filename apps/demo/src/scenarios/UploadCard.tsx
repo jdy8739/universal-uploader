@@ -20,7 +20,7 @@ export const UploadCard = ({
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, error, abort, retry, result, pause, resume, uploadMethod } =
+  const { upload, status, error, abort, refresh, result, pause, resume, uploadMethod } =
     useUniversalUpload({
       url: "/upload",
       options: {
@@ -69,7 +69,7 @@ export const UploadCard = ({
           {status === "idle" || status === "aborted"
             ? "Start Upload"
             : status === "success" || status === "error"
-              ? "Retry Upload"
+              ? "Upload Again"
               : status === "paused"
                 ? "Restart Upload"
                 : "Uploading..."}
@@ -83,10 +83,10 @@ export const UploadCard = ({
         </Button>
         <Button
           variant="outline"
-          onClick={() => file && retry(file)}
-          disabled={!file || status === "idle"}
+          onClick={refresh}
+          disabled={status === "idle"}
         >
-          Retry
+          Refresh
         </Button>
         {(method === "xhr chunked" ||
           method === "stream chunked" ||

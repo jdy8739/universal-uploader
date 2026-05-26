@@ -16,7 +16,7 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
   const [lastRunMessage, setLastRunMessage] = useState("Not started");
   const { t } = useI18n();
 
-  const { upload, status, error, result, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, error, result, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
       method: "auto",
@@ -44,9 +44,18 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
       <Card.Description>
         {t("test.scenarios.retryAndOnError.description")}
       </Card.Description>
-      <Button onClick={handleRun} disabled={!file || status === "uploading"}>
-        Run Retry Scenario
-      </Button>
+      <div className="scenario-actions">
+        <Button onClick={handleRun} disabled={!file || status !== "idle"}>
+          Start Scenario
+        </Button>
+        <Button
+          variant="outline"
+          onClick={refresh}
+          disabled={status === "idle" || status === "uploading"}
+        >
+          Refresh
+        </Button>
+      </div>
       <Log className="mt-4 p-3">
         <Log.Data
           items={[

@@ -35,11 +35,15 @@ pnpm add @universal-uploader/core
 ```typescript
 import upload from '@universal-uploader/core';
 
-const { result, actions } = await upload('/api/upload', file, {
-  method: 'auto',
-  onProgress: ({ percentage }) => console.log(`${percentage}%`),
-  onRetry: () => console.log('Retrying...'),
-  retryCount: 3
+const { result, actions } = await upload({
+  url: '/api/upload',
+  file,
+  options: {
+    method: 'auto',
+    onProgress: ({ percentage }) => console.log(`${percentage}%`),
+    onRetry: () => console.log('Retrying...'),
+    retryCount: 3,
+  },
 });
 ```
 
@@ -51,7 +55,7 @@ import { useUniversalUpload } from '@universal-uploader/react';
 export const Upload = () => {
   const [progress, setProgress] = useState(0);
   
-  const { upload, pause, resume, abort, status, uploadMethod, result, error } = useUniversalUpload({
+  const { upload, pause, resume, abort, refresh, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
       method: 'auto', 
@@ -73,6 +77,9 @@ export const Upload = () => {
         </>
       )}
       {status === 'paused' && <button onClick={resume}>Resume</button>}
+      {(status === 'error' || status === 'aborted') && (
+        <button onClick={refresh}>Restart</button>
+      )}
       {error && <p style={{ color: 'red' }}>{error.message}</p>}
     </div>
   );
@@ -85,8 +92,8 @@ export const Upload = () => {
 - ✅ **Smart Fallback** - Auto-detects Fetch capabilities, falls back to XHR
 - ✅ **Resumable** - Pause and resume with chunked methods
 - ✅ **Progress** - Detailed callbacks for all methods
-- ✅ **Retry** - Automatic exponential backoff
-- ✅ **Controls** - abort(), pause(), resume(), refresh(), retry()
+- ✅ **Retry** - Automatic exponential backoff (`retryCount`, `retryDelay`, `onRetry`)
+- ✅ **Controls** - `abort()`, `pause()`, `resume()`, `refresh()` (`retry` deprecated in React hook)
 - ✅ **Type-Safe** - Full TypeScript support
 - ✅ **Tiny** - < 10 kB gzipped, zero dependencies
 
@@ -95,7 +102,7 @@ export const Upload = () => {
 ## Upload Controls
 
 ```typescript
-const { result, actions } = await upload(url, file, options);
+const { result, actions } = await upload({ url, file, options });
 const { abort, pause, resume, refresh } = actions;
 
 pause();   // Status: "paused" (resumable)

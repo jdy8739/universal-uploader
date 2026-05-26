@@ -2,6 +2,7 @@
   "name": "universal-upload-root",
   "private": true,
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "dev": "pnpm --filter @universal-uploader/demo dev",
     "build-libs": "pnpm --filter @universal-uploader/core build && pnpm --filter @universal-uploader/react build",

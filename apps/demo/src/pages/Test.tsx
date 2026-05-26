@@ -105,7 +105,7 @@ export const Test = ({ onBack }: TestProps) => {
         <h2 className="mb-6 text-2xl font-bold">
           {t("test.step3.title")}
         </h2>
-        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
+        <div className="grid min-w-0 gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <RetryAndOnErrorCase file={file} />
           <ThrowOnErrorCase file={file} />
           <RetryRecoveryCase file={file} />

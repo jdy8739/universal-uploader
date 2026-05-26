@@ -12,32 +12,48 @@ Core file upload orchestrator. Three adaptive strategies, one unified API.
 ### 1. Fetch Stream (1 request, O(1) memory)
 Perfect for small/medium files on modern browsers.
 ```typescript
-const { result } = await upload('/api/upload', file, { method: 'stream' });
+const { result } = await upload({
+  url: '/api/upload',
+  file,
+  options: { method: 'stream' },
+});
 ```
 
 ### 2. Fetch Chunked (N requests, resumable)
 Best for large files with precise progress and resumption.
 ```typescript
-const { result } = await upload('/api/upload', file, {
-  method: 'stream chunked',
-  chunkSize: 1024 * 1024, // 1MB
-  onProgress: (p) => console.log(p.percentage)
+const { result } = await upload({
+  url: '/api/upload',
+  file,
+  options: {
+    method: 'stream chunked',
+    chunkSize: 1024 * 1024, // 1MB
+    onProgress: (p) => console.log(p.percentage),
+  },
 });
 ```
 
 ### 3. XHR Chunked (N requests, legacy support)
 Broadest compatibility with byte-level progress.
 ```typescript
-const { result } = await upload('/api/upload', file, {
-  method: 'xhr chunked',
-  chunkSize: 512 * 1024
+const { result } = await upload({
+  url: '/api/upload',
+  file,
+  options: {
+    method: 'xhr chunked',
+    chunkSize: 512 * 1024,
+  },
 });
 ```
 
 ### Auto-Select (Default)
 ```typescript
-const { result, uploadMethod } = await upload('/api/upload', file, {
-  method: 'auto' // Resolves to 'stream' or 'xhr chunked' based on browser support
+const { result, uploadMethod } = await upload({
+  url: '/api/upload',
+  file,
+  options: {
+    method: 'auto', // Resolves to 'stream' or 'xhr chunked' based on browser support
+  },
 });
 
 console.log(uploadMethod); // 'stream' | 'stream chunked' | 'xhr chunked'
@@ -56,7 +72,7 @@ NPM: https://www.npmjs.com/package/@universal-uploader/core
 ## Upload Control
 
 ```typescript
-const { result, actions, uploadMethod } = await upload(url, file, options);
+const { result, actions, uploadMethod } = await upload({ url, file, options });
 const { abort, pause, resume, refresh } = actions;
 
 console.log(uploadMethod); // Resolved upload strategy (never 'auto')
@@ -107,14 +123,22 @@ import type {
 
 ```typescript
 // Automatic retry with exponential backoff
-const { result } = await upload('/api/upload', file, {
-  retryCount: 5,
-  retryDelay: (attempt) => Math.pow(2, attempt) * 1000
+const { result } = await upload({
+  url: '/api/upload',
+  file,
+  options: {
+    retryCount: 5,
+    retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
+  },
 });
 
 // Throw on error
 try {
-  const { result } = await upload('/api/upload', file, { throwOnError: true });
+  const { result } = await upload({
+    url: '/api/upload',
+    file,
+    options: { throwOnError: true },
+  });
 } catch (err) {
   console.error(err);
 }

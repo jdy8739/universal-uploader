@@ -15,7 +15,7 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
     setEvents((prev) => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${msg}`]);
   };
 
-  const { upload, abort, status, pause, resume, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, abort, status, pause, resume, uploadMethod } = useUniversalUpload({
     url: '/upload',
     options: {
       method: 'auto',
@@ -39,8 +39,15 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
         {t("test.scenarios.lifecycleHooks.description")}
       </Card.Description>
       <div className="flex gap-2 mb-4">
-        <Button onClick={() => file && upload(file)} disabled={!file || status === 'uploading'}>
+        <Button onClick={() => file && upload(file)} disabled={!file || status !== 'idle'}>
           Start
+        </Button>
+        <Button
+          variant="outline"
+          onClick={refresh}
+          disabled={status === 'idle' || status === 'uploading'}
+        >
+          Refresh
         </Button>
         <Button variant="outline" onClick={abort} disabled={status !== 'uploading' && status !== 'paused'}>
           Abort

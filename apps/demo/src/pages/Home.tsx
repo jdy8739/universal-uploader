@@ -16,7 +16,7 @@ const FEATURE_BADGE_VARIANTS: Record<string, "info" | "error" | "success"> = {
 
 const CODE_SNIPPET = `import { useUniversalUpload } from '@universal-uploader/react';
 
-const { upload, pause, resume, abort, status } = useUniversalUpload({
+const { upload, pause, resume, abort, refresh, status } = useUniversalUpload({
   url: '/api/upload',
   options: {
     method: 'auto',       // stream → xhr fallback
@@ -40,6 +40,10 @@ const { upload, pause, resume, abort, status } = useUniversalUpload({
 
 <button onClick={abort} disabled={status === 'idle'}>
   Abort
+</button>
+
+<button onClick={refresh} disabled={status === 'idle'}>
+  Refresh
 </button>`;
 
 export const Home = ({ onNavigate }: HomeProps) => {
@@ -213,7 +217,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
               />
             </div>
             <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
-              <code className="text-emerald-400">{`import upload from '@universal-uploader/core';\nconst { result } = await upload('/api/upload', file);`}</code>
+              <code className="text-emerald-400">{`import upload from '@universal-uploader/core';\nconst { result } = await upload({\n  url: '/api/upload',\n  file,\n  options: { method: 'auto' },\n});`}</code>
             </pre>
           </div>
 
@@ -245,7 +249,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
               />
             </div>
             <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
-              <code className="text-emerald-400">{`const { upload, result } = useUniversalUpload({\n  url: '/api/upload'\n});`}</code>
+              <code className="text-emerald-400">{`const { upload, refresh, result } = useUniversalUpload({\n  url: '/api/upload'\n});`}</code>
             </pre>
           </div>
         </div>
@@ -548,7 +552,11 @@ function getLineColor(line: string): string {
     return "text-amber-300";
   if (/^\s*(const|let|url|method|retryCount|onProgress|onError)\b/.test(line))
     return "text-sky-300";
-  if (line.includes("useUniversalUpload") || line.includes("upload("))
+  if (
+    line.includes("useUniversalUpload") ||
+    line.includes("upload(") ||
+    line.includes("refresh")
+  )
     return "text-emerald-400";
   return "text-slate-200";
 }

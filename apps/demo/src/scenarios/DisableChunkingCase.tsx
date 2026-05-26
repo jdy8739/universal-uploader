@@ -12,7 +12,7 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, status, result, abort, pause, resume, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, result, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "xhr chunked",
@@ -37,8 +37,15 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
         {t("test.scenarios.disableChunking.description")}
       </Card.Description>
       <div className="flex gap-2 flex-wrap mb-4">
-        <Button onClick={handleRun} disabled={!file || status === "uploading"}>
-          Run
+        <Button onClick={handleRun} disabled={!file || status !== "idle"}>
+          Start
+        </Button>
+        <Button
+          variant="outline"
+          onClick={refresh}
+          disabled={status === "idle" || status === "uploading"}
+        >
+          Refresh
         </Button>
         <Button
           variant="outline"
