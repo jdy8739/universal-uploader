@@ -279,8 +279,8 @@ export default function useUniversalUpload({
   return {
     upload: uploadSafely,
     /**
-     * Alias for upload — restarts upload after abort, error, or success.
-     * upload의 별칭 — 중단, 실패, 성공 이후 업로드를 다시 시작할 때 사용합니다.
+     * @deprecated Use `upload(file)` to start a new upload, or `refresh()` to restart from the initial options snapshot.
+     * @deprecated 새 업로드는 `upload(file)`, 초기 옵션 스냅샷 재시작은 `refresh()`를 사용하세요.
      */
     retry: uploadSafely,
     result,
@@ -288,6 +288,7 @@ export default function useUniversalUpload({
     status,
     error,
     abort: () => prevReqAbortRef.current.abort(),
+    refresh: () => prevReqAbortRef.current.refresh(),
     pause: () => prevReqAbortRef.current.pause(),
     resume: () => prevReqAbortRef.current.resume(),
   };
