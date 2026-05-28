@@ -1,6 +1,6 @@
 {
   "name": "@universal-uploader/core",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Zero-dependency browser file upload library with Web Streams, Fetch Duplex, XHR fallback, progress tracking, chunked uploads, and automatic retries.",
   "main": "dist/index.cjs",
