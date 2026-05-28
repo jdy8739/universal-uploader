@@ -1,4 +1,4 @@
-import type { StreamUploaderParams } from "./types";
+import type { StreamUploaderParams, UploadResponse } from "./types";
 import { CHUNK_HEADER_KEYS, DEFAULT_STREAM_CHUNK_SIZE } from "./const";
 
 /**
@@ -160,4 +160,23 @@ export const initializeStream = ({
   };
 
   return { abortController, streamInit };
+};
+
+/**
+ * Syncs latest actions into the current actions object in place.
+ * 현재 actions 객체에 최신 actions를 제자리에서 동기화합니다.
+ */
+export const syncLatestActions = <
+  TCurrent extends UploadResponse["actions"],
+  TLatest extends UploadResponse["actions"],
+>(
+  currentActions: TCurrent | undefined,
+  latestActions: TLatest,
+): TCurrent | undefined => {
+  if (!currentActions) {
+    return currentActions;
+  }
+
+  Object.assign<TCurrent, TLatest>(currentActions, latestActions);
+  return currentActions;
 };

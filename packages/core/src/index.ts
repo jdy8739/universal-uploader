@@ -7,6 +7,7 @@ import {
 } from "./types";
 import { wait } from "./utils";
 import { getUploader } from "./orchestrator";
+import { syncLatestActions } from "./helper";
 
 /**
  * Orchestrates file upload by selecting the optimal method and managing retries and errors.
@@ -25,6 +26,7 @@ const upload = async (
   retryAttempt = 0,
   isResuming = false,
   initialOptions?: UploadParams["options"],
+  sharedActionsRef?: { current?: UploadResponse["actions"] },
 ): Promise<UploadResponseWithMethod> => {
   /**
    * Holds the externally shared actions object so refresh/resume can update
@@ -33,7 +35,7 @@ const upload = async (
    * 외부로 공유된 actions 객체를 보관하여 refresh/resume 이후에도
    * 동일 참조를 유지한 채 핸들러를 제자리에서 갱신할 수 있게 합니다.
    */
-  const latestActionsRef: { current?: UploadResponse["actions"] } = {};
+  const latestActionsRef = sharedActionsRef ?? {};
 
   const {
     onAbort,
@@ -51,18 +53,6 @@ const upload = async (
    * 최초 입력을 재사용해 refresh/resume 동작을 일관되게 유지합니다.
    */
   const optionsSnapshot = initialOptions ?? { ...options, method };
-
-  /**
-   * Keeps externally exposed actions pointing at the latest upload controls.
-   * 외부에 노출된 actions가 항상 최신 업로드 제어 함수를 가리키도록 동기화합니다.
-   */
-  const syncLatestActions = (uploadResponse: UploadResponse) => {
-    if (latestActionsRef.current) {
-      Object.assign(latestActionsRef.current, uploadResponse.actions);
-    }
-
-    return uploadResponse;
-  };
 
   /**
    * Re-runs upload with shared snapshot/context and optional action sync.
@@ -84,9 +74,16 @@ const upload = async (
       nextRetryAttempt,
       nextIsResuming,
       optionsSnapshot,
+      latestActionsRef,
     );
 
-    return shouldSyncActions ? uploadTask.then(syncLatestActions) : uploadTask;
+    return shouldSyncActions
+      ? uploadTask.then((uploadResponse) => {
+          syncLatestActions(latestActionsRef.current, uploadResponse.actions);
+
+          return uploadResponse;
+        })
+      : uploadTask;
   };
 
   if (retryAttempt === 0 && !isResuming) {
@@ -252,7 +249,7 @@ const upload = async (
               },
             });
 
-          Object.assign(originalActions, retryActions);
+          syncLatestActions(originalActions, retryActions);
           return retryResult;
         }
 
@@ -275,7 +272,9 @@ const upload = async (
 
     // Keep a stable external actions reference while swapping in latest handlers.
     // 외부 actions 참조는 유지한 채 최신 핸들러로 교체하기 위해 저장합니다.
-    latestActionsRef.current = uploadResponse.actions;
+    if (!latestActionsRef.current) {
+      latestActionsRef.current = uploadResponse.actions;
+    }
 
     const uploadResult = await wrapPromiseErrorHandler(uploadResponse);
 
