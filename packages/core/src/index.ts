@@ -58,7 +58,7 @@ const upload = async (
    * Re-runs upload with shared snapshot/context and optional action sync.
    * 공통 스냅샷/컨텍스트로 업로드를 재실행하고 필요 시 actions를 동기화합니다.
    */
-  const runUpload = ({
+  const runUpload = async ({
     uploadArgs,
     nextRetryAttempt = retryAttempt,
     nextIsResuming = false,
@@ -69,7 +69,7 @@ const upload = async (
     nextIsResuming?: boolean;
     shouldSyncActions?: boolean;
   }) => {
-    const uploadTask = upload(
+    const uploadTask = await upload(
       uploadArgs,
       nextRetryAttempt,
       nextIsResuming,
@@ -77,13 +77,11 @@ const upload = async (
       latestActionsRef,
     );
 
-    return shouldSyncActions
-      ? uploadTask.then((uploadResponse) => {
-          syncLatestActions(latestActionsRef.current, uploadResponse.actions);
+    if (shouldSyncActions) {
+      syncLatestActions(latestActionsRef.current, uploadTask.actions);
+    }
 
-          return uploadResponse;
-        })
-      : uploadTask;
+    return uploadTask;
   };
 
   if (retryAttempt === 0 && !isResuming) {
