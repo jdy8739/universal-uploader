@@ -171,7 +171,9 @@ const uploadWithFetchStreamChunked = async (
         });
 
         if (isLastChunk) {
-          onComplete?.();
+          // Pass the final chunk's Fetch Response so the consumer can read the server result.
+          // 마지막 청크의 Fetch Response를 넘겨 컨슈머가 서버 결과를 읽을 수 있게 합니다.
+          onComplete?.(fetchResponse);
         }
 
         // 성공 이후에 offset 갱신

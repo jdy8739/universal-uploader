@@ -34,8 +34,11 @@ export interface UploadOptions {
   retryDelay?: number | ((retryCount: number) => number);
   /** Whether to throw an error on failure. / 실패 시 에러를 던질지 여부. */
   throwOnError?: boolean | ((error: unknown) => boolean);
-  /** Callback on successful completion. / 성공적으로 완료될 때 호출되는 콜백. */
-  onComplete?: () => void;
+  /**
+   * Callback on successful completion. Receives the server's Fetch Response for 'stream' and 'stream chunked' (final chunk); undefined for 'xhr chunked' and empty-file uploads (no Fetch Response).
+   * 성공적으로 완료될 때 호출되는 콜백. 'stream'과 'stream chunked'(마지막 청크)에서는 서버 Fetch Response를 받고, 'xhr chunked' 및 빈 파일 업로드에서는 undefined입니다(Fetch Response 없음).
+   */
+  onComplete?: (response?: Response) => void;
   /** Callback for progress updates. / 진행률 업데이트를 위한 콜백. */
   onProgress?: (args: OnProgressParams) => void;
   /** Callback on upload abort. / 업로드 중단 시 호출되는 콜백. */

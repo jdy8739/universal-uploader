@@ -119,7 +119,8 @@ interface UseUniversalUploadConfig {
     customHeaders?: Record<string, string>;
     withCredentials?: boolean;
     onProgress?: (p: { loaded: number; total: number; percentage: number }) => void;
-    onComplete?: () => void;
+    onComplete?: (response?: Response) => void; // Response for 'stream'/'stream chunked'; undefined for 'xhr chunked' & empty files
+
     onError?: (error: Error) => void;
     onRetry?: () => void;
     onPause?: () => void;

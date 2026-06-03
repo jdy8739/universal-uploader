@@ -127,8 +127,8 @@ export default function useUniversalUpload({
         file,
         options: {
           ...$options,
-          onComplete: () => {
-            $options.onComplete?.();
+          onComplete: (response) => {
+            $options.onComplete?.(response);
             if (isLatestUploadRequest()) {
               setStatus("success");
               setResult((prevResult) => ({

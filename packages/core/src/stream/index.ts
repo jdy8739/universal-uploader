@@ -53,7 +53,7 @@ const uploadWithStream = async ({
             onProgress?.({ loaded: 0, total: 0, percentage: 100 });
           }
 
-          onComplete?.();
+          onComplete?.(res);
         }
 
         const resultSuccess = {
