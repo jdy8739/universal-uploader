@@ -1,0 +1,13 @@
+services:
+  upload-server:
+    build: .
+    container_name: universal-upload-server
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - UPLOAD_DIR=/uploads
+    volumes:
+      # Persist uploaded files to ./uploads on the host
+      - ./uploads:/uploads
+    restart: unless-stopped

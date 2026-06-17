@@ -1,0 +1,10 @@
+node_modules
+dist
+.vite
+demo/dist
+packages/*/dist
+.git
+.hermes
+*.md
+!README.md
+.DS_Store

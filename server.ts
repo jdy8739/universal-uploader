@@ -10,11 +10,12 @@ const app = express();
 const port = 3000;
 const failTwiceCounter = new Map<string, number>();
 
-const DESKTOP_PATH = path.join(os.homedir(), 'Desktop');
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(os.homedir(), 'Desktop');
 
-// Ensure Desktop exists (though it almost always does)
-if (!fs.existsSync(DESKTOP_PATH)) {
-  console.warn(`[WARN] Desktop path not found: ${DESKTOP_PATH}. Files will be saved in current directory.`);
+// Ensure upload directory exists
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  console.log(`[INFO] Created upload directory: ${UPLOAD_DIR}`);
 }
 
 app.use(cors());
@@ -76,7 +77,7 @@ const getFileWriteStream = (req: express.Request) => {
 
   // Use the original filename directly.
   const filename = originalName;
-  const saveDir = fs.existsSync(DESKTOP_PATH) ? DESKTOP_PATH : process.cwd();
+  const saveDir = UPLOAD_DIR;
   const filePath = path.join(saveDir, filename);
 
   // 'w' for chunk 0 or single uploads, 'a' for subsequent chunks (resumption)
@@ -172,7 +173,7 @@ export { app };
 
 app.listen(port, () => {
   console.log(`Test server running at http://localhost:${port}`);
-  console.log(`Uploads will be saved to: ${DESKTOP_PATH}`);
+  console.log(`Uploads will be saved to: ${UPLOAD_DIR}`);
 });
 
 process.on('SIGINT', () => {
