@@ -8,3 +8,4 @@ packages/*/dist
 *.md
 !README.md
 .DS_Store
+uploads

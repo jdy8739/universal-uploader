@@ -169,6 +169,10 @@ app.post('/upload/reset-test-counters', (_req, res) => {
   res.status(200).json({ message: 'Test counters reset' });
 });
 
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 export { app };
 
 app.listen(port, () => {
