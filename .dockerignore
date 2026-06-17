@@ -1,11 +1,10 @@
 node_modules
 dist
-.vite
-demo/dist
-packages/*/dist
+dist-server
 .git
-.hermes
-*.md
-!README.md
 .DS_Store
+*.log
 uploads
+apps
+packages
+pnpm-lock.yaml

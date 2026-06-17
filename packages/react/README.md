@@ -202,6 +202,32 @@ import type {
 - Firefox: Fetch Stream ✅
 - Safari/IE: XHR Fallback ✅
 
+## Testing
+
+11 vitest tests, all passing.
+
+```bash
+pnpm test   # vitest run
+```
+
+**Test file:** `__tests__/useUniversalUpload.test.tsx`
+
+| # | Test | Covers |
+|:--|------|--------|
+| 1 | `returns idle as initial status` | Default state: `idle`, no error, no method |
+| 2 | `returns control functions` | `upload`, `abort`, `pause`, `resume` are functions |
+| 3 | `transitions to success` | Upload completes → status = `"success"` |
+| 4 | `exposes uploadMethod` | Method string exposed after upload |
+| 5 | `transitions to error on upload failure` | Failed upload → status = `"error"`, error set |
+| 6 | `catches thrown errors` | `mockRejectedValue` → `error.message` captured |
+| 7 | `re-throws when throwOnError is true` | `options.throwOnError: true` propagates error |
+| 8 | `transitions to aborted` | Aborted result → status = `"aborted"` |
+| 9 | `transitions to paused` | Paused result → status = `"paused"` |
+| 10 | `aborts previous upload on new start` | Race condition: new `upload()` aborts in-flight request |
+| 11 | `aborts in-flight upload on unmount` | Component unmount → pending upload cleaned up |
+
+Test environment: **jsdom** via vitest with `@testing-library/react` hooks.
+
 ## License
 
 MIT

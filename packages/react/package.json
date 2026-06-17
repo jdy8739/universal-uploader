@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "react": "^19.2.6"
@@ -20,8 +21,13 @@
     "@universal-uploader/core": "workspace:*"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "@vitest/ui": "^4.1.9",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.9"
   },
   "publishConfig": {
     "access": "public"

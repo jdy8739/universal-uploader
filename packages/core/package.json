@@ -11,7 +11,9 @@
   ],
   "scripts": {
     "build": "rollup -c rollup.config.mjs",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -41,5 +43,10 @@
     "resumable",
     "universal-uploader"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@vitest/ui": "^4.1.9",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.9"
+  }
 }

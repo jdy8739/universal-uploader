@@ -158,6 +158,27 @@ try {
 - 100% TypeScript
 - Constant memory (Stream) or bounded (Chunked)
 
+## Testing
+
+71 vitest tests across 5 files, all passing.
+
+```bash
+pnpm test            # Run all tests (vitest run)
+pnpm test:watch      # Watch mode (vitest)
+```
+
+**Test files:**
+
+| File | Tests | Covers |
+|------|:-----:|--------|
+| `__tests__/helper.test.ts` | 28 | `calculateSizes`, `calculateChunkProgress`, `calculateResumePosition`, `getCustomHeaders`, `syncLatestActions` |
+| `__tests__/orchestrator.test.ts` | 9 | `getUploader` auto-detection, explicit method selection, unknown method rejection |
+| `__tests__/edge-cases.test.ts` | 14 | Zero-byte files, abort callbacks, `throwOnError`, retry success/failure, `uploadMethod` on both success and error |
+| `__tests__/upload-stream.test.ts` | 9 | Fetch stream: POST + duplex, headers, 200/500/0-byte, `onComplete`, custom headers, abort |
+| `__tests__/upload-xhr-chunked.test.ts` | 11 | XHR chunked: multi-chunk splits, error rejection, headers, abort, `onProgress`, `withCredentials`, chunkSize fallback |
+
+Test environment: **jsdom** via vitest. Mocked `fetch` and `XMLHttpRequest` — no network required.
+
 ## License
 
 MIT
