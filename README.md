@@ -87,6 +87,7 @@ const { result, actions } = await upload({
 ```typescript
 import { useState } from 'react';
 import { useUniversalUpload } from '@universal-uploader/react';
+import { UPLOAD_AUTO } from '@universal-uploader/core';
 
 export const Upload = () => {
   const [progress, setProgress] = useState(0);
@@ -94,6 +95,7 @@ export const Upload = () => {
   const { upload, pause, resume, abort, refresh, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
+      strategy: UPLOAD_AUTO,
       retryCount: 3,
       onProgress: (p) => setProgress(Math.round(p.percentage))
     }

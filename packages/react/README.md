@@ -23,6 +23,7 @@ NPM Packages:
 
 ```typescript
 import { useUniversalUpload } from '@universal-uploader/react';
+import { UPLOAD_AUTO } from '@universal-uploader/react';
 import { useState } from 'react';
 
 export const Upload = () => {
@@ -31,6 +32,7 @@ export const Upload = () => {
   const { upload, pause, resume, abort, refresh, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
+      strategy: UPLOAD_AUTO,
       retryCount: 3,
       onProgress: (p) => setProgress(Math.round(p.percentage))
     }
@@ -145,7 +147,12 @@ interface UseUniversalUploadConfig {
 
 ### With Error Recovery
 ```typescript
-const { upload, refresh, error } = useUniversalUpload({ url: '/api/upload' });
+import { UPLOAD_AUTO } from '@universal-uploader/react';
+
+const { upload, refresh, error } = useUniversalUpload({
+  url: '/api/upload',
+  options: { strategy: UPLOAD_AUTO },
+});
 const [file, setFile] = useState<File | null>(null);
 
 const handleUpload = async (nextFile: File) => {
@@ -169,9 +176,12 @@ return (
 
 ### Lifecycle Hooks
 ```typescript
+import { UPLOAD_AUTO } from '@universal-uploader/react';
+
 const { upload } = useUniversalUpload({
   url: '/api/upload',
   options: {
+    strategy: UPLOAD_AUTO,
     onProgress: ({ percentage }) => console.log(`${percentage}%`),
     onError: (err) => console.error('❌', err),
     onRetry: () => console.log('🔄 Retrying'),
