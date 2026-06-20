@@ -26,7 +26,6 @@ const CODE_SNIPPET = `import { useUniversalUpload } from '@universal-uploader/re
 const { upload, pause, resume, abort, refresh, status } = useUniversalUpload({
   url: '/api/upload',
   options: {
-    method: 'auto',       // stream → xhr fallback
     retryCount: 3,
     onProgress: (p) => updateUI(p.percentage),
     onError: (err) => console.error(err),
@@ -52,6 +51,39 @@ const { upload, pause, resume, abort, refresh, status } = useUniversalUpload({
 <button onClick={refresh} disabled={status === 'idle'}>
   Refresh
 </button>`;
+const TREE_SHAKABLE_SNIPPET = `import { useUniversalUpload } from '@universal-uploader/react/base';
+import { UPLOAD_WITH_STREAM } from '@universal-uploader/react';
+
+const { upload, pause, resume, abort, refresh, status } = useUniversalUpload({
+  url: '/api/upload',
+  options: {
+    strategy: UPLOAD_WITH_STREAM,
+    retryCount: 3,
+    onProgress: (p) => updateUI(p.percentage),
+    onError: (err) => console.error(err),
+  }
+});
+
+<button onClick={() => upload(file)} disabled={status === 'uploading'}>
+  {status === 'idle' ? 'Start Upload' : 'Upload Again'}
+</button>
+
+<button onClick={pause} disabled={status !== 'uploading'}>
+  Pause
+</button>
+
+<button onClick={resume} disabled={status !== 'paused'}>
+  Resume
+</button>
+
+<button onClick={abort} disabled={status === 'idle'}>
+  Abort
+</button>
+
+<button onClick={refresh} disabled={status === 'idle'}>
+  Refresh
+</button>`;
+
 
 export const Home = ({ onNavigate }: HomeProps) => {
   const { t, language } = useI18n();
@@ -224,7 +256,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
               />
             </div>
             <pre className="bg-slate-950 text-slate-100 p-3 rounded text-xs overflow-x-auto scrollbar-hidden">
-              <code className="text-emerald-400">{`import upload from '@universal-uploader/core';\nconst { result } = await upload({\n  url: '/api/upload',\n  file,\n  options: { method: 'auto' },\n});`}</code>
+              <code className="text-emerald-400">{`import upload from '@universal-uploader/core';\nconst { result } = await upload({\n  url: '/api/upload',\n  file,\n  options: { retryCount: 3 },\n});`}</code>
             </pre>
           </div>
 
@@ -379,7 +411,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
             </div>
             <pre className="px-3 sm:px-6 py-4 sm:py-5 text-[11px] sm:text-[12.5px] leading-[1.85] overflow-x-auto scrollbar-hidden m-0 bg-slate-950">
               <code>
-                {CODE_SNIPPET.split("\n").map((line, i) => (
+                {TREE_SHAKABLE_SNIPPET.split("\n").map((line, i) => (
                   <div key={i} className="flex min-w-0">
                     <span className="select-none w-4 sm:w-5 text-slate-600 text-right mr-3 sm:mr-5 flex-shrink-0 tabular-nums text-[10px] sm:text-[11px]">
                       {i + 1}
@@ -393,6 +425,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
             </pre>
           </div>
         </div>
+
       </section>
 
       {/* ── Method Comparison ──────────────────────────── */}
