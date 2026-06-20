@@ -1,17 +1,19 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
-import { useUniversalUpload, UploadMethod } from "@universal-uploader/react";
+import { useUniversalUpload, UploadStrategy } from "@universal-uploader/react";
 import { useI18n } from "../i18n";
 
 interface ChunkedResumptionCaseProps {
   file: File | null;
-  method: UploadMethod;
+  tag: string;
+  strategy: UploadStrategy;
   title: string;
 }
 
 export const ChunkedResumptionCase = ({
   file,
-  method,
+  tag,
+  strategy,
   title,
 }: ChunkedResumptionCaseProps) => {
   const [log, setLog] = useState<string[]>([]);
@@ -31,7 +33,7 @@ export const ChunkedResumptionCase = ({
   } = useUniversalUpload({
     url: "/upload/fail-at-chunk-3",
     options: {
-      method,
+      strategy,
       chunkSize: 1024 * 512,
       retryCount: 3,
       retryDelay: 1000,
@@ -63,7 +65,7 @@ export const ChunkedResumptionCase = ({
       <Card.Description>
         {t("test.scenarios.chunkedResumption.description", "").replace(
           "{method}",
-          method,
+          tag,
         )}
       </Card.Description>
 

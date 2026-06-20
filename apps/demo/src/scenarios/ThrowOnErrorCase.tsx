@@ -17,7 +17,6 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
   const { upload, refresh, status, result, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
-      method: "auto",
       retryCount: 0,
       throwOnError: true,
       onError: () => setOnErrorCalls((prev) => prev + 1),

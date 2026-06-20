@@ -1,5 +1,5 @@
 import { Card, Button, Log, Badge } from "../ui";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useUniversalUpload } from "@universal-uploader/react";
 import { useI18n } from "../i18n";
 
@@ -12,10 +12,18 @@ export const DisableChunkingCase = ({ file }: DisableChunkingCaseProps) => {
   const [progress, setProgress] = useState(0);
   const { t } = useI18n();
 
-  const { upload, refresh, status, result, abort, pause, resume, uploadMethod } = useUniversalUpload({
+  const {
+    upload,
+    refresh,
+    status,
+    result,
+    abort,
+    pause,
+    resume,
+    uploadMethod,
+  } = useUniversalUpload({
     url: "/upload",
     options: {
-      method: "xhr chunked",
       chunkSize: 0, // Should trigger fallback to uploadWithoutChunking
       onProgress: (p) => setProgress(Math.round(p.percentage)),
     },

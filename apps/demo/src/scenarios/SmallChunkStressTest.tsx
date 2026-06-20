@@ -16,7 +16,6 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
   const { upload, refresh, status, result, error, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
-      method: "xhr chunked",
       chunkSize: 16 * 1024,
       onProgress: (p) => setProgress(p.percentage),
     },

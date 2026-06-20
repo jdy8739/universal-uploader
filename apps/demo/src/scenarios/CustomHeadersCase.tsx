@@ -10,7 +10,6 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
   const { upload, refresh, status, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
-      method: "auto",
       customHeaders: {
         Authorization: "Bearer demo-token-123",
         "X-Client-Version": "1.0.0",
