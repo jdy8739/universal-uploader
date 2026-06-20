@@ -21,6 +21,7 @@ const FEATURE_BADGE_VARIANTS: Record<string, "info" | "error" | "success"> = {
   lifecycle: "success",
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CODE_SNIPPET = `import { useUniversalUpload } from '@universal-uploader/react';
 
 const { upload, pause, resume, abort, refresh, status } = useUniversalUpload({
@@ -83,7 +84,6 @@ const { upload, pause, resume, abort, refresh, status } = useUniversalUpload({
 <button onClick={refresh} disabled={status === 'idle'}>
   Refresh
 </button>`;
-
 
 export const Home = ({ onNavigate }: HomeProps) => {
   const { t, language } = useI18n();
@@ -200,33 +200,33 @@ export const Home = ({ onNavigate }: HomeProps) => {
           {t("home.features.title")}
         </h2>
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
-          {t("home.features.items").map(
-            (feature: FeatureItem, idx: number) => (
-              <Card key={idx}>
-                <div className="flex items-center gap-2 mb-4">
-                  {feature.tag && (
-                    <Badge
-                      variant={FEATURE_BADGE_VARIANTS[feature.tag] || "info"}
-                      className="px-2 py-1"
-                    >
-                      {feature.tag}
-                    </Badge>
-                  )}
-                  <Badge variant="info" className="px-2 py-1">
-                    core
+          {t("home.features.items").map((feature: FeatureItem, idx: number) => (
+            <Card key={idx}>
+              <div className="flex items-center gap-2 mb-4">
+                {feature.tag && (
+                  <Badge
+                    variant={FEATURE_BADGE_VARIANTS[feature.tag] || "info"}
+                    className="px-2 py-1"
+                  >
+                    {feature.tag}
                   </Badge>
-                </div>
-                <Card.Title>{feature.title}</Card.Title>
-                <Card.Description>{feature.description}</Card.Description>
-              </Card>
-            ),
-          )}
+                )}
+                <Badge variant="info" className="px-2 py-1">
+                  core
+                </Badge>
+              </div>
+              <Card.Title>{feature.title}</Card.Title>
+              <Card.Description>{feature.description}</Card.Description>
+            </Card>
+          ))}
         </div>
       </section>
 
       {/* ── Quick Start / Installation ───────────────────────── */}
       <section className="mb-10 sm:mb-12">
-        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">Quick Start</h2>
+        <h2 className="mt-0 mb-4 sm:mb-6 text-xl sm:text-2xl font-bold">
+          Quick Start
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Core Package */}
           <div className="card min-w-0">
@@ -416,7 +416,9 @@ export const Home = ({ onNavigate }: HomeProps) => {
                     <span className="select-none w-4 sm:w-5 text-slate-600 text-right mr-3 sm:mr-5 flex-shrink-0 tabular-nums text-[10px] sm:text-[11px]">
                       {i + 1}
                     </span>
-                    <span className={`${getLineColor(line)} break-all sm:break-normal`}>
+                    <span
+                      className={`${getLineColor(line)} break-all sm:break-normal`}
+                    >
                       {line || "\u00A0"}
                     </span>
                   </div>
@@ -425,7 +427,6 @@ export const Home = ({ onNavigate }: HomeProps) => {
             </pre>
           </div>
         </div>
-
       </section>
 
       {/* ── Method Comparison ──────────────────────────── */}
@@ -469,16 +470,14 @@ export const Home = ({ onNavigate }: HomeProps) => {
                       <td className="px-4 py-3 text-sm font-medium text-gray-600 bg-gray-50">
                         {row.label}
                       </td>
-                      {row.values.map(
-                        (value: string, valIdx: number) => (
-                          <td
-                            key={valIdx}
-                            className="px-4 py-3 text-sm text-gray-700"
-                          >
-                            {value}
-                          </td>
-                        ),
-                      )}
+                      {row.values.map((value: string, valIdx: number) => (
+                        <td
+                          key={valIdx}
+                          className="px-4 py-3 text-sm text-gray-700"
+                        >
+                          {value}
+                        </td>
+                      ))}
                     </tr>
                   ),
                 )}

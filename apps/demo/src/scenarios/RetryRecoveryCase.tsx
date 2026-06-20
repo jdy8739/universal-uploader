@@ -1,6 +1,7 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload } from "@universal-uploader/react";
+import { UPLOAD_WITH_STREAM } from "@universal-uploader/react";
 import { useI18n } from "../i18n";
 
 interface RetryRecoveryCaseProps {
@@ -18,6 +19,7 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
   const { upload, refresh, status, result, error, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-twice-then-success",
     options: {
+      strategy: UPLOAD_WITH_STREAM,
       retryCount: 3,
       retryDelay: 200,
       customHeaders: {

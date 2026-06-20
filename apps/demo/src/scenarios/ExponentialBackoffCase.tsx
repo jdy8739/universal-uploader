@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useUniversalUpload } from "@universal-uploader/react";
+import { UPLOAD_WITH_STREAM } from "@universal-uploader/react";
 import { Card, Button, Badge } from "../ui";
 import { useI18n } from "../i18n";
 
@@ -19,6 +20,7 @@ export const ExponentialBackoffCase = ({
   const { upload, refresh, status, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
+      strategy: UPLOAD_WITH_STREAM,
       retryCount: 3,
       retryDelay: (count) => count * 1000,
       onRetry: () => {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useUniversalUpload } from '@universal-uploader/react';
+import { UPLOAD_WITH_STREAM } from '@universal-uploader/react';
 import { Card, Button, Log } from '../ui';
 import { useI18n } from '../i18n';
 
@@ -18,6 +19,7 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
   const { upload, refresh, abort, status, pause, resume, uploadMethod } = useUniversalUpload({
     url: '/upload',
     options: {
+      strategy: UPLOAD_WITH_STREAM,
       onComplete: () => addEvent('✅ Complete'),
       onAbort: () => addEvent('🛑 Aborted'),
       onError: (err) => addEvent(`❌ Error: ${err.message}`),

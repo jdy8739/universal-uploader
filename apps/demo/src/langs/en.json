@@ -52,6 +52,11 @@
           "title": "Deterministic Action Rebinding",
           "description": "After retry/resume/refresh relaunches, control actions stay bound to the latest in-flight request so abort/pause always target the active upload operation.",
           "tag": "lifecycle"
+        },
+        {
+          "title": "Tree-Shakable Strategy Injection",
+          "description": "Import only the upload strategy you need — stream, chunked, or XHR — and let your bundler drop the rest. No dead code, no unnecessary HTTP transports.",
+          "tag": "xhr"
         }
       ]
     },

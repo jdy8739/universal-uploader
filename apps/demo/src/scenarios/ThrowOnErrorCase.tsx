@@ -1,6 +1,7 @@
 import { Card, Button, Log, Badge } from "../ui";
 import React, { useState } from "react";
 import { useUniversalUpload } from "@universal-uploader/react";
+import { UPLOAD_WITH_STREAM } from "@universal-uploader/react";
 import { useI18n } from "../i18n";
 
 interface ThrowOnErrorCaseProps {
@@ -17,6 +18,7 @@ export const ThrowOnErrorCase = ({ file }: ThrowOnErrorCaseProps) => {
   const { upload, refresh, status, result, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
+      strategy: UPLOAD_WITH_STREAM,
       retryCount: 0,
       throwOnError: true,
       onError: () => setOnErrorCalls((prev) => prev + 1),

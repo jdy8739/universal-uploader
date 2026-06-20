@@ -1,6 +1,7 @@
 import { Card } from "../ui";
 import { Button } from "../ui";
 import { useUniversalUpload } from "@universal-uploader/react";
+import { UPLOAD_WITH_XHR_CHUNKED } from "@universal-uploader/react";
 import { Badge } from "../ui";
 import { useState } from "react";
 import { useI18n } from "../i18n";
@@ -16,6 +17,7 @@ export const SmallChunkStressTest = ({ file }: SmallChunkStressTestProps) => {
   const { upload, refresh, status, result, error, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
+      strategy: UPLOAD_WITH_XHR_CHUNKED,
       chunkSize: 16 * 1024,
       onProgress: (p) => setProgress(p.percentage),
     },

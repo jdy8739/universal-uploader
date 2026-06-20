@@ -1,4 +1,5 @@
 import { useUniversalUpload } from "@universal-uploader/react";
+import { UPLOAD_WITH_STREAM } from "@universal-uploader/react";
 import { Card, Button, Badge } from "../ui";
 import { useI18n } from "../i18n";
 
@@ -10,6 +11,7 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
   const { upload, refresh, status, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
+      strategy: UPLOAD_WITH_STREAM,
       customHeaders: {
         Authorization: "Bearer demo-token-123",
         "X-Client-Version": "1.0.0",

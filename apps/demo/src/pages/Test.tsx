@@ -13,7 +13,12 @@ import {
 } from "../scenarios";
 import { Button, LanguageToggle } from "../ui";
 import { useI18n } from "../i18n";
-import { UPLOAD_WITH_STREAM, UPLOAD_WITH_FETCH_STREAM_CHUNKED, UPLOAD_WITH_XHR_CHUNKED } from "@universal-uploader/react";
+import {
+  UPLOAD_AUTO,
+  UPLOAD_WITH_STREAM,
+  UPLOAD_WITH_FETCH_STREAM_CHUNKED,
+  UPLOAD_WITH_XHR_CHUNKED,
+} from "@universal-uploader/react";
 
 interface TestProps {
   onBack: () => void;
@@ -44,9 +49,7 @@ export const Test = ({ onBack }: TestProps) => {
         <h1 className="text-4xl font-extrabold mb-2">
           {t("test.header.title")}
         </h1>
-        <p className="text-lg text-gray-500">
-          {t("test.header.subtitle")}
-        </p>
+        <p className="text-lg text-gray-500">{t("test.header.subtitle")}</p>
       </header>
 
       <section className="mb-12">
@@ -65,7 +68,8 @@ export const Test = ({ onBack }: TestProps) => {
           />
           {file && (
             <aside className="mt-4 p-3 bg-gray-100 rounded-md text-sm">
-              📄 <strong>{file.name}</strong> • {(file.size / (1024 * 1024)).toFixed(2)} MB
+              📄 <strong>{file.name}</strong> •{" "}
+              {(file.size / (1024 * 1024)).toFixed(2)} MB
             </aside>
           )}
         </div>
@@ -76,6 +80,7 @@ export const Test = ({ onBack }: TestProps) => {
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <UploadCard
             title={language === "en" ? "Intelligent Auto" : "지능형 자동"}
+            strategy={UPLOAD_AUTO}
             file={file}
             showResolvedMethod
           />
@@ -94,7 +99,9 @@ export const Test = ({ onBack }: TestProps) => {
             showResolvedMethod
           />
           <UploadCard
-            title={language === "en" ? "Reliable Chunking" : "신뢰할 수 있는 청킹"}
+            title={
+              language === "en" ? "Reliable Chunking" : "신뢰할 수 있는 청킹"
+            }
             tag="xhr chunked"
             strategy={UPLOAD_WITH_XHR_CHUNKED}
             file={file}
@@ -105,9 +112,7 @@ export const Test = ({ onBack }: TestProps) => {
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-6 text-2xl font-bold">
-          {t("test.step3.title")}
-        </h2>
+        <h2 className="mb-6 text-2xl font-bold">{t("test.step3.title")}</h2>
         <div className="grid min-w-0 gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <RetryAndOnErrorCase file={file} />
           <ThrowOnErrorCase file={file} />
@@ -117,21 +122,25 @@ export const Test = ({ onBack }: TestProps) => {
             file={file}
             tag="stream chunked"
             strategy={UPLOAD_WITH_FETCH_STREAM_CHUNKED}
-            title={language === "en" ? "Stream Chunked Resumption" : "스트림 청크 재개"}
+            title={
+              language === "en"
+                ? "Stream Chunked Resumption"
+                : "스트림 청크 재개"
+            }
           />
           <ChunkedResumptionCase
             file={file}
             tag="xhr chunked"
             strategy={UPLOAD_WITH_XHR_CHUNKED}
-            title={language === "en" ? "XHR Chunked Resumption" : "XHR 청크 재개"}
+            title={
+              language === "en" ? "XHR Chunked Resumption" : "XHR 청크 재개"
+            }
           />
         </div>
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-6 text-2xl font-bold">
-          {t("test.step4.title")}
-        </h2>
+        <h2 className="mb-6 text-2xl font-bold">{t("test.step4.title")}</h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <SmallChunkStressTest file={file} />
           <CustomHeadersCase file={file} />
@@ -139,9 +148,7 @@ export const Test = ({ onBack }: TestProps) => {
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-6 text-2xl font-bold">
-          {t("test.step5.title")}
-        </h2>
+        <h2 className="mb-6 text-2xl font-bold">{t("test.step5.title")}</h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <LifecycleHooksCase file={file} />
         </div>

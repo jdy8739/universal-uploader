@@ -3,6 +3,7 @@ import { Button } from "../ui";
 import { Log } from "../ui";
 import { useState } from "react";
 import { useUniversalUpload } from "@universal-uploader/react";
+import { UPLOAD_WITH_STREAM } from "@universal-uploader/react";
 import { Badge } from "../ui";
 import { useI18n } from "../i18n";
 
@@ -19,6 +20,7 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
   const { upload, refresh, status, error, result, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
+      strategy: UPLOAD_WITH_STREAM,
       retryCount: 2,
       retryDelay: 300,
       onRetry: () => setRetryCalls((prev) => prev + 1),
