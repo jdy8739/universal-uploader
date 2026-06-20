@@ -31,7 +31,6 @@ export const Upload = () => {
   const { upload, pause, resume, abort, refresh, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
-      method: 'auto', 
       retryCount: 3,
       onProgress: (p) => setProgress(Math.round(p.percentage))
     }
@@ -73,6 +72,18 @@ export const Upload = () => {
 };
 ```
 
+### Tree-Shakable Import
+
+```typescript
+import { useUniversalUpload } from '@universal-uploader/react/base';
+import { UPLOAD_WITH_STREAM } from '@universal-uploader/react';
+
+useUniversalUpload({
+  url: '/api/upload',
+  options: { strategy: UPLOAD_WITH_STREAM },
+});
+```
+
 ## Hook API
 
 ```typescript
@@ -112,15 +123,14 @@ Automatic retries on failure are handled by core via `retryCount` / `retryDelay`
 interface UseUniversalUploadConfig {
   url: string;
   options?: {
-    method?: 'stream' | 'stream chunked' | 'xhr chunked' | 'auto';
     chunkSize?: number; // 512KB default
     retryCount?: number; // 3 default
     retryDelay?: number | ((attempt: number) => number);
     customHeaders?: Record<string, string>;
     withCredentials?: boolean;
+    strategy?: (args: UploadParamsInternal) => Promise<UploadResponse>; // v2: inject strategy directly
     onProgress?: (p: { loaded: number; total: number; percentage: number }) => void;
     onComplete?: (response?: Response) => void; // Response for 'stream'/'stream chunked'; undefined for 'xhr chunked' & empty files
-
     onError?: (error: Error) => void;
     onRetry?: () => void;
     onPause?: () => void;
@@ -192,7 +202,8 @@ import type {
   UploadStatus,
   UploadResult,
   OnProgressParams,
-  UploadOptions
+  UploadOptions,
+  UploadStrategy,
 } from '@universal-uploader/core';
 ```
 
@@ -204,7 +215,7 @@ import type {
 
 ## Testing
 
-11 vitest tests, all passing.
+16 vitest tests, all passing.
 
 ```bash
 pnpm test   # vitest run
@@ -225,6 +236,8 @@ pnpm test   # vitest run
 | 9 | `transitions to paused` | Paused result → status = `"paused"` |
 | 10 | `aborts previous upload on new start` | Race condition: new `upload()` aborts in-flight request |
 | 11 | `aborts in-flight upload on unmount` | Component unmount → pending upload cleaned up |
+| 12-16 | `pause/resume/refresh/abort actions` | Controls callable during in-flight upload |
+| 16 | `stale-upload cleanup` | Older rejection doesn't overwrite newer success |
 
 Test environment: **jsdom** via vitest with `@testing-library/react` hooks.
 

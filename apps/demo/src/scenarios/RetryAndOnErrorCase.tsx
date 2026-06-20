@@ -19,7 +19,6 @@ export const RetryAndOnErrorCase = ({ file }: RetryAndOnErrorCaseProps) => {
   const { upload, refresh, status, error, result, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
-      method: "auto",
       retryCount: 2,
       retryDelay: 300,
       onRetry: () => setRetryCalls((prev) => prev + 1),

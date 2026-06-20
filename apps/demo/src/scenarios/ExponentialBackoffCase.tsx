@@ -19,7 +19,6 @@ export const ExponentialBackoffCase = ({
   const { upload, refresh, status, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-always",
     options: {
-      method: "auto",
       retryCount: 3,
       retryDelay: (count) => count * 1000,
       onRetry: () => {

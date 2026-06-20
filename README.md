@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
 [![npm downloads](https://img.shields.io/npm/dm/@universal-uploader/core.svg)](https://www.npmjs.com/package/@universal-uploader/core)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![tests](https://img.shields.io/badge/tests-82%20passing-brightgreen)](./packages)
+[![tests](https://img.shields.io/badge/tests-127%20passing-brightgreen)](./packages)
 
 High-performance file uploads with Web Streams API, automatic fallbacks, and resumable uploads. < 10 kB gzipped, zero dependencies, 100% TypeScript.
 
@@ -53,6 +53,19 @@ pnpm add @universal-uploader/core
 - [@universal-uploader/core](https://www.npmjs.com/package/@universal-uploader/core)
 - [@universal-uploader/react](https://www.npmjs.com/package/@universal-uploader/react)
 
+### Tree-Shakable Imports
+
+```typescript
+// Full bundle (auto strategy selection)
+import upload from '@universal-uploader/core';
+
+// Tree-shakable — only the stream strategy (no XHR/chunked overhead)
+import upload from '@universal-uploader/core/base';
+import { UPLOAD_WITH_STREAM } from '@universal-uploader/core/stream';
+
+await upload({ url, file, options: { strategy: UPLOAD_WITH_STREAM } });
+```
+
 ## Quick Start
 
 ### Core
@@ -63,10 +76,9 @@ const { result, actions } = await upload({
   url: '/api/upload',
   file,
   options: {
-    method: 'auto',
+    retryCount: 3,
     onProgress: ({ percentage }) => console.log(`${percentage}%`),
     onRetry: () => console.log('Retrying...'),
-    retryCount: 3,
   },
 });
 ```
@@ -82,7 +94,6 @@ export const Upload = () => {
   const { upload, pause, resume, abort, refresh, status, uploadMethod, result, error } = useUniversalUpload({
     url: '/api/upload',
     options: { 
-      method: 'auto', 
       retryCount: 3,
       onProgress: (p) => setProgress(Math.round(p.percentage))
     }
@@ -139,13 +150,13 @@ refresh(); // Full restart from initial options
 
 ```typescript
 interface UploadOptions {
-  method?: 'stream' | 'stream chunked' | 'xhr chunked' | 'auto';
   chunkSize?: number; // Default: 512KB
   retryCount?: number; // Default: 3
   retryDelay?: number | ((attempt: number) => number);
   customHeaders?: Record<string, string>;
   withCredentials?: boolean;
   offset?: number;
+  strategy?: (args: UploadParamsInternal) => Promise<UploadResponse>; // v2: inject strategy directly
   
   onProgress?: (p: { loaded: number; total: number; percentage: number }) => void;
   onComplete?: (response?: Response) => void; // Response for 'stream'/'stream chunked'; undefined for 'xhr chunked' & empty files
@@ -208,13 +219,13 @@ The Docker image uses a **multi-stage build** — TypeScript compilation in stag
 
 ## Testing
 
-82 vitest tests across 2 packages, zero failures.
+127 vitest tests across 2 packages, zero failures.
 
 ```bash
-# Core: 71 tests (5 files) — upload engine, helpers, orchestrator, edge cases
+# Core: 111 tests (6 files) — upload engine, helpers, orchestrator, edge cases
 pnpm --filter @universal-uploader/core test
 
-# React: 11 tests (1 file) — hook lifecycle, state transitions, race conditions
+# React: 16 tests (1 file) — hook lifecycle, state transitions, race conditions
 pnpm --filter @universal-uploader/react test
 
 # Watch mode
@@ -225,8 +236,8 @@ pnpm --filter @universal-uploader/core test:watch
 
 | Package | Files | Tests | Covers |
 |---------|:-----:|:-----:|--------|
-| `@universal-uploader/core` | 5 | 71 | helper utils, orchestrator, edge cases (zero-byte, abort, retry), stream upload, XHR chunked |
-| `@universal-uploader/react` | 1 | 11 | idle state, success/error/abort/pause transitions, uploadMethod, throwOnError, stale-upload cleanup, unmount abort |
+| `@universal-uploader/core` | 6 | 111 | helper utils, orchestrator, edge cases (zero-byte, abort, retry), stream upload, XHR chunked, stream chunked |
+| `@universal-uploader/react` | 1 | 16 | idle state, success/error/abort/pause transitions, uploadMethod, throwOnError, stale-upload cleanup, unmount abort |
 
 Test environment: **jsdom** via vitest. No browser required.
 

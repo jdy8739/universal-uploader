@@ -567,4 +567,26 @@ describe("upload orchestrator — edge cases", () => {
     expect(typeof response.actions.pause).toBe("function");
     expect(typeof response.actions.resume).toBe("function");
   });
+
+  // ── strategy injection ────────────────────────────────
+  it("uses injected strategy function instead of orchestrator default", async () => {
+    const strategy = vi.fn(async () => ({
+      result: Promise.resolve({ ok: true, total: 5, status: "success" as const }),
+      actions: {
+        abort: vi.fn(),
+        refresh: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+      },
+    }));
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { strategy },
+    });
+
+    expect(strategy).toHaveBeenCalledTimes(1);
+    await expect(response.result).resolves.toMatchObject({ ok: true, status: "success" });
+  });
 });

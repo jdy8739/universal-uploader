@@ -18,7 +18,6 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
   const { upload, refresh, abort, status, pause, resume, uploadMethod } = useUniversalUpload({
     url: '/upload',
     options: {
-      method: 'auto',
       onComplete: () => addEvent('✅ Complete'),
       onAbort: () => addEvent('🛑 Aborted'),
       onError: (err) => addEvent(`❌ Error: ${err.message}`),

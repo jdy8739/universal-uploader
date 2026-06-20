@@ -18,7 +18,6 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
   const { upload, refresh, status, result, error, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-twice-then-success",
     options: {
-      method: "auto",
       retryCount: 3,
       retryDelay: 200,
       customHeaders: {

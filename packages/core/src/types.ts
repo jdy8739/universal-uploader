@@ -11,15 +11,18 @@ export interface OnProgressParams {
   percentage: number;
 }
 
-export type UploadMethod = "auto" | "stream" | "stream chunked" | "xhr chunked";
+export type UploadMethod = "auto" | "stream" | "stream chunked" | "xhr chunked" | "custom";
+
+/** Signature for an upload strategy function that can be injected into the upload engine. */
+export type UploadStrategy = (
+  args: UploadParamsInternal,
+) => Promise<UploadResponse>;
 
 /**
  * Configuration options for the upload process.
  * 업로드 프로세스를 위한 구성 옵션입니다.
  */
 export interface UploadOptions {
-  /** Upload method. 'auto' defaults to stream if supported. / 업로드 방식. 'auto'는 지원 시 스트림을 사용합니다. */
-  method?: UploadMethod;
   /** Size of each chunk in bytes. / 각 청크의 바이트 크기. */
   chunkSize?: number;
   /** Internal retry state for resumed chunked uploads. / 청크 재시도 내부 상태용 오프셋입니다(외부 입력용 아님). */
@@ -51,6 +54,8 @@ export interface UploadOptions {
   onResume?: () => void;
   /** Callback on fatal error. / 치명적 에러 발생 시 호출되는 콜백. */
   onError?: (error: Error) => void;
+  /** Upload strategy function. Required when using @universal-uploader/core/base. */
+  strategy?: UploadStrategy;
 }
 
 /**

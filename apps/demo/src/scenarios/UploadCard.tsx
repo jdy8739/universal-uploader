@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { useUniversalUpload, UploadMethod } from "@universal-uploader/react";
+import { useUniversalUpload, UploadStrategy } from "@universal-uploader/react";
 import { Card, Button, Log, Badge } from "../ui";
 import { useState } from "react";
 import { useI18n } from "../i18n";
@@ -7,14 +7,16 @@ import { useI18n } from "../i18n";
 interface UploadCardProps {
   title: string;
   file: File | null;
-  method: UploadMethod;
+  tag?: string;
+  strategy?: UploadStrategy;
   showResolvedMethod?: boolean;
 }
 
 export const UploadCard = ({
   title,
-  method,
+  tag,
   file,
+  strategy,
   showResolvedMethod = false,
 }: UploadCardProps) => {
   const [progress, setProgress] = useState(0);
@@ -24,7 +26,7 @@ export const UploadCard = ({
     useUniversalUpload({
       url: "/upload",
       options: {
-        method,
+        strategy,
         chunkSize: 1024 * 1024,
         onProgress: (p) => setProgress(Math.round(p.percentage)),
       },
@@ -36,26 +38,25 @@ export const UploadCard = ({
     upload(file);
   };
 
+  const isChunkable = tag === "stream chunked" || tag === "xhr chunked" || !tag;
   const tagClass =
-    method === "stream"
+    tag === "stream" || tag === "stream chunked"
       ? "tag tag-stream"
-      : method === "stream chunked"
-        ? "tag tag-stream"
-        : method === "xhr chunked"
-          ? "tag tag-xhr"
-          : "tag";
+      : tag === "xhr chunked"
+        ? "tag tag-xhr"
+        : "tag";
 
   return (
     <Card>
       <header>
-        <span className={tagClass}>{method}</span>
+        <span className={tagClass}>{tag || "auto"}</span>
         <Card.Title>{title}</Card.Title>
         <Card.Description>
-          {method === "stream"
+          {tag === "stream"
             ? t("test.scenarios.uploadCard.stream")
-            : method === "stream chunked"
+            : tag === "stream chunked"
               ? t("test.scenarios.uploadCard.streamChunked")
-              : method === "xhr chunked"
+              : tag === "xhr chunked"
                 ? t("test.scenarios.uploadCard.xhrChunked")
                 : t("test.scenarios.uploadCard.auto")}
         </Card.Description>
@@ -88,9 +89,7 @@ export const UploadCard = ({
         >
           Refresh
         </Button>
-        {(method === "xhr chunked" ||
-          method === "stream chunked" ||
-          method === "auto") && (
+        {isChunkable && (
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -111,8 +110,8 @@ export const UploadCard = ({
       </div>
 
       {status !== "idle" && (
-        <section aria-labelledby={`progress-title-${method}`}>
-          <h4 id={`progress-title-${method}`} className="sr-only">
+        <section aria-labelledby={`progress-title-${tag || "auto"}`}>
+          <h4 id={`progress-title-${tag || "auto"}`} className="sr-only">
             Upload Progress
           </h4>
           <Card.ProgressBar

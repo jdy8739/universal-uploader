@@ -96,17 +96,19 @@
       ]
     },
     "developerExperience": {
-    "title": "Developer Experience",
-    "description": "Simple enough for basic uploads, powerful enough for complex streaming pipelines. Zero dependencies, 100% type-safe.",
-    "items": [
-    "Full TypeScript support with exhaustive, strict type definitions",
-    "< 10 kB gzipped for the full suite (Core + React hooks)",
-    "First-class hooks for progress, pause/resume, and lifecycle events",
-    "Deterministic refresh flow with initial-option snapshot semantics",
-    "Configurable retry + backoff with explicit recovery behaviors",
-    "One API over stream / stream chunked / xhr chunked execution paths"
-    ]
-    },    "browserSupport": {
+      "title": "Developer Experience",
+      "description": "Simple enough for basic uploads, powerful enough for complex streaming pipelines. Zero dependencies, 100% type-safe.",
+      "items": [
+        "Full TypeScript support with exhaustive, strict type definitions",
+        "< 10 kB gzipped for the full suite (Core + React hooks)",
+        "First-class hooks for progress, pause/resume, and lifecycle events",
+        "Deterministic refresh flow with initial-option snapshot semantics",
+        "Configurable retry + backoff with explicit recovery behaviors",
+        "One API over stream / stream chunked / xhr chunked execution paths",
+        "Tree-shakable subpath exports — import only the strategy you need"
+      ]
+    },
+    "browserSupport": {
       "title": "Browser Support",
       "description": "Streaming fetch support is detected at runtime. Falls back to chunked XHR silently — no configuration, no flags, no polyfills required.",
       "items": [
@@ -140,31 +142,59 @@
       "rows": [
         {
           "label": "HTTP Requests",
-          "values": ["1 request", "N requests", "N requests"]
+          "values": [
+            "1 request",
+            "N requests",
+            "N requests"
+          ]
         },
         {
           "label": "Progress",
-          "values": ["⚠️", "Per chunk", "Per chunk detail"]
+          "values": [
+            "⚠️",
+            "Per chunk",
+            "Per chunk detail"
+          ]
         },
         {
           "label": "Retry on Failure",
-          "values": ["Restart ❌", "Chunk only ✅", "Chunk only ✅"]
+          "values": [
+            "Restart ❌",
+            "Chunk only ✅",
+            "Chunk only ✅"
+          ]
         },
         {
           "label": "Resumption",
-          "values": ["❌", "✅", "✅"]
+          "values": [
+            "❌",
+            "✅",
+            "✅"
+          ]
         },
         {
           "label": "Service Worker Compatible",
-          "values": ["✅", "✅", "❌"]
+          "values": [
+            "✅",
+            "✅",
+            "❌"
+          ]
         },
         {
           "label": "Code Style",
-          "values": ["async/await", "async/await", "Callback"]
+          "values": [
+            "async/await",
+            "async/await",
+            "Callback"
+          ]
         },
         {
           "label": "Large Files",
-          "values": ["⚠️", "✅", "✅"]
+          "values": [
+            "⚠️",
+            "✅",
+            "✅"
+          ]
         }
       ],
       "legend": [

@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 
-vi.mock("@universal-uploader/core", () => ({
+vi.mock("@universal-uploader/core/base", () => ({
   default: vi.fn(),
 }));
 
 import useUniversalUpload from "../src/useUniversalUpload";
-import uploadCore from "@universal-uploader/core";
+import uploadCore from "@universal-uploader/core/base";
 import type { UploadResult, UploadActions } from "@universal-uploader/core";
 
 const mockUploadCore = uploadCore as ReturnType<typeof vi.fn>;
@@ -74,9 +74,7 @@ describe("useUniversalUpload", () => {
   });
 
   it("exposes the uploadMethod after upload", async () => {
-    mockUploadCore.mockResolvedValue(
-      makeResponse(makeResult(), "xhr chunked"),
-    );
+    mockUploadCore.mockResolvedValue(makeResponse(makeResult(), "xhr chunked"));
 
     const { result } = renderHook(() =>
       useUniversalUpload({ url: "http://localhost:3000/upload" }),
@@ -142,7 +140,12 @@ describe("useUniversalUpload", () => {
   // ── abort / pause ───────────────────────────────────────
   it("transitions to aborted", async () => {
     mockUploadCore.mockResolvedValue(
-      makeResponse({ ok: false, total: 0, message: "aborted", status: "aborted" }),
+      makeResponse({
+        ok: false,
+        total: 0,
+        message: "aborted",
+        status: "aborted",
+      }),
     );
 
     const { result } = renderHook(() =>
@@ -179,13 +182,23 @@ describe("useUniversalUpload", () => {
 
     mockUploadCore.mockResolvedValueOnce({
       result: new Promise(() => {}),
-      actions: { abort: abort1, refresh: vi.fn(), pause: vi.fn(), resume: vi.fn() },
+      actions: {
+        abort: abort1,
+        refresh: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+      },
       uploadMethod: "stream",
     });
 
     mockUploadCore.mockResolvedValueOnce({
       result: Promise.resolve(makeResult()),
-      actions: { abort: abort2, refresh: vi.fn(), pause: vi.fn(), resume: vi.fn() },
+      actions: {
+        abort: abort2,
+        refresh: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+      },
       uploadMethod: "stream",
     });
 
@@ -209,12 +222,14 @@ describe("useUniversalUpload", () => {
     expect(result.current.status).toBe("success");
   });
 
-
-
   it("does not let an older uploadCore rejection overwrite newer success", async () => {
     let rejectOld!: (error: Error) => void;
     mockUploadCore
-      .mockReturnValueOnce(new Promise((_, reject) => { rejectOld = reject; }))
+      .mockReturnValueOnce(
+        new Promise((_, reject) => {
+          rejectOld = reject;
+        }),
+      )
       .mockResolvedValueOnce({
         result: Promise.resolve(makeResult()),
         actions: makeActions(),
@@ -249,7 +264,12 @@ describe("useUniversalUpload", () => {
 
     mockUploadCore.mockResolvedValue({
       result: new Promise(() => {}),
-      actions: { abort: abortFn, refresh: vi.fn(), pause: vi.fn(), resume: vi.fn() },
+      actions: {
+        abort: abortFn,
+        refresh: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+      },
       uploadMethod: "stream",
     });
 
@@ -274,7 +294,12 @@ describe("useUniversalUpload", () => {
     const abortFn = vi.fn();
     mockUploadCore.mockResolvedValue({
       result: new Promise(() => {}),
-      actions: { abort: abortFn, refresh: vi.fn(), pause: vi.fn(), resume: vi.fn() },
+      actions: {
+        abort: abortFn,
+        refresh: vi.fn(),
+        pause: vi.fn(),
+        resume: vi.fn(),
+      },
       uploadMethod: "stream",
     });
 
@@ -301,7 +326,12 @@ describe("useUniversalUpload", () => {
     const resumeFn = vi.fn();
     mockUploadCore.mockResolvedValue({
       result: new Promise(() => {}),
-      actions: { abort: vi.fn(), refresh: vi.fn(), pause: pauseFn, resume: resumeFn },
+      actions: {
+        abort: vi.fn(),
+        refresh: vi.fn(),
+        pause: pauseFn,
+        resume: resumeFn,
+      },
       uploadMethod: "stream",
     });
 
@@ -331,7 +361,12 @@ describe("useUniversalUpload", () => {
     const refreshFn = vi.fn();
     mockUploadCore.mockResolvedValue({
       result: new Promise(() => {}),
-      actions: { abort: vi.fn(), refresh: refreshFn, pause: vi.fn(), resume: vi.fn() },
+      actions: {
+        abort: vi.fn(),
+        refresh: refreshFn,
+        pause: vi.fn(),
+        resume: vi.fn(),
+      },
       uploadMethod: "stream",
     });
 
@@ -373,4 +408,5 @@ describe("useUniversalUpload", () => {
         await result.current.upload(new File([], "test.bin"));
       }),
     ).rejects.toThrow("Fatal");
-  });});
+  });
+});

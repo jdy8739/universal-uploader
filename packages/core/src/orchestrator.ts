@@ -11,7 +11,7 @@ import { UploadParamsInternal } from "./types";
  */
 export const getUploader = (
   url: string,
-  method: UploadOptions["method"],
+  method: UploadMethod | undefined,
 ): {
   method: Exclude<UploadMethod, "auto">;
   upload: (args: UploadParamsInternal) => Promise<UploadResponse>;
