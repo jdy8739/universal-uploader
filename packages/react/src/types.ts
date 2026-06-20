@@ -7,8 +7,6 @@ import { UploadOptions, UploadMethod as UploadMethodType } from "@universal-uplo
 export interface UploadHookOptions extends UploadOptions {
   /** Callback when the target URL changes. / URL이 변경될 때 호출되는 콜백. */
   onUrlChange?: (url: string) => void;
-  /** Callback when the upload method changes. / 업로드 방식이 변경될 때 호출되는 콜백. */
-  onMethodChange?: (method: UploadOptions["method"]) => void;
 }
 
 export type UploadMethod = UploadMethodType;

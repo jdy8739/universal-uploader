@@ -1,7 +1,7 @@
 export * from "./types";
 
 import uploadBase from "./base";
-import { getUploader } from "./orchestrator";
+import uploadAuto from "./auto";
 import { UploadParams, UploadResponseWithMethod } from "./types";
 
 /**
@@ -17,15 +17,12 @@ const upload = async ({
     return uploadBase({ url, file, options });
   }
 
-  const { method, upload: strategy } = getUploader(url, options.method);
-
   return uploadBase({
     url,
     file,
     options: {
       ...options,
-      strategy,
-      resolvedMethod: method,
+      strategy: uploadAuto,
     },
   });
 };
@@ -33,6 +30,7 @@ const upload = async ({
 export default upload;
 
 export { default as uploadBase } from "./base";
-export { default as UPLOAD_WITH_STREAM } from "./stream/index";
-export { default as UPLOAD_WITH_FETCH_STREAM_CHUNKED } from "./stream-chunked/index";
-export { default as UPLOAD_WITH_XHR_CHUNKED } from "./xhr-chuncked/index";
+export { default as UPLOAD_AUTO } from "./auto";
+export { default as UPLOAD_WITH_STREAM } from "./stream";
+export { default as UPLOAD_WITH_FETCH_STREAM_CHUNKED } from "./stream-chunked";
+export { default as UPLOAD_WITH_XHR_CHUNKED } from "./xhr-chunked";

@@ -5,6 +5,7 @@ import { createRollupConfig } from '../../configs/rollup.config.base.mjs';
 
 export default createRollupConfig(pkg, {
   index: 'src/index.ts',
+  auto: 'src/auto.ts',
   base: 'src/base.ts',
   stream: 'src/stream.ts',
   'stream-chunked': 'src/stream-chunked.ts',

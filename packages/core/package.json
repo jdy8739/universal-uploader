@@ -6,6 +6,7 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -16,6 +17,11 @@
       "types": "./dist/base.d.ts",
       "import": "./dist/base.js",
       "require": "./dist/base.cjs"
+    },
+    "./auto": {
+      "types": "./dist/auto.d.ts",
+      "import": "./dist/auto.js",
+      "require": "./dist/auto.cjs"
     },
     "./stream": {
       "types": "./dist/stream.d.ts",

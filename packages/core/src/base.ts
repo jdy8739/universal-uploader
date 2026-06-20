@@ -4,6 +4,7 @@ import {
   UploadResponse,
   UploadResponseWithMethod,
   UploadResult,
+  UploadMethod,
 } from "./types";
 import { wait } from "./utils";
 import { syncLatestActions } from "./helper";
@@ -21,7 +22,7 @@ import { syncLatestActions } from "./helper";
  * initialOptions: refresh를 항상 동일하게 만들기 위한 최초 옵션 스냅샷입니다.
  */
 const upload = async (
-  { url, file, options: { method = "auto", ...options } }: UploadParams,
+  { url, file, options: { strategy, ...options } }: UploadParams,
   retryAttempt = 0,
   isResuming = false,
   initialOptions?: UploadParams["options"],
@@ -51,7 +52,7 @@ const upload = async (
    * 중첩 upload 호출 전반에서 공유되는 불변 옵션 기준값입니다.
    * 최초 입력을 재사용해 refresh/resume 동작을 일관되게 유지합니다.
    */
-  const optionsSnapshot = initialOptions ?? { ...options, method };
+  const optionsSnapshot = initialOptions ?? { ...options, strategy };
 
   /**
    * Re-runs upload with shared snapshot/context and optional action sync.
@@ -274,7 +275,7 @@ const upload = async (
               file,
               options: {
                 ...options,
-                method,
+                strategy,
                 offset: options.offset,
                 retryCount: retryCount - 1,
               },
@@ -290,14 +291,14 @@ const upload = async (
     return { result: retriedResult, actions: originalActions };
   };
 
-  if (!options.strategy) {
+  if (!strategy) {
     throw new Error(
       "Upload strategy is required. Use @universal-uploader/core for auto strategy selection, or pass options.strategy when using @universal-uploader/core/base.",
     );
   }
 
-  const uploadMethod = options.resolvedMethod ?? method;
-  const uploadFile = options.strategy;
+  const uploadMethod: UploadMethod = "custom";
+  const uploadFile = strategy;
 
   try {
     const uploadResponse = await uploadFile({
@@ -315,9 +316,14 @@ const upload = async (
     }
 
     const uploadResult = await wrapPromiseErrorHandler(uploadResponse);
+    const resolvedUploadMethod =
+      (uploadResponse as Partial<UploadResponseWithMethod>).uploadMethod ??
+      uploadMethod;
 
-    return { ...uploadResult, uploadMethod };
+    return { ...uploadResult, uploadMethod: resolvedUploadMethod };
   } catch (e) {
+    const errorUploadMethod =
+      (e as Partial<UploadResponseWithMethod>).uploadMethod ?? uploadMethod;
     const uploadResult: UploadResult =
       e instanceof DOMException && e.name === "AbortError"
         ? handleAbort(e)
@@ -327,7 +333,7 @@ const upload = async (
 
     return {
       result: Promise.resolve(uploadResult),
-      uploadMethod,
+      uploadMethod: errorUploadMethod,
       actions: {
         abort: () => null,
         refresh,

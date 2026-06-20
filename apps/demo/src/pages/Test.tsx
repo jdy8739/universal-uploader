@@ -13,6 +13,7 @@ import {
 } from "../scenarios";
 import { Button, LanguageToggle } from "../ui";
 import { useI18n } from "../i18n";
+import { UPLOAD_WITH_STREAM, UPLOAD_WITH_FETCH_STREAM_CHUNKED, UPLOAD_WITH_XHR_CHUNKED } from "@universal-uploader/react";
 
 interface TestProps {
   onBack: () => void;
@@ -75,25 +76,27 @@ export const Test = ({ onBack }: TestProps) => {
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           <UploadCard
             title={language === "en" ? "Intelligent Auto" : "지능형 자동"}
-            method="auto"
             file={file}
             showResolvedMethod
           />
           <UploadCard
             title={language === "en" ? "Modern Streaming" : "최신 스트리밍"}
-            method="stream"
+            tag="stream"
+            strategy={UPLOAD_WITH_STREAM}
             file={file}
             showResolvedMethod
           />
           <UploadCard
             title={language === "en" ? "Stream Chunked" : "스트림 청크"}
-            method="stream chunked"
+            tag="stream chunked"
+            strategy={UPLOAD_WITH_FETCH_STREAM_CHUNKED}
             file={file}
             showResolvedMethod
           />
           <UploadCard
             title={language === "en" ? "Reliable Chunking" : "신뢰할 수 있는 청킹"}
-            method="xhr chunked"
+            tag="xhr chunked"
+            strategy={UPLOAD_WITH_XHR_CHUNKED}
             file={file}
             showResolvedMethod
           />
@@ -112,12 +115,14 @@ export const Test = ({ onBack }: TestProps) => {
           <ExponentialBackoffCase file={file} />
           <ChunkedResumptionCase
             file={file}
-            method="stream chunked"
+            tag="stream chunked"
+            strategy={UPLOAD_WITH_FETCH_STREAM_CHUNKED}
             title={language === "en" ? "Stream Chunked Resumption" : "스트림 청크 재개"}
           />
           <ChunkedResumptionCase
             file={file}
-            method="xhr chunked"
+            tag="xhr chunked"
+            strategy={UPLOAD_WITH_XHR_CHUNKED}
             title={language === "en" ? "XHR Chunked Resumption" : "XHR 청크 재개"}
           />
         </div>

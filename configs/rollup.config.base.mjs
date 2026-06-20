@@ -27,7 +27,13 @@ export const createRollupConfig = (pkg, entries = { index: 'src/index.ts' }) => 
       commonjs(),
       typescript({ tsconfig: './tsconfig.json' }),
     ],
-    external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
+    external: (id) => {
+      const externals = [
+        ...Object.keys(pkg.dependencies || {}),
+        ...Object.keys(pkg.peerDependencies || {}),
+      ];
+      return externals.some((dep) => id === dep || id.startsWith(`${dep}/`));
+    },
   },
   ...Object.entries(entries).map(([name, input]) => ({
     input,
