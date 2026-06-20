@@ -12,7 +12,7 @@ export const CopyButton = ({
   label = "Copy",
 }: CopyButtonProps) => {
   const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleCopy = useCallback(async () => {
     try {

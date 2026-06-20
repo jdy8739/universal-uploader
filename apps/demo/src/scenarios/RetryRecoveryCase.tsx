@@ -15,7 +15,7 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
   );
   const { t } = useI18n();
 
-  const { upload, refresh, status, result, error, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, result, error, abort, uploadMethod } = useUniversalUpload({
     url: "/upload/fail-twice-then-success",
     options: {
       method: "auto",
@@ -41,13 +41,20 @@ export const RetryRecoveryCase = ({ file }: RetryRecoveryCaseProps) => {
         {t("test.scenarios.retryRecovery.description")}
       </Card.Description>
       <div className="scenario-actions">
-        <Button onClick={handleRun} disabled={!file || status !== "idle"}>
+        <Button onClick={handleRun} disabled={!file || status === "uploading"}>
           Start Scenario
         </Button>
         <Button
           variant="outline"
+          onClick={abort}
+          disabled={status !== "uploading" && status !== "paused"}
+        >
+          Abort
+        </Button>
+        <Button
+          variant="outline"
           onClick={refresh}
-          disabled={status === "idle" || status === "uploading"}
+          disabled={status === "idle"}
         >
           Refresh
         </Button>

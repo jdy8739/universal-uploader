@@ -39,13 +39,13 @@ export const LifecycleHooksCase = ({ file }: LifecycleHooksCaseProps) => {
         {t("test.scenarios.lifecycleHooks.description")}
       </Card.Description>
       <div className="flex gap-2 mb-4">
-        <Button onClick={() => file && upload(file)} disabled={!file || status !== 'idle'}>
+        <Button onClick={() => file && upload(file)} disabled={!file || status === "uploading"}>
           Start
         </Button>
         <Button
           variant="outline"
           onClick={refresh}
-          disabled={status === 'idle' || status === 'uploading'}
+          disabled={status === "idle"}
         >
           Refresh
         </Button>

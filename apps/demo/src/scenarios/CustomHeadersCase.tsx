@@ -7,7 +7,7 @@ interface CustomHeadersCaseProps {
 }
 
 export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
-  const { upload, refresh, status, pause, resume, uploadMethod } = useUniversalUpload({
+  const { upload, refresh, status, abort, pause, resume, uploadMethod } = useUniversalUpload({
     url: "/upload",
     options: {
       method: "auto",
@@ -29,16 +29,23 @@ export const CustomHeadersCase = ({ file }: CustomHeadersCaseProps) => {
       <div className="flex gap-2 flex-wrap mb-4">
         <Button
           onClick={() => file && upload(file)}
-          disabled={!file || status !== "idle"}
+          disabled={!file || status === "uploading"}
         >
           Upload with Headers
         </Button>
         <Button
           variant="outline"
           onClick={refresh}
-          disabled={status === "idle" || status === "uploading"}
+          disabled={status === "idle"}
         >
           Refresh
+        </Button>
+        <Button
+          variant="outline"
+          onClick={abort}
+          disabled={status !== "uploading" && status !== "paused"}
+        >
+          Abort
         </Button>
         <Button
           variant="outline"

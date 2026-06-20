@@ -1,6 +1,13 @@
-import React from "react";
 import { Badge, Button, Card, CopyButton, LanguageToggle } from "../ui";
 import { useI18n } from "../i18n";
+import type {
+  FeatureItem,
+  ControlItem,
+  ControlBadge,
+  MethodRow,
+  LegendItem,
+  BrowserItem,
+} from "../i18n";
 
 interface HomeProps {
   onNavigate: () => void;
@@ -81,7 +88,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
           )}
         </p>
         <div className="flex justify-center gap-2 flex-wrap px-2">
-          {process.env.NODE_ENV === "development" && (
+          {import.meta.env.DEV && (
             <Button
               onClick={onNavigate}
               className="px-6 py-2.5 font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all"
@@ -161,8 +168,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
           {t("home.features.title")}
         </h2>
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(280px,1fr))]">
-          {(t("home.features.items") as any).map(
-            (feature: any, idx: number) => (
+          {t("home.features.items").map(
+            (feature: FeatureItem, idx: number) => (
               <Card key={idx}>
                 <div className="flex items-center gap-2 mb-4">
                   {feature.tag && (
@@ -265,8 +272,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
             {t("home.controlSemantics.description")}
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(t("home.controlSemantics.items") as any).map(
-              (item: any, idx: number) => (
+            {t("home.controlSemantics.items").map(
+              (item: ControlItem, idx: number) => (
                 <div
                   key={idx}
                   className="rounded-lg border border-gray-100 bg-gray-50 p-4"
@@ -293,8 +300,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
             )}
           </div>
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-4 mt-4">
-            {(t("home.controlSemantics.badges") as any).map(
-              (badge: any, idx: number) => {
+            {t("home.controlSemantics.badges").map(
+              (badge: ControlBadge, idx: number) => {
                 const bgColorClasses: Record<string, string> = {
                   abort: "border-red-100 bg-red-50",
                   pause: "border-blue-100 bg-blue-50",
@@ -342,7 +349,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
               {t("home.developerExperience.description")}
             </p>
             <ul className="space-y-4">
-              {(t("home.developerExperience.items") as any).map(
+              {t("home.developerExperience.items").map(
                 (item: string, idx: number) => (
                   <li key={idx} className="flex gap-3 items-start">
                     <span className="mt-0.5 w-5 h-5 rounded-full bg-primary flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">
@@ -403,7 +410,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
             <table className="w-full min-w-[540px] border-collapse">
               <thead>
                 <tr className="border-b border-gray-200">
-                  {(t("home.methodComparison.headers") as any).map(
+                  {t("home.methodComparison.headers").map(
                     (header: string, idx: number) => (
                       <th
                         key={idx}
@@ -418,8 +425,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
                 </tr>
               </thead>
               <tbody>
-                {(t("home.methodComparison.rows") as any).map(
-                  (row: any, rowIdx: number) => (
+                {t("home.methodComparison.rows").map(
+                  (row: MethodRow, rowIdx: number) => (
                     <tr
                       key={rowIdx}
                       className={`border-b border-gray-100 ${
@@ -429,7 +436,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
                       <td className="px-4 py-3 text-sm font-medium text-gray-600 bg-gray-50">
                         {row.label}
                       </td>
-                      {(row.values as any).map(
+                      {row.values.map(
                         (value: string, valIdx: number) => (
                           <td
                             key={valIdx}
@@ -448,8 +455,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
 
           {/* 범례 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {(t("home.methodComparison.legend") as any).map(
-              (item: any, idx: number) => {
+            {t("home.methodComparison.legend").map(
+              (item: LegendItem, idx: number) => {
                 const colors = [
                   "border-blue-100 bg-blue-50",
                   "border-green-100 bg-green-50",
@@ -481,8 +488,8 @@ export const Home = ({ onNavigate }: HomeProps) => {
         </h2>
         <div className="card min-w-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {(t("home.browserSupport.items") as any).map(
-              (item: any, idx: number) => {
+            {t("home.browserSupport.items").map(
+              (item: BrowserItem, idx: number) => {
                 const isFull = idx < 2;
                 return (
                   <div
@@ -514,7 +521,7 @@ export const Home = ({ onNavigate }: HomeProps) => {
       </section>
 
       {/* ── CTA ─────────────────────────────────────────── */}
-      {process.env.NODE_ENV === "development" && (
+      {import.meta.env.DEV && (
         <section className="mb-10 sm:mb-12">
           <div className="card text-center py-8 sm:py-12 px-4">
             <h2 className="mt-0 text-2xl sm:text-3xl font-extrabold mb-3 text-gray-900">

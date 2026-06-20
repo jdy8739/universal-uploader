@@ -4,6 +4,99 @@ import ko from "./langs/ko.json";
 
 export type Language = "en" | "ko";
 
+// ── Translation schema ────────────────────────────────────
+export interface FeatureItem {
+  title: string;
+  description: string;
+  tag: string;
+}
+
+export interface ControlItem {
+  action: string;
+  behavior: string;
+}
+
+export interface ControlBadge {
+  label: string;
+  description: string;
+}
+
+export interface MethodRow {
+  label: string;
+  values: string[];
+}
+
+export interface LegendItem {
+  title: string;
+  description: string;
+}
+
+export interface BrowserItem {
+  name: string;
+  mode: string;
+}
+
+interface TranslationSchema {
+  home: {
+    header: {
+      badge: string;
+      title: string;
+      subtitle: string;
+      exploreDashboard: string;
+      sourceCode: string;
+    };
+    stats: {
+      dependencies: { value: string; label: string };
+      gzipped: { value: string; label: string };
+      uploadModes: { value: string; label: string };
+      typeSafe: { value: string; label: string };
+    };
+    features: {
+      title: string;
+      items: FeatureItem[];
+    };
+    controlSemantics: {
+      title: string;
+      description: string;
+      items: ControlItem[];
+      badges: ControlBadge[];
+    };
+    developerExperience: {
+      title: string;
+      description: string;
+      items: string[];
+    };
+    browserSupport: {
+      title: string;
+      description: string;
+      items: BrowserItem[];
+    };
+    methodComparison: {
+      title: string;
+      description: string;
+      headers: string[];
+      rows: MethodRow[];
+      legend: LegendItem[];
+    };
+    cta: {
+      title: string;
+      description: string;
+      button: string;
+    };
+    footer: string;
+  };
+}
+
+// Deep path resolver: "a.b.c" → TranslationSchema["a"]["b"]["c"]
+// Falls back to `string` for paths not in the schema (e.g. dynamic interpolation).
+type DeepValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
+  ? K extends keyof T
+    ? DeepValue<T[K], Rest>
+    : string
+  : P extends keyof T
+    ? T[P]
+    : string;
+
 function getBrowserLanguage(): Language {
   const langs =
     typeof navigator !== "undefined"
@@ -21,7 +114,10 @@ interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   toggleLanguage: () => void;
-  t: (path: string, defaultValue?: string) => string;
+  t: <P extends string>(
+    path: P,
+    defaultValue?: string,
+  ) => DeepValue<TranslationSchema, P>;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -37,12 +133,17 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     return "en";
   });
 
-  const t = (path: string, defaultValue = path): string => {
+  const t = <P extends string>(
+    path: P,
+    defaultValue: string = path,
+  ): DeepValue<TranslationSchema, P> => {
     const translations = language === "ko" ? ko : en;
 
-    return path.split(".").reduce((obj: any, key: string) => {
-      return obj?.[key] ?? defaultValue;
-    }, translations);
+    return path.split(".").reduce(
+      (obj: unknown, key) =>
+        (obj as Record<string, unknown>)?.[key] ?? defaultValue,
+      translations,
+    ) as DeepValue<TranslationSchema, P>;
   };
 
   const handleSetLanguage = (lang: Language) => {
