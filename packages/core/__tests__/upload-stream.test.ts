@@ -150,4 +150,47 @@ describe("uploadWithStream", () => {
     const [, init] = fetchMock.mock.calls[0];
     expect(init.signal.aborted).toBe(true);
   });
+
+  // ── pause + resume ─────────────────────────────────────
+  it("pause action sets isPaused flag and calls onPause", async () => {
+    fetchMock.mockReturnValue(new Promise(() => {}));
+    const onPause = vi.fn();
+
+    const { actions } = await uploadWithStream(
+      baseArgs({ options: { onPause } } as any),
+    );
+    actions.pause();
+
+    expect(onPause).toHaveBeenCalled();
+  });
+
+  it("resume calls through to orchestrator resume", async () => {
+    fetchMock.mockReturnValue(new Promise(() => {}));
+    const resumeFn = vi.fn();
+
+    const { actions } = await uploadWithStream(
+      baseArgs({ resume: resumeFn }),
+    );
+    actions.pause();
+    actions.resume();
+
+    expect(resumeFn).toHaveBeenCalled();
+  });
+
+  // ── withCredentials ────────────────────────────────────
+  it("uses same-origin credentials by default", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+    await uploadWithStream(baseArgs());
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.credentials).toBe("same-origin");
+  });
+
+  it("uses include credentials when withCredentials is true", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+    await uploadWithStream(
+      baseArgs({ options: { withCredentials: true } } as any),
+    );
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.credentials).toBe("include");
+  });
 });

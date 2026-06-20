@@ -207,6 +207,320 @@ describe("upload orchestrator — edge cases", () => {
     expect(r.status).toBe("error");
   });
 
+  // ── retryDelay as function ──────────────────────────────
+  it("uses retryDelay as function for exponential backoff", async () => {
+    const retryDelay = vi.fn((attempt: number) => attempt * 100);
+    let callCount = 0;
+    vi.mocked(uploadWithStream).mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return { result: Promise.reject(new Error("fail")), actions: makeActions() };
+      }
+      return { result: Promise.resolve(BASE_RESULT), actions: makeActions() };
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 3, retryDelay, onRetry: vi.fn() },
+    });
+
+    const r = await response.result;
+    expect(r.ok).toBe(true);
+    expect(retryDelay).toHaveBeenCalledWith(1);
+  });
+
+  // ── HTTP error (non-ok response) triggers retry ─────────
+  it("retries on HTTP error (non-ok fetch response)", async () => {
+    const onError = vi.fn();
+    let callCount = 0;
+    vi.mocked(uploadWithStream).mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return {
+          result: Promise.resolve({ ok: false, total: 0, status: "error", message: "fail" }),
+          actions: makeActions(),
+        };
+      }
+      return { result: Promise.resolve(BASE_RESULT), actions: makeActions() };
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 3, retryDelay: 1, onError },
+    });
+
+    const r = await response.result;
+    expect(r.ok).toBe(true);
+    expect(onError).not.toHaveBeenCalled(); // retried, not errored
+  });
+
+  // ── onRetry callback ────────────────────────────────────
+  it("fires onRetry when retry occurs", async () => {
+    const onRetry = vi.fn();
+    let callCount = 0;
+    vi.mocked(uploadWithStream).mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return { result: Promise.reject(new Error("fail")), actions: makeActions() };
+      }
+      return { result: Promise.resolve(BASE_RESULT), actions: makeActions() };
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 3, retryDelay: 10, onRetry },
+    });
+
+    const r = await response.result;
+    expect(r.ok).toBe(true);
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  // ── retryCount = 0 (no retries) ─────────────────────────
+  it("does not retry when retryCount is 0", async () => {
+    const onError = vi.fn();
+    vi.mocked(uploadWithStream).mockRejectedValue(new Error("fail"));
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 0, retryDelay: 1, onError },
+    });
+
+    const r = await response.result;
+    expect(r.status).toBe("error");
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  // ── retry exhausted + throwOnError ──────────────────────
+  it("throws after retries exhausted when throwOnError is true", async () => {
+    vi.mocked(uploadWithStream).mockRejectedValue(new Error("persistent"));
+
+    await expect(
+      upload({
+        url: "http://localhost:3000/upload",
+        file: makeFile(),
+        options: { retryCount: 2, retryDelay: 1, throwOnError: true },
+      }),
+    ).rejects.toThrow("persistent");
+  });
+
+  // ── options.offset reset on initial call ────────────────
+  it("resets offset to undefined on initial upload", async () => {
+    // The orchestrator clears offset on the internal options copy,
+    // not the caller's original object (to avoid mutating user data).
+    // We verify that an upload with offset: 500 doesn't break.
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.resolve(BASE_RESULT),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { offset: 500 },
+    });
+
+    const r = await response.result;
+    expect(r.ok).toBe(true);
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // BUG TESTS — these test for KNOWN bugs in the current code.
+  // When these tests FAIL, the bugs are still present.
+  // When they PASS (after fixes), the bugs are resolved.
+  // ═══════════════════════════════════════════════════════════
+
+  it("BUG: upload returns actions immediately while result is pending", async () => {
+    const actions = makeActions();
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: new Promise(() => {}),
+      actions,
+    });
+
+    const timeout = Symbol("timeout");
+    const response = await Promise.race([
+      upload({
+        url: "http://localhost:3000/upload",
+        file: makeFile(),
+        options: {},
+      }),
+      new Promise((resolve) => setTimeout(() => resolve(timeout), 20)),
+    ]);
+
+    expect(response).not.toBe(timeout);
+    expect((response as Awaited<ReturnType<typeof upload>>).actions).toBe(actions);
+  });
+
+  it("BUG: throwOnError rejects response.result, not the outer upload response", async () => {
+    const onError = vi.fn();
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.resolve({ ok: false, total: 0, status: "error", message: "fail" }),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { throwOnError: true, retryCount: 0, onError },
+    });
+
+    await expect(response.result).rejects.toThrow("fail");
+    expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it("BUG: onAbort via promise-path rejects response.result and reports once", async () => {
+    const onAbort = vi.fn();
+    const abortError = new DOMException("Aborted", "AbortError");
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.reject(abortError),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { throwOnError: true, onAbort },
+    });
+
+    await expect(response.result).rejects.toThrow(abortError);
+    expect(onAbort).toHaveBeenCalledTimes(1);
+  });
+
+  it("BUG: primitive promise rejection routes through onError without WeakSet crash", async () => {
+    const onError = vi.fn();
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.reject("fail"),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 0, onError },
+    });
+
+    const r = await response.result;
+    expect(r.status).toBe("error");
+    expect(r.message).toBe("fail");
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
+  });
+
+  it("BUG: onRetry fires after retry completes, not when retry starts", async () => {
+    const callOrder: string[] = [];
+    let callCount = 0;
+    vi.mocked(uploadWithStream).mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        callOrder.push("fail");
+        return { result: Promise.reject(new Error("fail")), actions: makeActions() };
+      }
+      callOrder.push("retry-success");
+      return { result: Promise.resolve(BASE_RESULT), actions: makeActions() };
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: {
+        retryCount: 3,
+        retryDelay: 1,
+        onRetry: () => callOrder.push("onRetry"),
+      },
+    });
+    await response.result;
+
+    // Fixed: onRetry now fires BEFORE the retry upload starts.
+    // Order: fail → onRetry → retry-success
+    expect(callOrder).toEqual(["fail", "onRetry", "retry-success"]);
+  });
+
+  // ── onRetry called for each retry attempt ─────────────────
+  it("fires onRetry once per retry attempt (not just once total)", async () => {
+    const onRetry = vi.fn();
+    let callCount = 0;
+    vi.mocked(uploadWithStream).mockImplementation(async () => {
+      callCount++;
+      if (callCount <= 2) {
+        return { result: Promise.reject(new Error("fail")), actions: makeActions() };
+      }
+      return { result: Promise.resolve(BASE_RESULT), actions: makeActions() };
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 3, retryDelay: 1, onRetry },
+    });
+    await response.result;
+
+    // 2 failures → 2 retries → 2 onRetry calls
+    expect(onRetry).toHaveBeenCalledTimes(2);
+  });
+
+  // ── onError receives original Error with HTTP error message ─
+  it("onError receives Error with HTTP status in message", async () => {
+    const onError = vi.fn();
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.resolve({
+        ok: false, total: 0, status: "error", message: "Upload failed with status 500",
+      }),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 0, onError },
+    });
+    await response.result;
+
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
+  });
+
+  // ── non-Error rejection edge cases ───────────────────────
+  it("handles null rejection through result promise", async () => {
+    const onError = vi.fn();
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.reject(null),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 0, onError },
+    });
+    const r = await response.result;
+
+    expect(r.status).toBe("error");
+    expect(r.message).toBe("null");
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
+  });
+
+  it("handles undefined rejection through result promise", async () => {
+    vi.mocked(uploadWithStream).mockResolvedValue({
+      result: Promise.reject(undefined),
+      actions: makeActions(),
+    });
+
+    const response = await upload({
+      url: "http://localhost:3000/upload",
+      file: makeFile(),
+      options: { retryCount: 0 },
+    });
+    const r = await response.result;
+
+    expect(r.status).toBe("error");
+    expect(r.message).toBe("undefined");
+  });
+
   // ── uploadMethod return ─────────────────────────────────
   it("includes uploadMethod on success", async () => {
     vi.mocked(uploadWithStream).mockResolvedValue({

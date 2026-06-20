@@ -219,4 +219,59 @@ describe("uploadWithXhrChuncked", () => {
     const result = await response.result;
     expect(result.ok).toBe(true);
   });
+
+  // ── pause + resume (chunked path) ──────────────────────
+  it("pause action is callable on chunked path", async () => {
+    let sendCount = 0;
+    const origSend = mockXHR.send.bind(mockXHR);
+    mockXHR.send = function (body?: any) {
+      origSend(body);
+      sendCount++;
+      if (sendCount === 1) {
+        setTimeout(() => mockXHR._respond(200), 3); // first chunk succeeds
+      }
+      // subsequent chunks wait forever
+    };
+
+    const response = uploadWithXhrChuncked(baseArgs());
+    await new Promise((r) => setTimeout(r, 10)); // first chunk completes
+
+    const { actions } = await response;
+    actions.pause();
+    // Verify it doesn't throw — pause is callable
+  });
+
+  // ── non-chunked fallback (uploadWithoutChunking) ────────
+  it("non-chunked fallback: returns success for single XHR", async () => {
+    setTimeout(() => mockXHR._respond(200), 5);
+
+    const response = await uploadWithXhrChuncked(
+      baseArgs({ options: { chunkSize: -1 } } as any),
+    );
+    const result = await response.result;
+    expect(result.ok).toBe(true);
+    expect(result.status).toBe("success");
+  });
+
+  it("non-chunked fallback: fires onProgress and onComplete", async () => {
+    const onProgress = vi.fn();
+    const onComplete = vi.fn();
+    setTimeout(() => mockXHR._respond(200), 5);
+
+    const response = await uploadWithXhrChuncked(
+      baseArgs({ options: { chunkSize: -1, onProgress, onComplete } } as any),
+    );
+    await response.result;
+    expect(onProgress).toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalled();
+  });
+
+  it("non-chunked fallback: handles HTTP error", async () => {
+    setTimeout(() => mockXHR._respond(500), 5);
+
+    const response = await uploadWithXhrChuncked(
+      baseArgs({ options: { chunkSize: -1 } } as any),
+    );
+    await expect(response.result).rejects.toThrow("Upload failed with status 500");
+  });
 });
