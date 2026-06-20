@@ -11,7 +11,8 @@
     "deploy-demo": "pnpm --filter @universal-uploader/demo run deploy",
     "lint": "eslint packages --ext .ts,.tsx",
     "test": "pnpm --filter @universal-uploader/core --filter @universal-uploader/react test",
-    "server": "docker compose up -d --build",
+    "docker:up": "CI=true docker compose up --build",
+    "docker:down": "CI=true docker compose down",
     "format": "prettier --write ."
   },
   "devDependencies": {
