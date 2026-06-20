@@ -5,7 +5,6 @@ import { createUploadBody, getStreamUploader } from "./helper";
 
 /**
  * Uploads a file using the Fetch streaming request body.
- * Fetch 스트리밍 요청 바디를 사용하여 파일을 업로드합니다.
  */
 const uploadWithStream = async ({
   url,
@@ -95,7 +94,6 @@ const uploadWithStream = async ({
       },
       pause: () => {
         // Actually pause means abort the upload because it is not chunked to catch the chunk upload progress.
-        // 실제로 일시정지는 청크 업로드 진행률을 캐치하지 않기 떄문에 업로드를 중단하게 되고 재개 시 업로드를 다시 시작합니다.
         isPaused = true;
 
         abortController.abort();

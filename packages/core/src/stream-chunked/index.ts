@@ -73,7 +73,6 @@ const uploadWithFetchStreamChunked = async (
 
     /**
      * Resume from persisted offset by deriving chunk index + stream offset.
-     * 저장된 offset으로부터 재개 시작 청크 인덱스와 오프셋을 계산합니다.
      */
     const { startChunkIndex, startOffset } = calculateResumePosition({
       offset: options.offset,
@@ -118,7 +117,6 @@ const uploadWithFetchStreamChunked = async (
 
       /**
        * Whether the chunk is paused.
-       * 청크가 일시정지된 경우 명시적으로 abort 에러를 던지지 않기 위한 플래그 값.
        */
       let isPaused = false;
 
@@ -172,11 +170,9 @@ const uploadWithFetchStreamChunked = async (
 
         if (isLastChunk) {
           // Pass the final chunk's Fetch Response so the consumer can read the server result.
-          // 마지막 청크의 Fetch Response를 넘겨 컨슈머가 서버 결과를 읽을 수 있게 합니다.
           onComplete?.(fetchResponse);
         }
 
-        // 성공 이후에 offset 갱신
         offset = end;
         options.offset = end;
 

@@ -7,7 +7,6 @@ import { UploadParamsInternal } from "./types";
 
 /**
  * Returns the appropriate uploader function based on the method and URL.
- * 메서드와 URL에 따라 적절한 업로더 함수를 반환합니다.
  */
 export const getUploader = (
   url: string,

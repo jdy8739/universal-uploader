@@ -6,7 +6,6 @@ import { UploadParams, UploadResponseWithMethod } from "./types";
 
 /**
  * File upload with automatic strategy selection and full fallback bundle.
- * 파일 업로드 - 자동 전략 선택 및 전체 폴백 번들 포함.
  */
 const upload = async ({
   url,

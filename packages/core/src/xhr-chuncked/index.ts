@@ -18,7 +18,6 @@ import { DEFAULT_STREAM_CHUNK_SIZE } from "../const";
 
 /**
  * Handles file upload as a single request without chunking using XMLHttpRequest.
- * XMLHttpRequest를 사용하여 파일을 청크 분할 없이 단일 요청으로 업로드합니다.
  */
 const uploadWithoutChunking = ({
   url,
@@ -120,7 +119,6 @@ const uploadWithoutChunking = ({
       },
       pause: () => {
         // Actually pause means abort the upload because it is not chunked to catch the chunk upload progress.
-        // 실제로 일시정지는 청크 업로드 진행률을 캐치하지 않기 떄문에 업로드를 중단하게 되고 재개 시 업로드를 다시 시작합니다.
         isPaused = true;
         xhr.abort();
         onPause?.();
@@ -141,7 +139,6 @@ const uploadWithoutChunking = ({
 
 /**
  * Uploads a file by splitting it into sequential chunks using XMLHttpRequest.
- * XMLHttpRequest를 사용하여 파일을 여러 개의 청크로 나누어 순차적으로 업로드합니다.
  */
 const uploadWithXhrChuncked = async (
   args: UploadParamsInternal,
@@ -174,7 +171,6 @@ const uploadWithXhrChuncked = async (
   };
 
   // If the chunk size is invalid, upload the file as a single request.
-  // 청크 크기가 유효하지 않은 경우 단일 요청으로 업로드합니다.
   if (typeof chunkSize === "number" && chunkSize <= 0) {
     return uploadWithoutChunking(args);
   }
@@ -185,7 +181,6 @@ const uploadWithXhrChuncked = async (
   });
 
   // If the file size is 0, upload the file as a single request.
-  // 파일 크기가 0인 경우 바로 성공 처리합니다.
   if (totalFileSize === 0) {
     onProgress?.({ loaded: 0, total: 0, percentage: 100 });
     onComplete?.();
@@ -216,8 +211,6 @@ const uploadWithXhrChuncked = async (
      * Upload the file by chunks starting from the persisted resume position.
      * options.offset is converted to startChunkIndex/startOffset for resume.
      *
-     * 저장된 offset을 기준으로 재개 시작 청크/오프셋을 계산해 업로드를 이어갑니다.
-     * 청크 인덱스가 totalChunks보다 작을 때까지 반복합니다.
      */
     const { startChunkIndex, startOffset } = calculateResumePosition({
       offset: options.offset,
@@ -247,7 +240,6 @@ const uploadWithXhrChuncked = async (
 
           /**
            * Whether the chunk is paused.
-           * 청크가 일시정지된 경우 명시적으로 abort 에러를 던지지 않기 위한 플래그 값.
            */
           let isPaused = false;
 
@@ -284,7 +276,6 @@ const uploadWithXhrChuncked = async (
                 onComplete?.();
               }
 
-              // 성공 이후에 offset 갱신
               offset = chunkEnd;
               options.offset = chunkEnd;
 
@@ -303,7 +294,6 @@ const uploadWithXhrChuncked = async (
             reject(new Error(`Upload failed with status ${xhr.status}`));
           xhr.onabort = () => {
             // If the chunk is paused, do not reject the promise.
-            // 청크가 일시정지된 경우 명시적으로 abort 에러를 던지지 않습니다.
             if (isPaused) {
               return;
             }
@@ -314,7 +304,6 @@ const uploadWithXhrChuncked = async (
           const chunk = file.slice(offset, chunkEnd);
           xhr.send(chunk);
 
-          // 클로저로 밖에서 참조하는 response.actions 객체를 업데이트합니다.
           response.actions.abort = () => xhr.abort();
           response.actions.refresh = () => {
             xhr.abort();
@@ -338,7 +327,6 @@ const uploadWithXhrChuncked = async (
               isResuming = true;
 
               // Resume the upload based on the options.offset in the closure. No separate resume function is used because it restarts the upload itself.
-              // 업로드를 클로저인 options.offset 기준으로 재개합니다. 별도의 resume 함수는 업로드 자체를 재실행하므로 쓰지 않습니다.
               response.result = uploadChunkedXhr();
               onResume?.();
             }

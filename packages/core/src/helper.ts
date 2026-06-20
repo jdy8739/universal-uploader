@@ -3,20 +3,15 @@ import { CHUNK_HEADER_KEYS, DEFAULT_STREAM_CHUNK_SIZE } from "./const";
 
 /**
  * Metadata for chunked uploads.
- * 청크 단위 업로드를 위한 메타데이터입니다.
  */
 export interface ChunkUploadSizesMeta {
-  /** Safe size of each chunk. / 안전한 각 청크의 크기. */
   safeChunkSize: number;
-  /** Total file size. / 전체 파일 크기. */
   totalFileSize: number;
-  /** Total number of chunks. / 전체 청크 수. */
   totalChunks: number;
 }
 
 /**
  * Calculates metadata for chunked uploads, such as safe chunk size and total chunks.
- * 안전한 청크 크기 및 전체 청크 수와 같은 청크 업로드용 메타데이터를 계산합니다.
  */
 export const calculateSizes = ({
   chunkSize,
@@ -41,7 +36,6 @@ export const calculateSizes = ({
 
 /**
  * Calculates chunk progress state.
- * 청크 진행 상태(isLastChunk, percentage)를 계산합니다.
  */
 export const calculateChunkProgress = ({
   loaded,
@@ -58,7 +52,6 @@ export const calculateChunkProgress = ({
 
 /**
  * Calculates the resume start position from a persisted offset.
- * 저장된 오프셋으로부터 재개 시작 위치를 계산합니다.
  */
 export const calculateResumePosition = ({
   offset,
@@ -75,7 +68,6 @@ export const calculateResumePosition = ({
 
 /**
  * Creates a Uint8Array buffer from a specific slice of the file.
- * 파일의 특정 부분을 잘라 Uint8Array 버퍼를 생성합니다.
  */
 export const createBuffer = async ({
   file,
@@ -91,7 +83,6 @@ export const createBuffer = async ({
 
 /**
  * Returns chunk-related headers merged with custom headers.
- * 청크 관련 헤더와 커스텀 헤더를 병합해 반환합니다.
  */
 export const getCustomHeaders = ({
   customHeaders,
@@ -134,7 +125,6 @@ export const getCustomHeaders = ({
 
 /**
  * Initializes a RequestInit object and AbortController for streaming uploads.
- * 스트리밍 업로드를 위한 RequestInit 객체 및 AbortController를 초기화합니다.
  */
 export const initializeStream = ({
   body,
@@ -164,7 +154,6 @@ export const initializeStream = ({
 
 /**
  * Syncs latest actions into the current actions object in place.
- * 현재 actions 객체에 최신 actions를 제자리에서 동기화합니다.
  */
 export const syncLatestActions = <
   TCurrent extends UploadResponse["actions"],
