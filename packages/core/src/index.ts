@@ -89,6 +89,38 @@ const upload = async (
   }
 
   /**
+   * Tracks errors already reported via callbacks so a single error
+   * that propagates through both wrapPromiseErrorHandler and the main
+   * catch doesn't fire onError / onAbort twice when throwOnError is true.
+   *
+   * throwOnError가 true일 때 동일 에러가 wrapper와 메인 catch 양쪽을
+   * 통과하며 onError / onAbort가 중복 호출되는 것을 방지합니다.
+   */
+  const reportedErrors = new WeakSet<object>();
+
+  /**
+   * Converts arbitrary promise rejection values into Error objects for
+   * callback/API consistency.
+   *
+   * 임의의 Promise rejection 값을 콜백/API 일관성을 위해 Error 객체로 변환합니다.
+   */
+  const toError = (e: unknown): Error =>
+    e instanceof Error ? e : new Error(String(e));
+
+  /**
+   * Reports each object error at most once without crashing on primitives.
+   * primitive rejection은 WeakSet에 넣을 수 없으므로 객체만 추적합니다.
+   */
+  const reportOnce = <T extends Error>(e: T, report: (error: T) => void) => {
+    if (reportedErrors.has(e)) {
+      return;
+    }
+
+    reportedErrors.add(e);
+    report(e);
+  };
+
+  /**
    * Determines whether to throw an error based on configuration.
    * 구성 설정에 따라 에러를 throw할지 결정합니다.
    */
@@ -105,7 +137,7 @@ const upload = async (
    * 사용자에 의해 중단된 경우를 처리합니다.
    */
   const handleAbort = (e: DOMException): UploadResult => {
-    onAbort?.(e);
+    reportOnce(e, (error) => onAbort?.(error));
 
     if (shouldThrowError(e)) {
       throw e;
@@ -123,14 +155,16 @@ const upload = async (
    * Handles generic errors during upload.
    * 업로드 중 발생하는 일반적인 에러를 처리합니다.
    */
-  const handleError = (e: Error): UploadResult => {
-    onError?.(e);
+  const handleError = (e: unknown): UploadResult => {
+    const error = toError(e);
 
-    if (shouldThrowError(e)) {
-      throw e;
+    reportOnce(error, (reportedError) => onError?.(reportedError));
+
+    if (shouldThrowError(error)) {
+      throw error;
     }
 
-    return { ok: false, total: 0, message: e.message, status: "error" };
+    return { ok: false, total: 0, message: error.message, status: "error" };
   };
 
   /**
@@ -193,14 +227,14 @@ const upload = async (
 
     await wait(nextRetryDelay);
 
+    onRetry?.();
+
     const uploadResponse = await runUpload({
       uploadArgs,
       nextRetryAttempt,
       nextIsResuming: false,
       shouldSyncActions: false,
     });
-
-    onRetry?.();
 
     return uploadResponse;
   };
@@ -251,10 +285,10 @@ const upload = async (
           return retryResult;
         }
 
-        return handleError(e as Error);
+        return handleError(e);
       });
 
-    return { result: Promise.resolve(retriedResult), actions: originalActions };
+    return { result: retriedResult, actions: originalActions };
   };
 
   const { method: uploadMethod, upload: uploadFile } = getUploader(url, method);
