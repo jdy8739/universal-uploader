@@ -252,9 +252,15 @@ export default function useUniversalUpload({
    */
   const uploadSafely = useCallback(
     async (file: File) => {
+      const uploadRequestId = latestUploadRequestIdRef.current + 1;
+
       try {
         await upload(file);
       } catch (e) {
+        if (latestUploadRequestIdRef.current !== uploadRequestId) {
+          return;
+        }
+
         setError(e as Error);
         setStatus("error");
         setResult({ ...INITIAL_UPLOAD_RESULT, status: "error" });
