@@ -6,6 +6,34 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./base": {
+      "types": "./dist/base.d.ts",
+      "import": "./dist/base.js",
+      "require": "./dist/base.cjs"
+    },
+    "./stream": {
+      "types": "./dist/stream.d.ts",
+      "import": "./dist/stream.js",
+      "require": "./dist/stream.cjs"
+    },
+    "./stream-chunked": {
+      "types": "./dist/stream-chunked.d.ts",
+      "import": "./dist/stream-chunked.js",
+      "require": "./dist/stream-chunked.cjs"
+    },
+    "./xhr-chunked": {
+      "types": "./dist/xhr-chunked.d.ts",
+      "import": "./dist/xhr-chunked.js",
+      "require": "./dist/xhr-chunked.cjs"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist"
   ],

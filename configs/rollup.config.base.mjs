@@ -3,12 +3,24 @@ import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import dts from 'rollup-plugin-dts';
 
-export const createRollupConfig = (pkg) => [
+export const createRollupConfig = (pkg, entries = { index: 'src/index.ts' }) => [
   {
-    input: 'src/index.ts',
+    input: entries,
     output: [
-      { file: pkg.main, format: 'cjs', sourcemap: true },
-      { file: pkg.module, format: 'esm', sourcemap: true },
+      {
+        dir: 'dist',
+        format: 'cjs',
+        sourcemap: true,
+        entryFileNames: '[name].cjs',
+        chunkFileNames: '[name]-[hash].cjs',
+      },
+      {
+        dir: 'dist',
+        format: 'esm',
+        sourcemap: true,
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name]-[hash].js',
+      },
     ],
     plugins: [
       resolve(),
@@ -17,9 +29,9 @@ export const createRollupConfig = (pkg) => [
     ],
     external: [...Object.keys(pkg.dependencies || {}), ...Object.keys(pkg.peerDependencies || {})],
   },
-  {
-    input: 'src/index.ts',
-    output: [{ file: pkg.types, format: 'es' }],
+  ...Object.entries(entries).map(([name, input]) => ({
+    input,
+    output: [{ file: `dist/${name}.d.ts`, format: 'es' }],
     plugins: [dts()],
-  },
+  })),
 ];

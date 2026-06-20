@@ -13,6 +13,11 @@ export interface OnProgressParams {
 
 export type UploadMethod = "auto" | "stream" | "stream chunked" | "xhr chunked";
 
+/** Signature for an upload strategy function that can be injected into the upload engine. */
+export type UploadStrategy = (
+  args: UploadParamsInternal,
+) => Promise<UploadResponse>;
+
 /**
  * Configuration options for the upload process.
  * 업로드 프로세스를 위한 구성 옵션입니다.
@@ -51,6 +56,10 @@ export interface UploadOptions {
   onResume?: () => void;
   /** Callback on fatal error. / 치명적 에러 발생 시 호출되는 콜백. */
   onError?: (error: Error) => void;
+  /** Upload strategy function. Required when using @universal-uploader/core/base. */
+  strategy?: UploadStrategy;
+  /** Internal resolved method name when strategy is selected by the default orchestrator. */
+  resolvedMethod?: Exclude<UploadMethod, "auto">;
 }
 
 /**
