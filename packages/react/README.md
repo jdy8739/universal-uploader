@@ -139,6 +139,11 @@ interface UseUniversalUploadConfig {
     onResume?: () => void;
     onAbort?: (error: DOMException) => void;
     throwOnError?: boolean | ((error: unknown) => boolean);
+    /**
+     * Called when the `url` prop changes. Receives the new URL.
+     * Use for logging or cleanup when switching upload targets.
+     */
+    onUrlChange?: (url: string) => void;
   };
 }
 ```

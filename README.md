@@ -24,9 +24,8 @@ universal-upload/
 │       ├── src/           # TypeScript source
 │       ├── __tests__/     # 11 vitest tests (1 file)
 │       └── vitest.config.ts
-├── apps/
-│   └── demo/              # Vite demo app (한국어, English)
-└── configs/               # Shared build configs
+|├── apps/demo/             # Vite demo app (한국어, English)
+|└── configs/               # Shared build configs
 ```
 
 ## Three Upload Methods
@@ -37,7 +36,7 @@ universal-upload/
 | **Fetch Chunked** | N | O(chunk) ✅ | ✅ | ✅ | ❌ |
 | **XHR Chunked** | N | O(chunk) ✅ | ✅ | ✅ | ✅ |
 
-Auto-selects the best method for your browser.
+Auto-selects the optimal method for your browser: **Fetch Stream** where supported, **XHR Chunked** otherwise (Safari, legacy browsers). Fetch Chunked is available as a manual strategy (`UPLOAD_WITH_FETCH_STREAM_CHUNKED`).
 
 ## Installation
 
